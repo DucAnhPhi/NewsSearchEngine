@@ -17,28 +17,29 @@ class NetzpolitikScraper(scrapy.Spider):
             yield scrapy.Request(link, self.parse_article)
 
     def parse_article(self, response):
-            body_with_linebreaks = re.sub(r"<[\/]p>|<[\/]h3>|<br\s*[\/]?>|<[\/]figcaption>", "\n", response.text)
-            soup = BeautifulSoup(body_with_linebreaks, 'lxml')
+        body_with_linebreaks = re.sub(r"<[\/]p>|<[\/]h[1-6]>|<br\s*[\/]?>|<[\/]figcaption>|<[\/]li>", "\n", response.text)
+        soup = BeautifulSoup(body_with_linebreaks, 'lxml')
 
-            subtitle = response.css('.entry-subtitle ::text').extract_first()
-            title = response.css('.entry-title ::text').extract_first()
-            published = response.css('.published ::text').extract_first()
-            authors = response.css('.entry-meta a[rel="author"] ::text').extract()
-            categories = response.css('.entry-footer__category a[rel="tag"] ::text').extract()
-            keywords = response.css('.entry-footer__tags a[rel="tag"] ::text').extract()
-            references = response.css('.entry-content a ::attr(href)').extract()
+        subtitle = response.css('.entry-subtitle ::text').extract_first()
+        title = response.css('.entry-title ::text').extract_first()
+        published = response.css('.published ::text').extract_first()
+        authors = response.css('.entry-meta a[rel="author"] ::text').extract()
+        categories = response.css('.entry-footer__category a[rel="tag"] ::text').extract()
+        keywords = response.css('.entry-footer__tags a[rel="tag"] ::text').extract()
+        references = response.css('.entry-content a ::attr(href)').extract()
 
-            head_section = "".join([p.get_text() for p in soup.article.header.find_all('p')])
-            content_section = soup.article.find_all('div', class_='entry-content')[0].get_text()
-            body = head_section + content_section
+        head_section = "".join([p.get_text() for p in soup.article.header.find_all('p')])
+        content_section = soup.article.find_all('div', class_='entry-content')[0].get_text()
+        body = head_section + content_section
 
-            yield {
-                'title': title,
-                'subtitle': subtitle,
-                'published': published.lstrip()[:10].replace(".", "-"),
-                'authors': authors,
-                'categories': categories,
-                'keywords': keywords,
-                'body': body,
-                'references': references
-            }
+        yield {
+            'id': response.url,
+            'title': title,
+            'subtitle': subtitle,
+            'published': published.lstrip()[:10].replace(".", "-"),
+            'authors': authors,
+            'categories': categories,
+            'keywords': keywords,
+            'body': body,
+            'references': references
+        }
