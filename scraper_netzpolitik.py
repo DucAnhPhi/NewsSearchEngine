@@ -1,19 +1,17 @@
 import scrapy
-from bs4 import BeautifulSoup
 import re
+import json
+from bs4 import BeautifulSoup
 from scrapy.selector import Selector
 
 class NetzpolitikScraper(scrapy.Spider):
     name="netzpolitik_spider"
-    start_urls = ['https://netzpolitik.org/2020']
+    start_urls = ['https://netzpolitik.org/2010'] + ['https://netzpolitik.org/2010/page/' + str(page) for page in range(2,78)]
 
     def parse(self, response):
         LINK_SELECTOR = ".teaser__link.teaser__text-link.teaser__headline-link.u-uid.u-url"
         for element in response.css(LINK_SELECTOR):
             link = element.css('a ::attr(href)').extract_first()
-            yield {
-                'link': link
-            }
             yield scrapy.Request(link, self.parse_article)
 
     def parse_article(self, response):
@@ -32,7 +30,7 @@ class NetzpolitikScraper(scrapy.Spider):
         content_section = soup.article.find_all('div', class_='entry-content')[0].get_text()
         body = head_section + content_section
 
-        yield {
+        article = {
             'id': response.url,
             'title': title,
             'subtitle': subtitle,
@@ -43,3 +41,5 @@ class NetzpolitikScraper(scrapy.Spider):
             'body': body,
             'references': references
         }
+
+        yield article
