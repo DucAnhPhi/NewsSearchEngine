@@ -3,10 +3,23 @@ from sentence_transformers import SentenceTransformer
 import torch
 import numpy as np
 import os
+import sys
+import nvidia_smi
 
 class EmbeddingModel():
     def __init__(self):
-        os.environ["CUDA_VISIBLE_DEVICES"]=""
+        nvidia_smi.nvmlInit()
+
+        handle = nvidia_smi.nvmlDeviceGetHandleByIndex(0)
+        free_memory = nvidia_smi.nvmlDeviceGetMemoryInfo(handle).free
+
+        # If you run into GPU memory problems, uncomment the following line:
+
+        # os.environ["CUDA_VISIBLE_DEVICES"]=""
+
+        # disable GPU usage if VRAM < 2GB
+        if free_memory < 1500000000:
+            os.environ["CUDA_VISIBLE_DEVICES"]=""
 
         # load BERT model from Hugging Face
         word_embedding_model = models.Transformer(
