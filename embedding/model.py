@@ -16,7 +16,7 @@ class EmbeddingModel():
 
         # os.environ["CUDA_VISIBLE_DEVICES"]=""
 
-        # disable GPU usage if VRAM < 2GB
+        # disable GPU usage if VRAM < 1.5GB
         if free_memory < 1500000000:
             os.environ["CUDA_VISIBLE_DEVICES"]=""
 
