@@ -395,5 +395,4 @@ class TestScraperNetzpolitik(unittest.TestCase):
             "http://www.guardian.co.uk/world/us-embassy-cables-documents/176810?CMP=twt_gu",
             "http://blogs.computerworlduk.com/simon-says/2010/12/three-strikes-typhoid-mary-identified/"
         }
-        print(parsed["body"])
         self.assertTrue(set(parsed["references"]) == refs or refs.issubset(set(parsed["references"])))
