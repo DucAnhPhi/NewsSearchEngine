@@ -3,7 +3,6 @@ from sentence_transformers import SentenceTransformer
 import torch
 import numpy as np
 import os
-import sys
 import nvidia_smi
 
 class EmbeddingModel():
