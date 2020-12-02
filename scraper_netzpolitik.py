@@ -3,6 +3,7 @@ import re
 import json
 from bs4 import BeautifulSoup
 from scrapy.selector import Selector
+from typings import StringList
 
 baseurl = "https://netzpolitik.org/"
 num_pages = {
@@ -19,7 +20,7 @@ num_pages = {
     '2020': 55
 }
 
-def get_start_urls():
+def get_start_urls() -> StringList:
     urls = []
     for year in num_pages.keys():
         urls.append(baseurl + year)
