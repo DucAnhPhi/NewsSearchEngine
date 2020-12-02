@@ -6,6 +6,8 @@ sys.path.append("..")
 from feature_extraction import FeatureExtraction
 
 class TestFeatureExtraction(unittest.TestCase):
+    def setUp(self):
+        self.fe = FeatureExtraction(debug=True)
 
     def test_get_first_paragraph(self):
         actual_text = []
@@ -19,8 +21,7 @@ class TestFeatureExtraction(unittest.TestCase):
         with open("test/jsonl/test_articles.jsonl", "r") as f:
             for line in f:
                 article = json.loads(line)
-                fe = FeatureExtraction()
-                first_paragraph = fe.get_first_paragraph(article)
+                first_paragraph = self.fe.get_first_paragraph(article)
                 actual_text.append(first_paragraph)
         
         for id, actual in enumerate(actual_text):
@@ -38,8 +39,7 @@ class TestFeatureExtraction(unittest.TestCase):
         with open("test/jsonl/test_articles.jsonl", "r") as f:
             for line in f:
                 article = json.loads(line)
-                fe = FeatureExtraction()
-                q_text = fe.get_first_paragraph_with_titles(article)
+                q_text = self.fe.get_first_paragraph_with_titles(article)
                 actual_text.append(q_text)
 
         for id, actual in enumerate(actual_text):
