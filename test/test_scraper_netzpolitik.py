@@ -1,9 +1,9 @@
+import sys
+sys.path.append("..")
 from scrapy.http import HtmlResponse, Request
 from scraper_netzpolitik import NetzpolitikScraper
 import unittest
 import os
-import sys
-sys.path.append("..")
 
 
 def fake_response_from_file(file_name, url=None):

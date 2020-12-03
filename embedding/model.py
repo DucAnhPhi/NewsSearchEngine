@@ -1,9 +1,13 @@
+import sys
+sys.path.append("..")
+
 from sentence_transformers import models, util, SentenceTransformer
 from sentence_transformers import SentenceTransformer
 import torch
 import numpy as np
 import os
 import nvidia_smi
+from typings import Vector
 
 class EmbeddingModel():
     def __init__(self):
@@ -33,5 +37,5 @@ class EmbeddingModel():
         # join BERT model and pooling to get the sentence transformer
         self.model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
 
-    def encode(self, text):
+    def encode(self, text:str) -> Vector:
         return (self.model.encode(text, convert_to_tensor=False, batch_size=8)).tolist()
