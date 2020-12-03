@@ -1,12 +1,10 @@
 import re
-from embedding.model import EmbeddingModel
 from typings import Vector
 
 class FeatureExtraction():
 
-    def __init__(self, debug=False):
-        if debug is False:
-            self.embedder = EmbeddingModel()
+    def __init__(self, embedder=None):
+        self.embedder = embedder
 
     def get_first_paragraph(self, article) -> str:
         body = article["body"]

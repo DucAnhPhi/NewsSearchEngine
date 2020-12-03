@@ -1,13 +1,14 @@
+import sys
+sys.path.append("..")
 import unittest
 import json
 import os
-import sys
-sys.path.append("..")
 from feature_extraction import FeatureExtraction
+from embedding.model import EmbeddingModel
 
 class TestFeatureExtraction(unittest.TestCase):
     def setUp(self):
-        self.fe = FeatureExtraction(debug=True)
+        self.fe = FeatureExtraction()
 
     def test_get_first_paragraph(self):
         actual_text = []
