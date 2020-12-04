@@ -38,5 +38,5 @@ class FeatureExtraction():
         return self.embedder.encode(first_p)
 
     def get_first_paragraph_with_titles_embedding(self, article) -> Vector:
-        combined_text = self.get_first_paragraph_with_titles
+        combined_text = self.get_first_paragraph_with_titles(article)
         return self.embedder.encode(combined_text)

@@ -2,6 +2,7 @@ import hnswlib
 import numpy as np
 import threading
 import pickle
+from typings import VectorList
 
 class Index():
     def __init__(self, space, dim):
@@ -10,10 +11,10 @@ class Index():
         self.dict_labels = {}
         self.cur_ind = 0
 
-    def init_index(self, max_elements, ef_construction = 200, M = 16):
+    def init_index(self, max_elements: int, ef_construction = 200, M = 16):
         self.index.init_index(max_elements = max_elements, ef_construction = ef_construction, M = M)
 
-    def add_items(self, data, ids=None):
+    def add_items(self, data: VectorList, ids=None):
         if ids is not None:
             assert len(data) == len(ids)
         num_added = len(data)
@@ -34,23 +35,23 @@ class Index():
                 start += 1
         self.index.add_items(data=data, ids=np.asarray(int_labels))
 
-    def set_ef(self, ef):
+    def set_ef(self, ef: int):
         self.index.set_ef(ef)
 
-    def load_index(self, path):
-        self.index.load_index(path)
+    def load_index(self, path: str, max_elements=0):
+        self.index.load_index(path, max_elements=max_elements)
         with open(path + ".pkl", "rb") as f:
             self.cur_ind, self.dict_labels = pickle.load(f)
 
-    def save_index(self, path):
+    def save_index(self, path: str):
         self.index.save_index(path)
         with open(path + ".pkl", "wb") as f:
             pickle.dump((self.cur_ind, self.dict_labels), f)
 
-    def set_num_threads(self, num_threads):
+    def set_num_threads(self, num_threads:int):
         self.index.set_num_threads(num_threads)
 
-    def knn_query(self, data, k=1):
+    def knn_query(self, data: VectorList, k=1):
         labels_int, distances = self.index.knn_query(data=data, k=k)
         labels = []
         for li in labels_int:
