@@ -1,7 +1,8 @@
 import re
-from typings import Vector
-from scipy.sparse.linalg import svds
+from typings import Vector, StringList
+from scipy.spatial.distance import cosine
 import numpy as np
+from itertools import combinations
 
 class FeatureExtraction():
 
@@ -29,17 +30,18 @@ class FeatureExtraction():
             text += subtitle.strip() + " " + title.strip() + " " + first_p.strip()
         return text
 
-    def get_line_separated_text_tokens(self, article):
+    def get_line_separated_text_tokens(self, article) -> StringList:
         body = article["body"]
         tokens = body.split("\n")
         tokens = [ token for token in tokens if len(token) > 0 ]
         return tokens
 
-    def compute_group_cosine_similarity(self, Y):
-        scaled = [ np.array(vec) / np.linalg.norm(vec) for vec in Y ]
-        _, s, _ = svds(scaled, k = 1)
-        cos_sim_n = (s[0]**2)/len(Y)
-        return cos_sim_n
+    def mean_of_pairwise_cosine_distances(self, embeddings) -> float:
+        # all combinations of 2 rows, ignoring order and no repeated elements
+        coms = combinations(embeddings, 2)
+        dists = np.array([cosine(pair[0], pair[1]) for pair in coms])
+        mean_dist = np.mean(dists)
+        return mean_dist
 
     def get_title_embedding(self, article) -> Vector:
         title = article["title"]

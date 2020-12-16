@@ -5,7 +5,7 @@ import json
 import os
 from feature_extraction import FeatureExtraction
 from embedding.model import EmbeddingModel
-from scipy.spatial import distance
+import numpy as np
 
 class TestFeatureExtraction(unittest.TestCase):
     def setUp(self):
@@ -17,7 +17,6 @@ class TestFeatureExtraction(unittest.TestCase):
                 article = json.loads(line)
                 self.articles.append(article)
 
-
     def test_get_first_paragraph(self):
         actual_text = []
         expected_text = [
@@ -26,7 +25,6 @@ class TestFeatureExtraction(unittest.TestCase):
             "Teil I: Es gibt viele Gründe, zum Chaos Communication Congress zu fahren. Ebenso viele sprechen dagegen. Vermutlich stimmt beides. Ein Erlebnisbericht von ebenjenem.",
             "Teil II Was ist das? Was sagt er da? Was machen die da? Der Congress-Neuling schnappt Dinge auf, hört zu und beobachtet. Es ergibt sich ein Text, der nicht all zu leicht zu verstehen ist."
         ]
-
         for article in self.articles:
             first_paragraph = self.fe.get_first_paragraph(article)
             actual_text.append(first_paragraph)
@@ -42,14 +40,12 @@ class TestFeatureExtraction(unittest.TestCase):
             "Entscheide dich und bleib dabei. Erlebnisbericht eines Neulings auf dem Chaos Communication Congress Teil I: Es gibt viele Gründe, zum Chaos Communication Congress zu fahren. Ebenso viele sprechen dagegen. Vermutlich stimmt beides. Ein Erlebnisbericht von ebenjenem.",
             "Ein Text, den ich noch nicht lesen kann. Erlebnisbericht eines Neulings auf dem Chaos Communication Congress Teil II Was ist das? Was sagt er da? Was machen die da? Der Congress-Neuling schnappt Dinge auf, hört zu und beobachtet. Es ergibt sich ein Text, der nicht all zu leicht zu verstehen ist."
         ]
-
         for article in self.articles:
             q_text = self.fe.get_first_paragraph_with_titles(article)
             actual_text.append(q_text)
-
         for id, actual in enumerate(actual_text):
             self.assertEqual(actual, expected_text[id])
-    
+
     def test_get_line_separated_text_tokens(self):
         actual_tokens = self.fe.get_line_separated_text_tokens(self.articles[0])
         expected_tokens = [
@@ -80,13 +76,29 @@ class TestFeatureExtraction(unittest.TestCase):
         for id, actual in enumerate(actual_tokens):
             self.assertEqual(actual, expected_tokens[id])
 
-    def test_compute_group_cosine_similarity(self):
-        test_tokens = [
-            "test",
-            "test",
-            "test",
-            "test"
-        ]
+    def test_mean_of_pairwise_cosine_distances(self):
+        ems = np.array([
+            [-1,1,1],
+            [-11,3,9],
+            [22,0,8]
+        ], dtype=float)
+        self.assertTrue(abs(0.9770-self.fe.mean_of_pairwise_cosine_distances(ems)) < 1e-4)
 
-        test_embeddings = self.fe.get_token_embeddings(test_tokens)
-        self.assertEqual(1, self.fe.compute_group_cosine_similarity(test_embeddings))
+    def test_mean_of_pairwise_cosine_distances_of_embeddings(self):
+        sim_tokens = [
+            "Huhn",
+            "Ei",
+            "Vogel",
+            "Geflügel"
+        ]
+        diff_tokens = [
+            "Code",
+            "Geflügel",
+            "Siebträger",
+            "Donald Trump"
+        ]
+        sim_ems = self.fe.get_token_embeddings(sim_tokens)
+        diff_ems = self.fe.get_token_embeddings(diff_tokens)
+        mean_sim = self.fe.mean_of_pairwise_cosine_distances(sim_ems)
+        mean_diff = self.fe.mean_of_pairwise_cosine_distances(diff_ems)
+        self.assertTrue(mean_sim < mean_diff)
