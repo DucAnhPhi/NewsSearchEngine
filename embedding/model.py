@@ -36,6 +36,7 @@ class EmbeddingModel():
 
         # join BERT model and pooling to get the sentence transformer
         self.model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+        self.model.max_seq_length = 512
 
     def encode(self, text:str) -> Vector:
         return (self.model.encode(text, convert_to_tensor=False, batch_size=8)).tolist()
