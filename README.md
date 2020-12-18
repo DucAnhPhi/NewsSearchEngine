@@ -1,3 +1,13 @@
+## TODO
+- get strong baseline retrieval method with high recall
+- enforce static type checking
+- implement LTR
+- support more outlets
+- handle scaling vector storage (max elements)
+- implement webapp with async component and model server
+- log queries and clicks for judgement list and popularity metric
+
+
 ## Python Version
 
 Python 3.6.9
