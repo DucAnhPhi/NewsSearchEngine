@@ -3,6 +3,7 @@
 - enforce static type checking
 - implement LTR
 - support more outlets
+- handle module requirements
 - handle scaling vector storage (max elements)
 - implement webapp with async component and model server
 - log queries and clicks for judgement list and popularity metric
