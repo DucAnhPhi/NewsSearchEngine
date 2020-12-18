@@ -1,3 +1,8 @@
+## Python Version
+
+Python 3.6.9
+
+
 ## Run News Scraper
 
 Run the following command to run the scraper and save the output to **data/netzpolitik.jsonl**:
