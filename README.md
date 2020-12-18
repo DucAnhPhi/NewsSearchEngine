@@ -18,7 +18,7 @@ Python 3.6.9
 Run the following command in the current directory:
 
 ```
-python -m unittest -v
+pytest
 ```
 
 ## Run News Scraper

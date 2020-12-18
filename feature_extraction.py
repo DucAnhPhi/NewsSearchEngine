@@ -24,6 +24,8 @@ class FeatureExtraction():
 
     def get_semantic_specifity(self, article):
         text_tokens = self.parser.get_section_titles(article)
-        token_embeddings = [self.embedder.encode(token) for token in text_tokens]
-        semantic_specifity = FeatureExtraction.mean_of_pairwise_cosine_distances(token_embeddings)
+        semantic_specifity = 2 # max cosine distance
+        if len(text_tokens) > 1:
+            token_embeddings = [self.embedder.encode(token) for token in text_tokens]
+            semantic_specifity = FeatureExtraction.mean_of_pairwise_cosine_distances(token_embeddings)
         return semantic_specifity

@@ -11,6 +11,7 @@ from tqdm import tqdm
 from ..feature_extraction import FeatureExtraction
 from ..embedding.model import EmbeddingModel
 from ..netzpolitik.parser import ParserNetzpolitik
+from pathlib import Path
 
 if __name__ == "__main__":
     embedder = EmbeddingModel()
@@ -113,14 +114,16 @@ if __name__ == "__main__":
                 quit()
             yield data_dict
 
+    script_location = Path(__file__).absolute().parent.parent
+    data_location = script_location / 'data' / 'netzpolitik.jsonl'
     print("Counting...")
-    with open('data/netzpolitik.jsonl', 'r') as f:
+    with data_location.open() as f:
         lines = 0
         for line in f:
             lines += 1
 
     print("Indexing...")
-    with open('data/netzpolitik.jsonl', 'r') as f:
+    with data_location.open() as f:
         helpers.bulk(es, doc_generator(f, lines), request_timeout=30)
 
     es.indices.put_settings(index=args.index_name,

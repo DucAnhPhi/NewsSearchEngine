@@ -30,3 +30,17 @@ class TestFENetzpolitik():
         ss_sim = self.fe.get_semantic_specifity(article_sim)
         ss_diff = self.fe.get_semantic_specifity(article_diff)
         assert ss_sim < ss_diff
+
+    def test_semantic_specifity_empty(self):
+        empty = {
+            "raw_body": '<p>This is a paragraph, however, there are no titles</p>'
+        }
+        ss = self.fe.get_semantic_specifity(empty)
+        assert ss == 2
+
+    def test_semantic_specifity_one(self):
+        empty = {
+            "raw_body": '<h2>t</h2><p>This is a paragraph, however, there are no titles</p>'
+        }
+        ss = self.fe.get_semantic_specifity(empty)
+        assert ss == 2
