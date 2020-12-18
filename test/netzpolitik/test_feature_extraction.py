@@ -1,10 +1,11 @@
-import unittest
+import pytest
 from ...embedding.model import EmbeddingModel
 from ...netzpolitik.parser import ParserNetzpolitik
 from ...feature_extraction import FeatureExtraction
 
-class TestFENetzpolitik(unittest.TestCase):
-    def setUp(self):
+class TestFENetzpolitik():
+    @classmethod
+    def setup_class(self):
         self.embedder = EmbeddingModel()
         self.parser = ParserNetzpolitik()
         self.fe = FeatureExtraction(self.embedder, self.parser)
@@ -28,4 +29,4 @@ class TestFENetzpolitik(unittest.TestCase):
         }
         ss_sim = self.fe.get_semantic_specifity(article_sim)
         ss_diff = self.fe.get_semantic_specifity(article_diff)
-        self.assertTrue(ss_sim < ss_diff)
+        assert ss_sim < ss_diff

@@ -1,9 +1,9 @@
-import unittest
+import pytest
 import json
 from ..feature_extraction import FeatureExtraction
 import numpy as np
 
-class TestFeatureExtraction(unittest.TestCase):
+class TestFeatureExtraction():
 
     def test_mean_of_pairwise_cosine_distances(self):
         ems = np.array([
@@ -11,4 +11,4 @@ class TestFeatureExtraction(unittest.TestCase):
             [-11,3,9],
             [22,0,8]
         ], dtype=float)
-        self.assertTrue(abs(0.9770 - FeatureExtraction.mean_of_pairwise_cosine_distances(ems)) < 1e-4)
+        assert abs(0.9770 - FeatureExtraction.mean_of_pairwise_cosine_distances(ems)) < 1e-4
