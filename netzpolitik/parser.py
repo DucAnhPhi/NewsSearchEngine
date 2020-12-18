@@ -1,8 +1,11 @@
+import sys
+sys.path.append("..")
 import re
 from bs4 import BeautifulSoup
 from typings import StringList
+from parser_interface import ParserInterface
 
-class ParserNetzpolitik():
+class ParserNetzpolitik(ParserInterface):
     @staticmethod
     def parse_article(response):
         body_with_linebreaks = re.sub(r"<[\/]p>|<[\/]h[1-6]>|<br\s*[\/]?>|<[\/]figcaption>|<[\/]li>", "\n", response.text)
