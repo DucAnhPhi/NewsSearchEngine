@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.selector import Selector
 from typings import StringList
-from parser_netzpolitik import ParserNetzpolitik
+from .parser import ParserNetzpolitik
 
 baseurl = "https://netzpolitik.org/"
 num_pages = {

@@ -1,10 +1,10 @@
 import sys
-sys.path.append("..")
-from scrapy.http import HtmlResponse, Request
-from scraper_netzpolitik import NetzpolitikScraper
+sys.path.append("../..")
 import unittest
 import os
-from parser_netzpolitik import ParserNetzpolitik
+from scrapy.http import HtmlResponse, Request
+from netzpolitik.scraper import NetzpolitikScraper
+from netzpolitik.parser import ParserNetzpolitik
 
 def fake_response_from_file(file_name, url=None):
     """
@@ -34,7 +34,7 @@ def fake_response_from_file(file_name, url=None):
     return response
 
 
-class TestScraperNetzpolitik(unittest.TestCase):
+class TestParserNetzpolitik(unittest.TestCase):
     
     def test_parse_2020(self):
         fake_response = fake_response_from_file(
