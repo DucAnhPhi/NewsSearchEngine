@@ -1,8 +1,11 @@
 import pyw_hnswlib as hnswlib
 import json
-from feature_extraction import FeatureExtraction
 from typings import Vector, VectorList, StringList, NearestNeighborList
 from embedding.model import EmbeddingModel
+from typing import Callable, TypeVar
+
+# Generic Type
+T = TypeVar('T')
 
 NUM_ELEMENTS = 20000
 DIMS = 768
@@ -20,7 +23,6 @@ class VectorStorage():
         self.dim = dim
         self.num_elements = num_elements
         self.embedder = EmbeddingModel()
-        self.fe = FeatureExtraction(self.embedder)
         self.storage = hnswlib.Index(space='cosine', dim = dim)
 
         if path is not None:
@@ -33,14 +35,14 @@ class VectorStorage():
         self.storage.set_ef(20) # ef should always be > k
 
 
-    def add_items_from_file(self, path: str):
+    def add_items_from_file(self, path: str, embedding_func: Callable[[T], Vector]):
         with open(path, 'r') as data_file:
             emb_batch: VectorList = []
             id_batch: StringList = []
 
             for line in data_file:
                 article = json.loads(line)
-                emb = self.fe.get_first_paragraph_with_titles_embedding(article)
+                emb = embedding_func(article)
                 emb_batch.append(emb)
                 id_batch.append(article["id"])
 
