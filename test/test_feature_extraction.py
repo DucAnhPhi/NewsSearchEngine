@@ -1,8 +1,6 @@
-import sys
-sys.path.append("..")
 import unittest
 import json
-from feature_extraction import FeatureExtraction
+from ..feature_extraction import FeatureExtraction
 import numpy as np
 
 class TestFeatureExtraction(unittest.TestCase):

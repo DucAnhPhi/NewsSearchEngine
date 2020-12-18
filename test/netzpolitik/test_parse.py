@@ -1,10 +1,8 @@
-import sys
-sys.path.append("../..")
 import unittest
 import os
-from scrapy.http import HtmlResponse, Request
-from netzpolitik.scraper import NetzpolitikScraper
-from netzpolitik.parser import ParserNetzpolitik
+from ...scrapy.http import HtmlResponse, Request
+from ...netzpolitik.scraper import NetzpolitikScraper
+from ...netzpolitik.parser import ParserNetzpolitik
 
 def fake_response_from_file(file_name, url=None):
     """

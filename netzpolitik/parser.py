@@ -1,9 +1,7 @@
-import sys
-sys.path.append("..")
 import re
 from bs4 import BeautifulSoup
-from typings import StringList
-from parser_interface import ParserInterface
+from ..typings import StringList
+from ..parser_interface import ParserInterface
 
 class ParserNetzpolitik(ParserInterface):
     @staticmethod

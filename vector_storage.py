@@ -1,7 +1,7 @@
 import pyw_hnswlib as hnswlib
 import json
-from typings import Vector, VectorList, StringList, NearestNeighborList
-from embedding.model import EmbeddingModel
+from .typings import Vector, VectorList, StringList, NearestNeighborList
+from .embedding.model import EmbeddingModel
 from typing import Callable, TypeVar
 
 # Generic Type

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from elasticsearch import helpers
 from elasticsearch import Elasticsearch, TransportError
 import argparse
@@ -9,12 +8,14 @@ import re
 import sys
 import traceback
 from tqdm import tqdm
-from feature_extraction import FeatureExtraction
-from embedding.model import EmbeddingModel
+from ..feature_extraction import FeatureExtraction
+from ..embedding.model import EmbeddingModel
+from ..netzpolitik.parser import ParserNetzpolitik
 
 if __name__ == "__main__":
     embedder = EmbeddingModel()
-    fe = FeatureExtraction(embedder)
+    parser = ParserNetzpolitik()
+    fe = FeatureExtraction(embedder, parser)
     parser = argparse.ArgumentParser(description='Index netzpolitik.org articles to ElasticSearch')
     parser.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     parser.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                 del article['id']
 
                 # add feature: semantic_specifity, which is the mean of pairwise cosine distances of text embeddings
-                #article['semantic_specifity'] = fe.get_semantic_specifity(article)
+                article['semantic_specifity'] = fe.get_semantic_specifity(article)
 
                 data_dict['_source'] = article
 

@@ -2,7 +2,7 @@ import hnswlib
 import numpy as np
 import threading
 import pickle
-from typings import VectorList
+from .typings import VectorList
 
 class Index():
     def __init__(self, space, dim):

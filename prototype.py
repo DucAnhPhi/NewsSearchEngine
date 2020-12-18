@@ -1,4 +1,4 @@
-from vector_storage import VectorStorage
+from .vector_storage import VectorStorage
 import pprint
 import os.path
 

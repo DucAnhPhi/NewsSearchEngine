@@ -1,9 +1,7 @@
-import sys
-sys.path.append("../..")
 import unittest
-from embedding.model import EmbeddingModel
-from netzpolitik.parser import ParserNetzpolitik
-from feature_extraction import FeatureExtraction
+from ...embedding.model import EmbeddingModel
+from ...netzpolitik.parser import ParserNetzpolitik
+from ...feature_extraction import FeatureExtraction
 
 class TestFENetzpolitik(unittest.TestCase):
     def setUp(self):
