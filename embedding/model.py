@@ -7,7 +7,7 @@ import torch
 import numpy as np
 import os
 import nvidia_smi
-from typings import Vector
+from ..typings import Vector
 
 class EmbeddingModel():
     def __init__(self):

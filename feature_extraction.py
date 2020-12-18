@@ -1,5 +1,5 @@
 import re
-from typings import Vector, StringList
+from .typings import Vector, StringList
 from scipy.spatial.distance import cosine
 import numpy as np
 from itertools import combinations

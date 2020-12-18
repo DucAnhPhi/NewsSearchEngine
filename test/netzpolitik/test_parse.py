@@ -1,6 +1,6 @@
-import unittest
+import pytest
 import os
-from ...scrapy.http import HtmlResponse, Request
+from scrapy.http import HtmlResponse, Request
 from ...netzpolitik.scraper import NetzpolitikScraper
 from ...netzpolitik.parser import ParserNetzpolitik
 
