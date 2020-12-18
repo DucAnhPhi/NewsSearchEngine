@@ -2,6 +2,13 @@
 
 Python 3.6.9
 
+## Run Unittests
+
+Run the following command in the current directory:
+
+```
+python -m unittest -v
+```
 
 ## Run News Scraper
 
