@@ -1,10 +1,11 @@
+# Wrapper class around hnswlib
 import hnswlib
 import numpy as np
 import threading
 import pickle
 from .typings import VectorList
 
-class Index():
+class Hnswlib():
     def __init__(self, space, dim):
         self.index = hnswlib.Index(space, dim)
         self.lock = threading.Lock()

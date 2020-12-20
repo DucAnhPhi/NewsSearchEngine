@@ -1,4 +1,4 @@
-import pyw_hnswlib as hnswlib
+from .pyw_hnswlib import Hnswlib
 import json
 from .typings import Vector, VectorList, StringList, NearestNeighborList
 from .embedding.model import EmbeddingModel
@@ -23,7 +23,7 @@ class VectorStorage():
         self.dim = dim
         self.num_elements = num_elements
         self.embedder = EmbeddingModel()
-        self.storage = hnswlib.Index(space='cosine', dim = dim)
+        self.storage = Hnswlib(space='cosine', dim = dim)
 
         if path is not None:
             self.storage.load_index(path, max_elements=num_elements)
