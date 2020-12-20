@@ -60,12 +60,12 @@ class VectorStorage():
     def get_k_nearest(self, data: StringList, k: int) -> NearestNeighborList:
         embeddings = [self.embedder.encode(s) for s in data]
         labels, distances = self.storage.knn_query(embeddings, k)
-        nearest = []
+        nearest: NearestNeighborList = []
         for row_i, row in enumerate(labels):
             nn = []
             for col_i, col in enumerate(row):
                 dic = {}
                 dic[col] = distances[row_i][col_i]
                 nn.append(dic)
-            nearest.append(nn)
+            nearest = nearest + nn
         return nearest

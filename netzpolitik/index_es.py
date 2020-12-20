@@ -17,13 +17,13 @@ if __name__ == "__main__":
     embedder = EmbeddingModel()
     parser = ParserNetzpolitik()
     fe = FeatureExtraction(embedder, parser)
-    parser = argparse.ArgumentParser(description='Index netzpolitik.org articles to ElasticSearch')
-    parser.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
-    parser.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
-    parser.add_argument('--index_name', default='netzpolitik', help='index name')
-    parser.add_argument('--create', action='store_true')
+    p = argparse.ArgumentParser(description='Index netzpolitik.org articles to ElasticSearch')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default='netzpolitik', help='index name')
+    p.add_argument('--create', action='store_true')
 
-    args = parser.parse_args()
+    args = p.parse_args()
         
     es = Elasticsearch(hosts=[{"host": args.host, "port": args.port}],
                     retry_on_timeout=True, max_retries=10)

@@ -8,7 +8,6 @@
 
 ## TODOs
 - get strong baseline retrieval method with high recall
-- enforce static type checking
 - implement LTR
 - support more outlets
 - handle module requirements
