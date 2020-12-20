@@ -2,6 +2,7 @@
 - [TODOs](#todos)
 - [Installation](#installation)
 - [Getting started](#getting-started)
+- [Speed up performance](#speed-up-performance)
 - [License](#license)
 - [Author](#author)
 
@@ -68,6 +69,11 @@ Run the following command to run the scraper and save the output to **data/netzp
 ```
 scrapy runspider scraper_netzpolitik.py
 ```
+
+## Speed up performance
+
+You can speed up the encoding of embeddings if your machine has a [CUDA-enabled GPU](https://developer.nvidia.com/cuda-gpus) with atleast 2GB of free video memory:
+- Install [CUDA](https://developer.nvidia.com/cuda-downloads)
 
 
 ## License
