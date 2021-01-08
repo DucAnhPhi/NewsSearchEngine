@@ -3,4 +3,4 @@ from typing import List, Dict
 Vector = List[float]
 VectorList = List[Vector]
 StringList = List[str]
-NearestNeighborList = List[Dict[str, float]]
+NearestNeighborList = List[List[Dict[str, float]]]

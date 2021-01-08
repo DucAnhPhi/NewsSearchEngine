@@ -10,7 +10,7 @@ T = TypeVar('T')
 NUM_ELEMENTS = 20000
 DIMS = 768
 EF_CONSTRUCTION = 200
-M = 16
+M = 100
 
 class VectorStorage():
 
@@ -32,7 +32,7 @@ class VectorStorage():
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
-        self.storage.set_ef(20) # ef should always be > k
+        self.storage.set_ef(150) # ef should always be > k
 
 
     def add_items_from_file(self, path: str, embedding_func: Callable[[T], Vector]):
@@ -54,11 +54,15 @@ class VectorStorage():
             if len(emb_batch) is not 0:
                 self.storage.add_items(emb_batch, id_batch)
 
-        self.storage.save_index('data/storage.bin')
+
+    def save(self, path: str):
+        self.storage.save_index(path)
 
 
-    def get_k_nearest(self, data: StringList, k: int) -> NearestNeighborList:
-        embeddings = [self.embedder.encode(s) for s in data]
+    def get_k_nearest(self, embeddings: VectorList, k: int) -> NearestNeighborList:
+        '''
+        embeddings (shape:N*dim). Returns a numpy array of (shape: N*K)
+        '''
         labels, distances = self.storage.knn_query(embeddings, k)
         nearest: NearestNeighborList = []
         for row_i, row in enumerate(labels):
@@ -67,5 +71,5 @@ class VectorStorage():
                 dic = {}
                 dic[col] = distances[row_i][col_i]
                 nn.append(dic)
-            nearest = nearest + nn
+            nearest.append(nn)
         return nearest

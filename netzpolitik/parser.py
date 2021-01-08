@@ -59,6 +59,15 @@ class ParserNetzpolitik(ParserInterface):
         return text
 
     @staticmethod
+    def get_titles(article) -> str:
+        title = article["title"]
+        subtitle = article["subtitle"]
+        text = title
+        if subtitle != None:
+            text = f"{subtitle.strip()} {title.strip()}"
+        return text
+
+    @staticmethod
     def get_line_separated_text_tokens(article) -> StringList:
         body = article["body"]
         tokens = body.split("\n")
