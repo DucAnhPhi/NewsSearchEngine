@@ -27,6 +27,14 @@ class FeatureExtraction():
         titles = self.parser.get_titles(article)
         return self.embedder.encode(titles)
 
+    def get_titles_w_section_titles_embedding(self, article) -> Vector:
+        titles_str = self.parser.get_titles(article)
+        section_titles = self.parser.get_section_titles(article)
+        section_titles_str = " ".join(section_titles)
+        result = f"{titles_str} {section_titles_str}"
+        result = result.strip()
+        return self.embedder.encode(result)
+
     def get_semantic_specifity(self, article):
         text_tokens = self.parser.get_section_titles(article)
         semantic_specifity = 2 # max cosine distance
