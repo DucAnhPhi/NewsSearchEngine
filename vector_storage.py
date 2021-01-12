@@ -2,7 +2,7 @@ from .pyw_hnswlib import Hnswlib
 import json
 from .typings import Vector, VectorList, StringList, NearestNeighborList
 from .embedding.model import EmbeddingModel
-from typing import Callable, TypeVar
+from typing import Callable, Optional, TypeVar
 
 # Generic Type
 T = TypeVar('T')
@@ -35,7 +35,7 @@ class VectorStorage():
         self.storage.set_ef(150) # ef should always be > k
 
 
-    def add_items_from_file(self, path: str, embedding_func: Callable[[T], Vector]):
+    def add_items_from_file(self, path: str, embedding_func: Callable[[T], Optional[Vector]]):
         with open(path, 'r') as data_file:
             emb_batch: VectorList = []
             id_batch: StringList = []
@@ -43,6 +43,8 @@ class VectorStorage():
             for line in data_file:
                 article = json.loads(line)
                 emb = embedding_func(article)
+                if emb == None:
+                    continue
                 emb_batch.append(emb)
                 id_batch.append(article["id"])
 
