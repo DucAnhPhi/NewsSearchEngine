@@ -8,6 +8,7 @@ if __name__ == "__main__":
     index = "netzpolitik"
     count = 0
     recall_avg = 0.
+    retrieval_count_avg = 0.
     with open(f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_netzpolitik.jsonl", "r") as f:
         for line in f:
             judgment = json.loads(line)
@@ -32,6 +33,7 @@ if __name__ == "__main__":
                     }
                 )
                 recall = 0.
+                retrieval_count_avg += len(results["hits"]["hits"])
                 for res in results["hits"]["hits"]:
                     if res["_id"] in query_article["references"]:
                         recall += 1
@@ -41,4 +43,6 @@ if __name__ == "__main__":
                 count -= 1
                 continue
     recall_avg /= count
+    retrieval_count_avg /= count
     print(f"Keyword match query recall avg: {recall_avg}")
+    print(f"Retrieval count avg: {retrieval_count_avg}")

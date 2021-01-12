@@ -80,3 +80,7 @@ class ParserNetzpolitik(ParserInterface):
         titles = soup.find_all('h3') + soup.find_all('h2')
         titles = [title.get_text() for title in titles]
         return titles
+
+    @staticmethod
+    def get_keywords(article) -> StringList:
+        return article['keywords']

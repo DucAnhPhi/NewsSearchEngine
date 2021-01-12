@@ -3,6 +3,7 @@ from .typings import Vector, StringList
 from scipy.spatial.distance import cosine
 import numpy as np
 from itertools import combinations
+from typing import Optional
 
 class FeatureExtraction():
 
@@ -33,3 +34,10 @@ class FeatureExtraction():
             token_embeddings = [self.embedder.encode(token) for token in text_tokens]
             semantic_specifity = FeatureExtraction.mean_of_pairwise_cosine_distances(token_embeddings)
         return semantic_specifity
+
+    def get_keywords_embedding(self, article) -> Optional[Vector]:
+        keywords = self.parser.get_keywords(article)
+        if len(keywords) == 0:
+            return None
+        keywords_str = " ".join(keywords)
+        return self.embedder.encode(keywords_str)
