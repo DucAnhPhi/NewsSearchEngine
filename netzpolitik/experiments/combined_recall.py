@@ -10,8 +10,8 @@ import os
 import json
 
 # Combined Semantic + Keyword Retrieval
-# Recall Avg: 0.194763
-# Retrieval Count Avg: 109.9173
+# Recall Avg: 0.143914
+# Retrieval Count Avg: 106.98838
 
 if __name__ == "__main__":
     em = EmbeddingModel()
@@ -69,9 +69,9 @@ if __name__ == "__main__":
                 if len(combined_result_ids) == 0:
                     count -= 1
                     continue
-                retrieval_count_avg += len(combined_result_ids)
+                retrieval_count_avg += len(set(combined_result_ids))
                 recall = 0.
-                for res_id in combined_result_ids:
+                for res_id in set(combined_result_ids):
                     if res_id in query_article["references"]:
                         recall += 1/len(query_article["references"])
                 recall_avg += recall
