@@ -22,20 +22,33 @@ if __name__ == "__main__":
     recall_avg = 0.
     retrieval_count_avg = 0.
 
-    storage_file = "storage_titles_w_first_p.bin"
 
     # init vector storage
+    storage_file_twfp = "storage_titles_w_first_p.bin"
+    storage_file_keywords = "storage_keywords.bin"
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
-    storage_location = f"{data_location}/{storage_file}"
-    if os.path.isfile(storage_location):
-        print("Loading vector storage from file...\n")
-        vs = VectorStorage(storage_location)
+    storage_location_twfp = f"{data_location}/{storage_file_twfp}"
+    storage_location_keywords = f"{data_location}/{storage_file_keywords}"
+
+    if os.path.isfile(storage_location_twfp):
+        print("Loading twfp vector storage from file...\n")
+        vs_twfp = VectorStorage(storage_location_twfp)
     else:
-        print("Initialize vector storage.\n")
-        vs = VectorStorage()
+        print("Initialize twfp vector storage.\n")
+        vs_twfp = VectorStorage()
         print("Add items from file...\n")
-        vs.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_first_paragraph_with_titles_embedding)
-        vs.save(storage_location)
+        vs_twfp.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_first_paragraph_with_titles_embedding)
+        vs_twfp.save(storage_location_twfp)
+
+    if os.path.isfile(storage_location_keywords):
+        print("Loading keywords vector storage from file...\n")
+        vs_keywords = VectorStorage(storage_location_keywords)
+    else:
+        print("Initialize keywords vector storage.\n")
+        vs_keywords = VectorStorage()
+        print("Add items from file...\n")
+        vs_keywords.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_first_paragraph_with_titles_embedding)
+        vs_keywords.save(storage_location_keywords)
 
     # build query
     with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r") as f:
@@ -47,20 +60,24 @@ if __name__ == "__main__":
                     index=index,
                     id=judgment["id"]
                 ))["_source"]
-                emb_query = fe.get_first_paragraph_with_titles_embedding(query_article)
-                keyword_query = " ".join(query_article["keywords"])
+                twfp_emb_query = fe.get_first_paragraph_with_titles_embedding(query_article)
+                keyword_emb_query = fe.get_keywords_embedding(query_article)
+                keyword_match_query = " ".join(query_article["keywords"])
                 combined_result_ids: StringList = []
-                if emb_query != None:
-                    nearest_n: NearestNeighborList = vs.get_k_nearest([emb_query],100)
-                    combined_result_ids = combined_result_ids + [list(nn.keys())[0] for nn in nearest_n[0]]
-                if len(keyword_query) > 0:
+                if twfp_emb_query != None:
+                    nearest_n_twfp: NearestNeighborList = vs_twfp.get_k_nearest([twfp_emb_query],100)
+                    combined_result_ids = combined_result_ids + [list(nn.keys())[0] for nn in nearest_n_twfp[0]]
+                if keyword_emb_query != None:
+                    nearest_n_keywords: NearestNeighborList = vs_keywords.get_k_nearest([keyword_emb_query], 100)
+                    combined_result_ids = combined_result_ids + [list(nn.keys())[0] for nn in nearest_n_keywords[0]]
+                if len(keyword_match_query) > 0:
                     results = es.search(
                         index = index,
                         body = {
                             "query": {
                                 "multi_match": {
                                     "fields": [ "title", "subtitle", "body" ],
-                                    "query": keyword_query
+                                    "query": keyword_match_query
                                 }
                             }
                         }
