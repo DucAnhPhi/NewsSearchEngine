@@ -8,8 +8,8 @@ class ParserInterface(metaclass=abc.ABCMeta):
             callable(subclass.get_first_paragraph_with_titles) and
             hasattr(subclass, 'get_titles') and
             callable(subclass.get_titles) and
-            hasattr(subclass, 'get_section_titles') and
-            callable(subclass.get_section_titles) and
+            hasattr(subclass, 'get_keywords') and
+            callable(subclass.get_keywords) and
             hasattr(subclass, 'parse_article') and
             callable(subclass.parse_article) or
             NotImplemented)
@@ -23,7 +23,7 @@ class ParserInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractstaticmethod
-    def get_section_titles(article) -> str:
+    def get_keywords(article) -> str:
         raise NotImplementedError
 
     @abc.abstractstaticmethod

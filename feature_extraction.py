@@ -36,7 +36,7 @@ class FeatureExtraction():
         return self.embedder.encode(result)
 
     def get_semantic_specifity(self, article):
-        text_tokens = self.parser.get_section_titles(article)
+        text_tokens = self.parser.get_keywords(article)
         semantic_specifity = 2 # max cosine distance
         if len(text_tokens) > 1:
             token_embeddings = [self.embedder.encode(token) for token in text_tokens]

@@ -6,41 +6,78 @@ from ...feature_extraction import FeatureExtraction
 class TestFENetzpolitik():
     @classmethod
     def setup_class(self):
-        self.embedder = EmbeddingModel()
+        self.embedder_DE = EmbeddingModel()
+        self.embedder_EN = EmbeddingModel(lang="en")
         self.parser = ParserNetzpolitik()
-        self.fe = FeatureExtraction(self.embedder, self.parser)
+        self.fe_DE = FeatureExtraction(self.embedder_DE, self.parser)
+        self.fe_EN = FeatureExtraction(self.embedder_EN, self.parser)
 
-    def test_semantic_specifity(self):
+    def test_semantic_specifity_DE(self):
         article_sim = {
-            "raw_body": '''
-                <h3>Huhn</h3>
-                <h3>Ei</h3>
-                <h3>Vogel</h3>
-                <h3>Geflügel</h3>
-            '''
+            "keywords": [
+                "Huhn",
+                "Ei",
+                "Vogel",
+                "Geflügel"
+            ]
         }
         article_diff = {
-            "raw_body": '''
-                <h2>Code</h2>
-                <h2>Geflügel</h2>
-                <h2>Siebträger</h2>
-                <h2>Donald Trump</h2>
-            '''
+            "keywords": [
+                "Code",
+                "Geflügel",
+                "Siebträger",
+                "Donald Trump"
+            ]
         }
-        ss_sim = self.fe.get_semantic_specifity(article_sim)
-        ss_diff = self.fe.get_semantic_specifity(article_diff)
+        ss_sim = self.fe_DE.get_semantic_specifity(article_sim)
+        ss_diff = self.fe_DE.get_semantic_specifity(article_diff)
         assert ss_sim < ss_diff
 
-    def test_semantic_specifity_empty(self):
+    def test_semantic_specifity_empty_DE(self):
         empty = {
-            "raw_body": '<p>This is a paragraph, however, there are no titles</p>'
+            "keywords": []
         }
-        ss = self.fe.get_semantic_specifity(empty)
+        ss = self.fe_DE.get_semantic_specifity(empty)
         assert ss == 2
 
-    def test_semantic_specifity_one(self):
+    def test_semantic_specifity_one_DE(self):
         empty = {
-            "raw_body": '<h2>t</h2><p>This is a paragraph, however, there are no titles</p>'
+            "keywords": ["test"]
         }
-        ss = self.fe.get_semantic_specifity(empty)
+        ss = self.fe_DE.get_semantic_specifity(empty)
+        assert ss == 2
+
+    def test_semantic_specifity_EN(self):
+        article_sim = {
+            "keywords": [
+                "Chicken",
+                "Egg",
+                "Bird",
+                "Poultry"
+            ]
+        }
+        article_diff = {
+            "keywords": [
+                "Code",
+                "Poultry",
+                "Portafilter",
+                "Donald Trump"
+            ]
+        }
+        ss_sim = self.fe_EN.get_semantic_specifity(article_sim)
+        ss_diff = self.fe_EN.get_semantic_specifity(article_diff)
+        assert ss_sim < ss_diff
+
+    def test_semantic_specifity_empty_EN(self):
+        empty = {
+            "keywords": []
+        }
+        ss = self.fe_EN.get_semantic_specifity(empty)
+        assert ss == 2
+
+    def test_semantic_specifity_one_EN(self):
+        empty = {
+            "keywords": ["test"]
+        }
+        ss = self.fe_EN.get_semantic_specifity(empty)
         assert ss == 2
