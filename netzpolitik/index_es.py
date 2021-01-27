@@ -105,7 +105,7 @@ if __name__ == "__main__":
                 del article['id']
 
                 # add feature: semantic_specifity, which is the mean of pairwise cosine distances of text embeddings
-                article['semantic_specifity'] = fe.get_semantic_specifity(article)
+                article['keywords_similarity'] = fe.get_keywords_similarity(article)
 
                 data_dict['_source'] = article
 
