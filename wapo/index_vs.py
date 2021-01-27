@@ -1,7 +1,7 @@
-from ...wapo.parser import ParserWAPO
-from ...feature_extraction import FeatureExtraction
-from ...embedding.model import EmbeddingModel
-from ...vector_storage import VectorStorage
+from .parser import ParserWAPO
+from ..feature_extraction import FeatureExtraction
+from ..embedding.model import EmbeddingModel
+from ..vector_storage import VectorStorage
 import os
 import json
 
