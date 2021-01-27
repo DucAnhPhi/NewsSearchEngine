@@ -47,7 +47,7 @@ if __name__ == "__main__":
         print("Initialize keywords vector storage.\n")
         vs_keywords = VectorStorage()
         print("Add items from file...\n")
-        vs_keywords.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_first_paragraph_with_titles_embedding)
+        vs_keywords.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_keywords_embedding)
         vs_keywords.save(storage_location_keywords)
 
     # build query
