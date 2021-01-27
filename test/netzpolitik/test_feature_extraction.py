@@ -12,7 +12,7 @@ class TestFENetzpolitik():
         self.fe_DE = FeatureExtraction(self.embedder_DE, self.parser)
         self.fe_EN = FeatureExtraction(self.embedder_EN, self.parser)
 
-    def test_semantic_specifity_DE(self):
+    def test_keywords_similarity_DE(self):
         article_sim = {
             "keywords": [
                 "Huhn",
@@ -33,21 +33,21 @@ class TestFENetzpolitik():
         ss_diff = self.fe_DE.get_keywords_similarity(article_diff)
         assert ss_sim < ss_diff
 
-    def test_semantic_specifity_empty_DE(self):
+    def test_keywords_similarity_empty_DE(self):
         empty = {
             "keywords": []
         }
         ss = self.fe_DE.get_keywords_similarity(empty)
         assert ss == 2
 
-    def test_semantic_specifity_one_DE(self):
+    def test_keywords_similarity_one_DE(self):
         empty = {
             "keywords": ["test"]
         }
         ss = self.fe_DE.get_keywords_similarity(empty)
         assert ss == 2
 
-    def test_semantic_specifity_EN(self):
+    def test_keywords_similarity_EN(self):
         article_sim = {
             "keywords": [
                 "Chicken",
@@ -68,14 +68,14 @@ class TestFENetzpolitik():
         ss_diff = self.fe_EN.get_keywords_similarity(article_diff)
         assert ss_sim < ss_diff
 
-    def test_semantic_specifity_empty_EN(self):
+    def test_keywords_similarity_empty_EN(self):
         empty = {
             "keywords": []
         }
         ss = self.fe_EN.get_keywords_similarity(empty)
         assert ss == 2
 
-    def test_semantic_specifity_one_EN(self):
+    def test_keywords_similarity_one_EN(self):
         empty = {
             "keywords": ["test"]
         }
