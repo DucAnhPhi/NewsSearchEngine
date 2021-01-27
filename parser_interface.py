@@ -1,4 +1,5 @@
 import abc
+from .typings import StringList
 
 class ParserInterface(metaclass=abc.ABCMeta):
     @classmethod
@@ -15,5 +16,5 @@ class ParserInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractstaticmethod
-    def get_keywords(article) -> str:
+    def get_keywords(article) -> StringList:
         raise NotImplementedError
