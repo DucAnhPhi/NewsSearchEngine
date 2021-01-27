@@ -35,7 +35,7 @@ class FeatureExtraction():
         result = result.strip()
         return self.embedder.encode(result)
 
-    def get_semantic_specifity(self, article):
+    def get_keywords_similarity(self, article):
         text_tokens = self.parser.get_keywords(article)
         semantic_specifity = 2 # max cosine distance
         if len(text_tokens) > 1:

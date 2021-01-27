@@ -29,22 +29,22 @@ class TestFENetzpolitik():
                 "Donald Trump"
             ]
         }
-        ss_sim = self.fe_DE.get_semantic_specifity(article_sim)
-        ss_diff = self.fe_DE.get_semantic_specifity(article_diff)
+        ss_sim = self.fe_DE.get_keywords_similarity(article_sim)
+        ss_diff = self.fe_DE.get_keywords_similarity(article_diff)
         assert ss_sim < ss_diff
 
     def test_semantic_specifity_empty_DE(self):
         empty = {
             "keywords": []
         }
-        ss = self.fe_DE.get_semantic_specifity(empty)
+        ss = self.fe_DE.get_keywords_similarity(empty)
         assert ss == 2
 
     def test_semantic_specifity_one_DE(self):
         empty = {
             "keywords": ["test"]
         }
-        ss = self.fe_DE.get_semantic_specifity(empty)
+        ss = self.fe_DE.get_keywords_similarity(empty)
         assert ss == 2
 
     def test_semantic_specifity_EN(self):
@@ -64,20 +64,20 @@ class TestFENetzpolitik():
                 "Donald Trump"
             ]
         }
-        ss_sim = self.fe_EN.get_semantic_specifity(article_sim)
-        ss_diff = self.fe_EN.get_semantic_specifity(article_diff)
+        ss_sim = self.fe_EN.get_keywords_similarity(article_sim)
+        ss_diff = self.fe_EN.get_keywords_similarity(article_diff)
         assert ss_sim < ss_diff
 
     def test_semantic_specifity_empty_EN(self):
         empty = {
             "keywords": []
         }
-        ss = self.fe_EN.get_semantic_specifity(empty)
+        ss = self.fe_EN.get_keywords_similarity(empty)
         assert ss == 2
 
     def test_semantic_specifity_one_EN(self):
         empty = {
             "keywords": ["test"]
         }
-        ss = self.fe_EN.get_semantic_specifity(empty)
+        ss = self.fe_EN.get_keywords_similarity(empty)
         assert ss == 2
