@@ -31,7 +31,7 @@ class SemanticSearchExperiment():
 
         # build query
         with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r") as f:
-            for line_i, line in enumerate(f):
+            for line in (f):
                 judgment = json.loads(line)
                 try:
                     self.count += 1
