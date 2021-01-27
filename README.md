@@ -36,7 +36,7 @@ $ source env/bin/activate
 * Finally install all dependencies running:
 
 ```
-$ pip install requirements.txt
+$ pip install -r requirements.txt
 ```
 
 * If you are done working in the virtual environment for the moment, you can deactivate it (remember to activate it again on usage):
