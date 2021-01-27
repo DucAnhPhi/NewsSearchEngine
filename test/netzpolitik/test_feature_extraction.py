@@ -38,14 +38,14 @@ class TestFENetzpolitik():
             "keywords": []
         }
         ss = self.fe_DE.get_keywords_similarity(empty)
-        assert ss == 2
+        assert ss == 0
 
     def test_keywords_similarity_one_DE(self):
         empty = {
             "keywords": ["test"]
         }
         ss = self.fe_DE.get_keywords_similarity(empty)
-        assert ss == 2
+        assert ss == 0
 
     def test_keywords_similarity_EN(self):
         article_sim = {
@@ -73,11 +73,11 @@ class TestFENetzpolitik():
             "keywords": []
         }
         ss = self.fe_EN.get_keywords_similarity(empty)
-        assert ss == 2
+        assert ss == 0
 
     def test_keywords_similarity_one_EN(self):
         empty = {
             "keywords": ["test"]
         }
         ss = self.fe_EN.get_keywords_similarity(empty)
-        assert ss == 2
+        assert ss == 0
