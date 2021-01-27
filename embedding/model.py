@@ -10,12 +10,11 @@ import nvidia_smi
 from ..typings import Vector
 
 class EmbeddingModel():
-    def __init__(self, lang = "de"):
+    def __init__(self, lang = "de", device="cpu"):
         nvidia_smi.nvmlInit()
 
         handle = nvidia_smi.nvmlDeviceGetHandleByIndex(0)
         free_memory = nvidia_smi.nvmlDeviceGetMemoryInfo(handle).free
-        device = "cpu"
 
         # disable GPU usage if VRAM < 2GB
         if free_memory > 2e9:
