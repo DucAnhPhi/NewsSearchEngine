@@ -36,7 +36,7 @@ class FeatureExtraction():
         return self.embedder.encode(result)
 
     def get_keywords_similarity(self, article):
-        text_tokens = self.parser.get_keywords(article)
+        text_tokens = article["keywords"]
         keywords_similarity = 2 # max cosine distance
         if len(text_tokens) > 1:
             token_embeddings = [self.embedder.encode(token) for token in text_tokens]
@@ -46,7 +46,7 @@ class FeatureExtraction():
         return keywords_similarity
 
     def get_keywords_embedding(self, article) -> Optional[Vector]:
-        keywords = self.parser.get_keywords(article)
+        keywords = article["keywords"]
         if len(keywords) == 0:
             return None
         keywords_str = " ".join(keywords)
