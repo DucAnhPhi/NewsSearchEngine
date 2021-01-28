@@ -44,6 +44,8 @@ class VectorStorage():
                 article = json.loads(line)
                 if parse_func:
                     article = parse_func(article)
+                if article == None:
+                    continue
                 emb = embedding_func(article)
                 if emb == None:
                     continue
