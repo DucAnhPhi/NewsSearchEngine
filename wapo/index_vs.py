@@ -10,7 +10,7 @@ if __name__ == "__main__":
     fe = FeatureExtraction(em, ParserWAPO())
 
     # init vector storage
-    data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
+    data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
     storage_location_twfp = f"{data_location}/wapo_vs_twfp.bin"
     storage_location_keywords = f"{data_location}/wapo_vs_keywords.bin"
 
