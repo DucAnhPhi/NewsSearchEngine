@@ -70,7 +70,6 @@ class ParserWAPO(ParserInterface):
 
             # ignore not relevant docs
             if "published_date" not in raw or not title or not text or ParserWAPO.is_not_relevant(kicker):
-                print("irrelevant")
                 return None
 
             data_dict = {
