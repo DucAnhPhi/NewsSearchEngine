@@ -21,7 +21,7 @@ if __name__ == "__main__":
     vs_twfp.add_items_from_file(
         f"{data_location}/TREC_Washington_Post_collection.v3.jl",
         fe.get_first_paragraph_with_titles_embedding,
-        parse_func=parser.parse_article
+        parse_articles = True
     )
     vs_twfp.save(storage_location_twfp)
 
@@ -31,6 +31,6 @@ if __name__ == "__main__":
     vs_keywords.add_items_from_file(
         f"{data_location}/TREC_Washington_Post_collection.v3.jl",
         fe.get_keywords_embedding,
-        parse_func=parser.parse_article
+        parse_articles = True
     )
     vs_keywords.save(storage_location_keywords)

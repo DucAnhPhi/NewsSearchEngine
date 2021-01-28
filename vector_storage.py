@@ -35,18 +35,14 @@ class VectorStorage():
         self.storage.set_ef(150) # ef should always be > k
 
 
-    def add_items_from_file(self, path: str, embedding_func: Callable[[T], Optional[Vector]], parse_func = None):
+    def add_items_from_file(self, path: str, embedding_func, parse_articles = False):
         with open(path, 'r') as data_file:
             emb_batch: VectorList = []
             id_batch: StringList = []
 
             for line in data_file:
                 article = json.loads(line)
-                if parse_func:
-                    article = parse_func(article)
-                if article == None:
-                    continue
-                emb = embedding_func(article)
+                emb = embedding_func(article, parse_articles = parse_articles)
                 if emb == None:
                     continue
                 emb_batch.append(emb)
