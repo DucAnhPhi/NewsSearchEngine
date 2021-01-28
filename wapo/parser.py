@@ -87,9 +87,7 @@ class ParserWAPO(ParserInterface):
             data_dict['_source'] = source_block
 
         except Exception:
-            # print(json.dumps(js,sort_keys=True, indent=4))
-            traceback.print_exc(file=sys.stdout)
-            quit()
+            return None
 
         return data_dict
 

@@ -7,7 +7,6 @@ import gzip
 import json
 import re
 import sys
-import traceback
 from tqdm import tqdm
 from .parser import ParserWAPO
 from ..embedding.model import EmbeddingModel
