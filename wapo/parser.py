@@ -101,7 +101,7 @@ class ParserWAPO(ParserInterface):
 
             data_dict['_source'] = source_block
 
-        except Exception(e):
+        except Exception:
             return None
 
         return data_dict
