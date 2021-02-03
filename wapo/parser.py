@@ -49,54 +49,47 @@ class ParserWAPO(ParserInterface):
         return (kicker.lower() in not_relevant)
 
     def parse_article(self, raw):
-        try:
-            text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
-            first_p = ParserWAPO.get_first_paragraph(raw['contents'])
-            first_p = re.sub('<.*?>', ' ', first_p)
-            first_p = first_p.strip()
-            links = []
-            if text:
-                links = re.findall('href="([^"]*)"', text)
-                text = re.sub('<.*?>', ' ', text)
-            text = text.strip()
-            title = ParserWAPO.get_all_content_by_type(raw['contents'], 'title')
-            title = title.strip()
-            kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
+        text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
+        first_p = ParserWAPO.get_first_paragraph(raw['contents'])
+        first_p = re.sub('<.*?>', ' ', first_p)
+        first_p = first_p.strip()
+        links = []
+        if text:
+            links = re.findall('href="([^"]*)"', text)
+            text = re.sub('<.*?>', ' ', text)
+        text = text.strip()
+        title = ParserWAPO.get_all_content_by_type(raw['contents'], 'title')
+        title = title.strip()
+        kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
 
-            # ignore not relevant docs
-            if "published_date" not in raw or not title or not text or ParserWAPO.is_not_relevant(kicker):
-                return None
-
-            data_dict = {
-                "_index": "wapo",
-                "_type": '_doc',
-                "_id": raw['id'],
-            }
-
-            keywords = self.get_keywords(text)
-
-            source_block = {
-                "title": title,
-                "offset_first_paragraph": len(first_p),
-                "date": raw['published_date'],
-                "kicker": kicker,
-                "author": raw['author'],
-                "text": text or '',
-                "links": links or [],
-                "url": raw['article_url'],
-                "keywords": keywords
-
-            }
-
-            for key, val in raw.items():
-                if key == key.upper():
-                    print(raw['id'], ParserWAPO.unique_heads(val))
-                    source_block[key] = ParserWAPO.unique_heads(val)
-
-            data_dict['_source'] = source_block
-
-        except Exception:
+        # ignore not relevant docs
+        if ("published_date" not in raw) or (len(title) < 1) or (len(text) < 1) or ParserWAPO.is_not_relevant(kicker):
             return None
+
+        data_dict = {
+            "_index": "wapo",
+            "_type": '_doc',
+            "_id": raw['id'],
+        }
+
+        source_block = {
+            "title": title,
+            "offset_first_paragraph": len(first_p),
+            "date": raw['published_date'],
+            "kicker": kicker,
+            "author": raw['author'],
+            "text": text or '',
+            "links": links or [],
+            "url": raw['article_url']
+
+        }
+
+        for key, val in raw.items():
+            if key == key.upper():
+                print(raw['id'], ParserWAPO.unique_heads(val))
+                source_block[key] = ParserWAPO.unique_heads(val)
+
+        data_dict['_source'] = source_block
 
         return data_dict
 
