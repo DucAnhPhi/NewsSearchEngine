@@ -9,13 +9,9 @@ import re
 import sys
 from tqdm import tqdm
 from .parser import ParserWAPO
-from ..embedding.model import EmbeddingModel
-from ..feature_extraction import FeatureExtraction
 
 if __name__ == "__main__":
-    embedder = EmbeddingModel(lang="en")
     parser = ParserWAPO()
-    fe = FeatureExtraction(embedder, parser)
     p = argparse.ArgumentParser(description='Index WashingtonPost docs to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
@@ -33,18 +29,6 @@ if __name__ == "__main__":
                 'refresh_interval': '-1',
                 'number_of_shards': '5',
                 'number_of_replicas': '0'
-            },
-            # Set up a custom unstemmed analyzer.
-            'analysis': {
-                'analyzer': {
-                    'english_stemmed': {
-                        'tokenizer': 'standard',
-                        'filter': [
-                            'lowercase',
-                            'stemmer'
-                        ]
-                    }
-                }
             }
         },
         'mappings': {
@@ -52,12 +36,12 @@ if __name__ == "__main__":
                 'text': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'english_stemmed'
+                    'analyzer': 'english'
                 },
                 'title': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'english_stemmed'
+                    'analyzer': 'english'
                 },
                 'date': {
                     'type': 'date'
@@ -78,7 +62,6 @@ if __name__ == "__main__":
             js = json.loads(line)
             article = parser.parse_article(js)
             if article != None:
-                article["_source"]["keywords_similarity"] = fe.get_keywords_similarity(article)
                 yield article
 
     print("Counting...")

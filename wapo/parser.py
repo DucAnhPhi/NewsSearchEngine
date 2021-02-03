@@ -48,11 +48,6 @@ class ParserWAPO(ParserInterface):
         }
         return (kicker.lower() in not_relevant)
 
-# TODO
-    def get_keywords(self, text:str):
-        keywords = []
-        return keywords
-
     def parse_article(self, raw):
         try:
             text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')

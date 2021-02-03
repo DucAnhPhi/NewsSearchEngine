@@ -8,15 +8,9 @@ import re
 import sys
 import traceback
 from tqdm import tqdm
-from ..feature_extraction import FeatureExtraction
-from ..embedding.model import EmbeddingModel
-from ..netzpolitik.parser import ParserNetzpolitik
 from pathlib import Path
 
 if __name__ == "__main__":
-    embedder = EmbeddingModel()
-    parser = ParserNetzpolitik()
-    fe = FeatureExtraction(embedder, parser)
     p = argparse.ArgumentParser(description='Index netzpolitik.org articles to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
@@ -34,25 +28,6 @@ if __name__ == "__main__":
                 'refresh_interval': '-1',
                 'number_of_shards': '5',
                 'number_of_replicas': '0'
-            },
-            # Set up a custom unstemmed analyzer.
-            'analysis': {
-                "filter": {
-                    "german_stemmer": {
-                        "type": "stemmer",
-                        "language": "light_german"
-                    }
-                },
-                "analyzer": {
-                    "german_analyzer": {
-                    "tokenizer":  "standard",
-                    "filter": [
-                        "lowercase",
-                        "german_normalization",
-                        "german_stemmer"
-                    ]
-                    }
-                }
             }
         },
         'mappings': {
@@ -60,12 +35,12 @@ if __name__ == "__main__":
                 'title': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'german_analyzer'
+                    'analyzer': 'german'
                 },
                 'subtitle': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'german_analyzer'
+                    'analyzer': 'german'
                 },
                 'published': {
                     'type': 'date',
@@ -74,7 +49,7 @@ if __name__ == "__main__":
                 'body': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'german_analyzer'
+                    'analyzer': 'german'
                 },
                 'raw_body': {
                     'type': 'object',
@@ -103,9 +78,6 @@ if __name__ == "__main__":
 
                 article = js.copy()
                 del article['id']
-
-                # add feature: semantic_specifity, which is the mean of pairwise cosine distances of text embeddings
-                article['keywords_similarity'] = fe.get_keywords_similarity(article)
 
                 data_dict['_source'] = article
 
