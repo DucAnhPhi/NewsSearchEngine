@@ -7,6 +7,7 @@ import gzip
 import json
 import re
 import sys
+import os
 from tqdm import tqdm
 from .parser import ParserWAPO
 
@@ -15,7 +16,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Index WashingtonPost docs to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
-    p.add_argument('--index_name', default='wapo', help='index name')
+    p.add_argument('--index_name', default='wapo_clean', help='index name')
     p.add_argument('--create', action='store_true')
 
     args = p.parse_args()
@@ -65,13 +66,14 @@ if __name__ == "__main__":
                 yield article
 
     print("Counting...")
-    with open('TREC_Washington_Post_collection.v3.jl', 'r') as f:
+    data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
+    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r') as f:
         lines = 0
         for line in f:
             lines += 1
 
     print("Indexing...")
-    with open('TREC_Washington_Post_collection.v3.jl', 'r') as f:
+    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r') as f:
         helpers.bulk(es, doc_generator(f, lines), request_timeout=30)
 
     es.indices.put_settings(index=args.index_name,
