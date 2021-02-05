@@ -40,15 +40,18 @@ class ParserWAPO(ParserInterface):
 
     @staticmethod
     def is_not_relevant(kicker: str):
-        not_relevant = {
-            "test",
-            "opinion",
-            "letters to the editor",
-            "the post's view"
-        }
-        return (kicker.lower() in not_relevant)
+        is_not_relevant = False
+        if kicker:
+            not_relevant = {
+                "test",
+                "opinion",
+                "letters to the editor",
+                "the post's view"
+            }
+            is_not_relevant = kicker.lower() in not_relevant
+        return is_not_relevant
 
-    def parse_article(self, raw):
+    def parse_article(self, raw, index):
         text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
         first_p = ParserWAPO.get_first_paragraph(raw['contents'])
         first_p = re.sub('<.*?>', ' ', first_p)
@@ -57,17 +60,18 @@ class ParserWAPO(ParserInterface):
         if text:
             links = re.findall('href="([^"]*)"', text)
             text = re.sub('<.*?>', ' ', text)
-        text = text.strip()
+            text = text.strip()
         title = ParserWAPO.get_all_content_by_type(raw['contents'], 'title')
-        title = title.strip()
+        if title:
+            title.strip()
         kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
 
         # ignore not relevant docs
-        if ("published_date" not in raw) or (len(title) < 1) or (len(text) < 1) or ParserWAPO.is_not_relevant(kicker):
+        if ("published_date" not in raw) or (not title) or (not text) or ParserWAPO.is_not_relevant(kicker):
             return None
 
         data_dict = {
-            "_index": "wapo",
+            "_index": index,
             "_type": '_doc',
             "_id": raw['id'],
         }

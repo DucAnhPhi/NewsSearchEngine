@@ -13,10 +13,11 @@ from .parser import ParserWAPO
 
 if __name__ == "__main__":
     parser = ParserWAPO()
+    index_name = "wapo_clean"
     p = argparse.ArgumentParser(description='Index WashingtonPost docs to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
-    p.add_argument('--index_name', default='wapo_clean', help='index name')
+    p.add_argument('--index_name', default=index_name, help='index name')
     p.add_argument('--create', action='store_true')
 
     args = p.parse_args()
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     def doc_generator(f, num_docs):
         for line in tqdm(f, total=num_docs):
             js = json.loads(line)
-            article = parser.parse_article(js)
+            article = parser.parse_article(js, index_name)
             if article != None:
                 yield article
 
