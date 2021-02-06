@@ -38,12 +38,14 @@ if __name__ == "__main__":
                 'text': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'english'
+                    'analyzer': 'english',
+                    'term_vector': 'yes'
                 },
                 'title': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'english'
+                    'analyzer': 'english',
+                    'term_vector': 'yes'
                 },
                 'date': {
                     'type': 'date'
