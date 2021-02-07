@@ -3,6 +3,30 @@ from ..parser_interface import ParserInterface
 import re
 
 class ParserWAPO(ParserInterface):
+
+    def __init__(self, es = None):
+        self.es = es
+
+    def get_keywords(self, article, k=10):
+        tv = self.es.termvectors(
+            index = article["_index"],
+            id = article["_id"],
+            term_statistics = True,
+            fields = ["title", "text"],
+            body = {
+                "filter": {
+                    "min_term_freq": 1,
+                    "min_doc_freq": 1
+                }
+            }
+        )
+        keywords_title = [(key, tv["term_vectors"]["title"]["terms"][key]["score"]) for key in tv["term_vectors"]["title"]["terms"].keys()]
+        keywords_text = [(key, tv["term_vectors"]["text"]["terms"][key]["score"]) for key in tv["term_vectors"]["text"]["terms"].keys()]
+        combined = keywords_title + [text_tupl for text_tupl in keywords_text if not any(title_tupl[0] == text_tupl[0] for title_tupl in keywords_title)]
+        combined.sort(key = lambda tuple: tuple[1], reverse= True)
+        keywords = [tupl[0] for tupl in combined]
+        return keywords[:k]
+
     @staticmethod
     def get_first_content_by_type(jsarr, t):
         for block in jsarr:
