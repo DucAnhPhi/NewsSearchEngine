@@ -15,8 +15,9 @@ class ParserWAPO(ParserInterface):
             fields = ["title", "text"],
             body = {
                 "filter": {
-                    "min_term_freq": 1,
-                    "min_doc_freq": 1
+                    "min_term_freq": 2,
+                    "min_doc_freq": 5,
+                    "max_query_terms": 25
                 }
             }
         )

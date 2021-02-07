@@ -57,7 +57,7 @@ class KeywordsMatchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
 
 if __name__ == "__main__":
-    # Keyword match query recall avg: 0.630721
+    # Keyword match query recall avg: 0.632946
     # Retrieval Count Avg: 100
     exp = KeywordsMatchExperiment()
     print("----------------------------------------------------------------")
