@@ -34,28 +34,8 @@ class VectorStorage():
         # higher ef leads to better accuracy, but slower search
         self.storage.set_ef(150) # ef should always be > k
 
-
-    def add_items_from_file(self, path: str, embedding_func, parse_articles = False):
-        with open(path, 'r') as data_file:
-            emb_batch: VectorList = []
-            id_batch: StringList = []
-
-            for line in data_file:
-                article = json.loads(line)
-                emb = embedding_func(article, parse_articles = parse_articles)
-                if emb == None:
-                    continue
-                emb_batch.append(emb)
-                id_batch.append(article["id"])
-
-                if len(emb_batch) is 1000:
-                    self.storage.add_items(emb_batch, id_batch)
-                    emb_batch = []
-                    id_batch = []
-
-            if len(emb_batch) is not 0:
-                self.storage.add_items(emb_batch, id_batch)
-
+    def add_items(self, emb_batch, id_batch):
+        self.storage.add_items(emb_batch, id_batch)
 
     def save(self, path: str):
         self.storage.save_index(path)

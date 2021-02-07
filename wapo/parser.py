@@ -51,7 +51,8 @@ class ParserWAPO(ParserInterface):
             is_not_relevant = kicker.lower() in not_relevant
         return is_not_relevant
 
-    def parse_article(self, raw, index):
+    @staticmethod
+    def parse_article(raw, index):
         text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
         first_p = ParserWAPO.get_first_paragraph(raw['contents'])
         first_p = re.sub('<.*?>', ' ', first_p)

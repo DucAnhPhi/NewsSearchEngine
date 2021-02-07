@@ -19,10 +19,8 @@ class FeatureExtraction():
         mean_dist = np.mean(dists)
         return mean_dist
 
-    def get_first_paragraph_with_titles_embedding(self, article, parse_articles = False) -> Optional[Vector]:
+    def get_first_paragraph_with_titles_embedding(self, article) -> Optional[Vector]:
         emb = None
-        if parse_articles:
-            article = self.parser.parse_article(article)
         if article != None:
             combined_text = self.parser.get_first_paragraph_with_titles(article)
             emb = self.embedder.encode(combined_text)

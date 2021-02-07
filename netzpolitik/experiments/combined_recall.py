@@ -37,7 +37,25 @@ if __name__ == "__main__":
         print("Initialize twfp vector storage.\n")
         vs_twfp = VectorStorage()
         print("Add items from file...\n")
-        vs_twfp.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_first_paragraph_with_titles_embedding)
+        with open(f"{data_location}/netzpolitik.jsonl", 'r') as data_file:
+            emb_batch = []
+            id_batch: StringList = []
+
+            for line in data_file:
+                article = json.loads(line)
+                emb = fe.get_first_paragraph_with_titles_embedding(article)
+                if emb == None:
+                    continue
+                emb_batch.append(emb)
+                id_batch.append(article["id"])
+
+                if len(emb_batch) is 1000:
+                    vs_twfp.add_items(emb_batch, id_batch)
+                    emb_batch = []
+                    id_batch = []
+
+            if len(emb_batch) is not 0:
+                vs_twfp.add_items(emb_batch, id_batch)
         vs_twfp.save(storage_location_twfp)
 
     if os.path.isfile(storage_location_keywords):
@@ -47,7 +65,25 @@ if __name__ == "__main__":
         print("Initialize keywords vector storage.\n")
         vs_keywords = VectorStorage()
         print("Add items from file...\n")
-        vs_keywords.add_items_from_file(f"{data_location}/netzpolitik.jsonl", fe.get_keywords_embedding)
+        with open(f"{data_location}/netzpolitik.jsonl", 'r') as data_file:
+            emb_batch_key = []
+            id_batch_key: StringList = []
+
+            for line in data_file:
+                article = json.loads(line)
+                emb = fe.get_keywords_embedding(article)
+                if emb == None:
+                    continue
+                emb_batch_key.append(emb)
+                id_batch_key.append(article["id"])
+
+                if len(emb_batch_key) is 1000:
+                    vs_keywords.add_items(emb_batch_key, id_batch_key)
+                    emb_batch_key = []
+                    id_batch_key = []
+
+            if len(emb_batch_key) is not 0:
+                vs_keywords.add_items(emb_batch_key, id_batch_key)
         vs_keywords.save(storage_location_keywords)
 
     # build query

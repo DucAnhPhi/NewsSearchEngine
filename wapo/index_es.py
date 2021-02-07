@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from elasticsearch import helpers
-from elasticsearch import Elasticsearch, TransportError
+from elasticsearch import Elasticsearch, TransportError, helpers
 import argparse
 import gzip
 import json
