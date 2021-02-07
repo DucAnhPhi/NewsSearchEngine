@@ -7,6 +7,8 @@ import json
 import re
 import sys
 import os
+import nltk
+from nltk.corpus import stopwords
 from tqdm import tqdm
 from .parser import ParserWAPO
 
@@ -30,6 +32,33 @@ if __name__ == "__main__":
                 'refresh_interval': '-1',
                 'number_of_shards': '5',
                 'number_of_replicas': '0'
+            },
+            "analysis": {
+                "filter": {
+                    "english_stop": {
+                        "type":       "stop",
+                        "stopwords":  stopwords.words('english')
+                    },
+                    "english_stemmer": {
+                        "type":       "stemmer",
+                        "language":   "english"
+                    },
+                    "english_possessive_stemmer": {
+                        "type":       "stemmer",
+                        "language":   "possessive_english"
+                    }
+                },
+                "analyzer": {
+                    "english_custom": {
+                        "tokenizer":  "standard",
+                        "filter": [
+                            "english_possessive_stemmer",
+                            "lowercase",
+                            "english_stop",
+                            "english_stemmer"
+                        ]
+                    }
+                }
             }
         },
         'mappings': {
@@ -37,13 +66,13 @@ if __name__ == "__main__":
                 'text': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'english',
+                    'analyzer': 'english_custom',
                     'term_vector': 'yes'
                 },
                 'title': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'english',
+                    'analyzer': 'english_custom',
                     'term_vector': 'yes'
                 },
                 'date': {
