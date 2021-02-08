@@ -17,7 +17,7 @@ class TestParserNetzpolitik():
 
     def test_parse_article_2012(self):
         raw = self.articles[0]
-        parsed = self.parser.parse_article(raw, self.index)["_source"]
+        parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "The year ahead for D.C. region’s commuters"
         assert parsed["offset_first_paragraph"] == 281
         assert parsed["date"] == 1325444842000
@@ -29,7 +29,7 @@ class TestParserNetzpolitik():
 
     def test_parse_article_2013(self):
         raw = self.articles[1]
-        parsed = self.parser.parse_article(raw, self.index)["_source"]
+        parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Business Digest: Sears to spin off Lands’ End, last-minute bid to block airline merger fails"
         assert parsed["offset_first_paragraph"] == 195
         assert parsed["date"] == 1386378264000
@@ -41,7 +41,7 @@ class TestParserNetzpolitik():
 
     def test_parse_article_2014(self):
         raw = self.articles[2]
-        parsed = self.parser.parse_article(raw, self.index)["_source"]
+        parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Hawaii election to be held Friday in precincts closed by storm"
         assert parsed["offset_first_paragraph"] == 273
         assert parsed["date"] == 1407851892000
@@ -53,7 +53,7 @@ class TestParserNetzpolitik():
 
     def test_parse_article_2015(self):
         raw = self.articles[3]
-        parsed = self.parser.parse_article(raw, self.index)["_source"]
+        parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Japan and South Korea argue over a chocolate-covered pretzel stick"
         assert parsed["offset_first_paragraph"] == 224
         assert parsed["date"] == 1447248899000
@@ -65,7 +65,7 @@ class TestParserNetzpolitik():
 
     def test_parse_article_2016(self):
         raw = self.articles[4]
-        parsed = self.parser.parse_article(raw, self.index)["_source"]
+        parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Why party bosses can’t contain Trump"
         assert parsed["offset_first_paragraph"] == 85
         assert parsed["date"] == 1454106524000
@@ -77,7 +77,7 @@ class TestParserNetzpolitik():
 
     def test_parse_article_2017(self):
         raw = self.articles[5]
-        parsed = self.parser.parse_article(raw, self.index)["_source"]
+        parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "A bold paint color and neutral furniture turns a dreary room into a cozy retreat"
         assert parsed["offset_first_paragraph"] == 565
         assert parsed["date"] == 1490835610000

@@ -92,9 +92,15 @@ if __name__ == "__main__":
     def doc_generator(f, num_docs):
         for line in tqdm(f, total=num_docs):
             js = json.loads(line)
-            article = parser.parse_article(js, index_name)
-            if article != None:
-                yield article
+            article_source = parser.parse_article(js)
+            if article_source != None:
+                data_dict = {
+                    "_index": index_name,
+                    "_type": '_doc',
+                    "_id": raw['id'],
+                }
+                data_dict["_source"] = article_source
+                yield data_dict
 
     print("Counting...")
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"

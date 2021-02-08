@@ -7,7 +7,7 @@ class ParserWAPO(ParserInterface):
     def __init__(self, es = None):
         self.es = es
 
-    def get_keywords(self, article, k=10):
+    def get_keywords(self, article, k=25):
         tv = self.es.termvectors(
             index = article["_index"],
             id = article["_id"],
@@ -54,16 +54,6 @@ class ParserWAPO(ParserInterface):
             return None
 
     @staticmethod
-    def unique_heads(entry):
-        items = set()
-        if type(entry) is list:
-            for x in entry:
-                items.add(x[0])
-            return list(items)
-        else:
-            return entry
-
-    @staticmethod
     def is_not_relevant(kicker: str):
         is_not_relevant = False
         if kicker:
@@ -77,7 +67,7 @@ class ParserWAPO(ParserInterface):
         return is_not_relevant
 
     @staticmethod
-    def parse_article(raw, index):
+    def parse_article(raw):
         text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
         first_p = ParserWAPO.get_first_paragraph(raw['contents'])
         first_p = re.sub('<.*?>', ' ', first_p)
@@ -91,17 +81,9 @@ class ParserWAPO(ParserInterface):
         if title:
             title.strip()
         kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
-
         # ignore not relevant docs
         if ("published_date" not in raw) or (not title) or (not text) or ParserWAPO.is_not_relevant(kicker):
             return None
-
-        data_dict = {
-            "_index": index,
-            "_type": '_doc',
-            "_id": raw['id'],
-        }
-
         source_block = {
             "title": title,
             "offset_first_paragraph": len(first_p),
@@ -111,17 +93,8 @@ class ParserWAPO(ParserInterface):
             "text": text or '',
             "links": links or [],
             "url": raw['article_url']
-
         }
-
-        for key, val in raw.items():
-            if key == key.upper():
-                print(raw['id'], ParserWAPO.unique_heads(val))
-                source_block[key] = ParserWAPO.unique_heads(val)
-
-        data_dict['_source'] = source_block
-
-        return data_dict
+        return source_block
 
     @staticmethod
     def get_first_paragraph_with_titles(article) -> str:
