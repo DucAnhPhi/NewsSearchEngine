@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
         for line in data_file:
             article = json.loads(line)
-            article = parser.parse_article(article, index)
+            article = parser.parse_article(article)
             emb = fe.get_first_paragraph_with_titles_embedding(article)
             if emb == None:
                 continue
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
         for line in data_file:
             article = json.loads(line)
-            article = parser.parse_article(article, index)
+            article = parser.parse_article(article)
             article["keywords"] = parser.get_keywords(article)
             emb = fe.get_keywords_embedding(article)
             if emb == None:
