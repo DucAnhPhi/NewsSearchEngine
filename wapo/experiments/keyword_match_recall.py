@@ -3,11 +3,13 @@ import json
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.query import MoreLikeThis
+from ..parser import ParserWAPO
 from pprint import pprint
 
 class KeywordsMatchExperiment():
     def __init__(self):
         self.es = Elasticsearch()
+        self.parser = ParserWAPO(self.es)
         self.index = "wapo_clean"
         self.s = Search(using=self.es, index=self.index)
         # specify search size to 100
@@ -27,19 +29,32 @@ class KeywordsMatchExperiment():
                     continue
                 try:
                     self.count += 1
-                    results = self.s.query(
-                        MoreLikeThis(
-                            like={'_id': judgement["id"], '_index': self.index},
-                            fields=["title", "text"]
-                        )
-                    ).execute()
+                    #results = self.s.query(
+                    #    MoreLikeThis(
+                    #        like={'_id': judgement["id"], '_index': self.index},
+                    #        fields=["title", "text"]
+                    #    )
+                    #).execute()
+                    query_keywords = " OR ".join(self.parser.get_keywords(self.index, judgement["id"]))
+                    results = (self.es.search(
+                        size = 200,
+                        index = self.index,
+                        body = {
+                            "query": {
+                                "query_string": {
+                                    "fields": [ "title", "text" ],
+                                    "query": query_keywords
+                                }
+                            }
+                        }
+                    ))["hits"]["hits"]
                     recall = 0.
                     self.retrieval_count_avg += len(results)
                     for res in results:
-                        if res.meta.id == judgement["id"]:
+                        if res["_id"] == judgement["id"]:
                             continue
                         for ref in filtered:
-                            if ref["id"] == res.meta.id:
+                            if ref["id"] == res["_id"]:
                                 recall += 1
                                 break
                     recall /= len(filtered)
@@ -57,8 +72,37 @@ class KeywordsMatchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
 
 if __name__ == "__main__":
+    # MLT results:
     # Keyword match query recall avg: 0.632946
     # Retrieval Count Avg: 100
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.636238
+    # Retrieval Count Avg: 100
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.678989
+    # Retrieval Count Avg: 150
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.719923
+    # Retrieval Count Avg: 200
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.742124
+    # Retrieval Count Avg: 250
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.752354
+    # Retrieval Count Avg: 300
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.758316
+    # Retrieval Count Avg: 350
+
+    # Custom query, using termvectors:
+    # Keyword match query recall avg: 0.764501
+    # Retrieval Count Avg: 400
     exp = KeywordsMatchExperiment()
     print("----------------------------------------------------------------")
     print("Outlet: WAPO")
