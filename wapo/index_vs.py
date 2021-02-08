@@ -27,13 +27,14 @@ if __name__ == "__main__":
         id_batch: StringList = []
 
         for line in data_file:
-            article = json.loads(line)
-            article = parser.parse_article(article)
+            raw = json.loads(line)
+            article_id = raw["id"]
+            article = parser.parse_article(raw)
             emb = fe.get_first_paragraph_with_titles_embedding(article)
             if emb == None:
                 continue
             emb_batch.append(emb)
-            id_batch.append(article["_id"])
+            id_batch.append(article_id)
 
             if len(emb_batch) is 1000:
                 vs_twfp.add_items(emb_batch, id_batch)
@@ -53,14 +54,14 @@ if __name__ == "__main__":
         id_batch_key: StringList = []
 
         for line in data_file:
-            article = json.loads(line)
-            article = parser.parse_article(article)
-            article["keywords"] = parser.get_keywords(article)
+            raw = json.loads(line)
+            article_id = raw["id"]
+            article["keywords"] = parser.get_keywords(index, article_id)
             emb = fe.get_keywords_embedding(article)
             if emb == None:
                 continue
             emb_batch_key.append(emb)
-            id_batch_key.append(article["_id"])
+            id_batch_key.append(article_id)
 
             if len(emb_batch_key) is 1000:
                 vs_keywords.add_items(emb_batch_key, id_batch_key)

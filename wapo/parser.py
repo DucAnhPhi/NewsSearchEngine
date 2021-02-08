@@ -7,26 +7,38 @@ class ParserWAPO(ParserInterface):
     def __init__(self, es = None):
         self.es = es
 
-    def get_keywords(self, article, k=25):
-        tv = self.es.termvectors(
-            index = article["_index"],
-            id = article["_id"],
+    def get_keywords(self, index, article_id):
+        # use separate request, otherwise the filter body applies for both fields
+        title_termvector = self.es.termvectors(
+            index = index,
+            id = article_id,
             term_statistics = True,
-            fields = ["title", "text"],
+            fields = ["title"],
+            body = {
+                "filter": {
+                    "min_term_freq": 1,
+                    "min_doc_freq": 1,
+                    "max_num_terms": 3
+                }
+            }
+        )
+        text_termvector = self.es.termvectors(
+            index = index,
+            id = article_id,
+            term_statistics = True,
+            fields = ["text"],
             body = {
                 "filter": {
                     "min_term_freq": 2,
                     "min_doc_freq": 5,
-                    "max_query_terms": 25
+                    "max_num_terms": 25
                 }
             }
         )
-        keywords_title = [(key, tv["term_vectors"]["title"]["terms"][key]["score"]) for key in tv["term_vectors"]["title"]["terms"].keys()]
-        keywords_text = [(key, tv["term_vectors"]["text"]["terms"][key]["score"]) for key in tv["term_vectors"]["text"]["terms"].keys()]
-        combined = keywords_title + [text_tupl for text_tupl in keywords_text if not any(title_tupl[0] == text_tupl[0] for title_tupl in keywords_title)]
-        combined.sort(key = lambda tuple: tuple[1], reverse= True)
-        keywords = [tupl[0] for tupl in combined]
-        return keywords[:k]
+        keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
+        keywords_text = list(text_termvector["term_vectors"]["text"]["terms"].keys())
+        combined = list(set(keywords_title + keywords_text))
+        return combined
 
     @staticmethod
     def get_first_content_by_type(jsarr, t):
