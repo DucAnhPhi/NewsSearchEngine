@@ -1,3 +1,7 @@
 __pycache__/
-data/
+data/*.bin
+data/*.pkl
+data/*.txt
+data/TREC_Washington_Post_collection.v3.jl
+data/netzpolitik.jsonl
 .vscode/

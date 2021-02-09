@@ -1,9 +1,8 @@
 
 - [TODOs](#todos)
 - [Installation](#installation)
-- [Getting started](#getting-started)
-- [Speed up performance](#speed-up-performance)
-- [Datasets](#datasets)
+- [Run experiments](#getting-started)
+- [Run unit tests](#run-unit-tests)
 - [License](#license)
 - [Author](#author)
 
@@ -17,6 +16,8 @@
 
 ## Installation
 * Install Python 3.6.9 (if not already installed)
+
+* Install [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html)
 
 * **Recommended:**
 Setup a python virtual environment for this project. It keeps the dependencies required by different projects in separate places.
@@ -52,32 +53,54 @@ $ deactivate
 rm -rf env
 ```
 
-## Getting started
-### Run Unittests
-
-Run the following command in the current directory:
-
-```
-pytest
-```
-
-### Run News Scraper
-
-Run the following command to run the scraper and save the output to **data/netzpolitik.jsonl**:
-
-```
-scrapy runspider scraper_netzpolitik.py
-```
-
-## Speed up performance
+### Speed up performance
 
 You can speed up the encoding of embeddings if your machine has a [CUDA-enabled GPU](https://developer.nvidia.com/cuda-gpus) with atleast 2GB of free video memory:
 - Install [CUDA](https://developer.nvidia.com/cuda-downloads)
 
 
-## Datasets
+## Run experiments
 
-The following datasets were used to evaluate all experiments in this repository. Please download all listed datasets if you want to reproduce our experiments.
+
+
+
+### Download Datasets
+
+The following datasets were used to evaluate all experiments in this repository. Please download the following datasets if you want to reproduce our experiments:
+
+- To reproduce our experiments with the *TREC Washington Post Corpus (WAPO)*, request the dataset [here](https://trec.nist.gov/data/wapost/) and store the **.jl** file in the **data/** folder
+- To reproduce our experiments with *netzpolitik.org* run the following command to scrape all articles from 2012 to 2020 (the output is going to be stored in **data/netzpolitik.jsonl**):
+```
+scrapy runspider scraper_netzpolitik.py
+```
+
+### Index Datasets
+
+We provide indexing scripts for both datasets. Go to the parent directory of this project and run the following commands:
+
+```
+python -m NewsSearchEngine.wapo.index_es
+python -m NewsSearchEngine.wapo.index_vs
+```
+
+
+```
+python -m NewsSearchEngine.netzpolitik.index_es
+```
+
+### Run experiment scripts
+
+```
+python -m NewsSearchEngine.wapo.experiments.keyword_match_recall
+```
+
+```
+python -m NewsSearchEngine.netzpolitik.experiments.keyword_match_recall
+
+python -m NewsSearchEngine.netzpolitik.experiments.semantic_search_recall
+
+python -m NewsSearchEngine.netzpolitik.experiments.combined_recall
+```
 
 ### TREC Washington Post document collection (WAPO)
 
@@ -87,6 +110,8 @@ For the background linking task in 2018 (TREC 2018), TREC provided:
 
 - [50 test topics for background linking task](https://trec.nist.gov/data/news/2018/newsir18-topics.txt)
 - [relevance judgments for backgroundlinking task (with exponential gain values)](https://trec.nist.gov/data/news/2018/bqrels.exp-gains.txt)
+
+We put both sets together in a more usable [JSON Lines Format](https://jsonlines.org/) in **data/judgement_list_wapo**.
 
 According to the [TREC 2020 News Track Guidelines](http://trec-news.org/guidelines-2020.pdf) we removed articles from the dataset which are labeled in the "kicker" field as "Opinion", "Letters to the Editor", or "The Post's View", as they are **not relevant**. Additionally we removed articles which are labeled in the "kicker" field as "Test" as they contain "Lorem ipsum" text, thus being irrelevant aswell.
 After the filtering only 487,322 news articles remain, which is a decrease in size by 27%.
@@ -164,6 +189,13 @@ PUT /wapo_clean/_create/9171debc316e5e2782e0d2404ca7d09d
 }
 ```
 
+## Run unit tests
+
+Run the following command in the current directory:
+
+```
+pytest
+```
 
 ## License
 
