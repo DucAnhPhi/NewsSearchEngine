@@ -5,8 +5,6 @@ from .parser import ParserNetzpolitik
 
 baseurl = "https://netzpolitik.org/"
 num_pages = {
-    '2010': 77,
-    '2011': 65,
     '2012': 71,
     '2013': 103,
     '2014': 105,
@@ -15,7 +13,7 @@ num_pages = {
     '2017': 69,
     '2018': 57,
     '2019': 61,
-    '2020': 55
+    '2020': 61
 }
 
 def get_start_urls() -> StringList:
