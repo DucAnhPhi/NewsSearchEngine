@@ -20,7 +20,7 @@ class KeywordsMatchExperiment():
         self.rel_cutoff = 4
 
         judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo.jsonl"
-        with open(judgement_location, "r") as f:
+        with open(judgement_location, "r", encoding="utf-8") as f:
             for line in f:
                 judgement = json.loads(line)
                 # apply relevance cutoff

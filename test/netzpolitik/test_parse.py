@@ -22,7 +22,7 @@ def fake_response_from_file(file_name, url=None):
     else:
         file_path = file_name
 
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding="utf-8") as f:
         file_content = f.read()
 
     response = HtmlResponse(url=url,

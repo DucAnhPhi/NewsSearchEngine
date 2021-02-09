@@ -26,7 +26,7 @@ class SemanticSearchExperiment():
             print("Initialize vector storage.\n")
             self.vs = VectorStorage()
             print("Add items from file...\n")
-            with open(f"{data_location}/netzpolitik.jsonl", 'r') as data_file:
+            with open(f"{data_location}/netzpolitik.jsonl", 'r', encoding="utf-8") as data_file:
                 emb_batch: VectorList = []
                 id_batch: StringList = []
 
@@ -48,7 +48,7 @@ class SemanticSearchExperiment():
             self.vs.save(storage_location)
 
         # build query
-        with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r") as f:
+        with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r", encoding="utf-8") as f:
             for line in (f):
                 judgment = json.loads(line)
                 try:

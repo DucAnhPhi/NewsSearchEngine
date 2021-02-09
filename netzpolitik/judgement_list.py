@@ -11,13 +11,13 @@ if __name__ == "__main__":
     ref_count = 0
     id_count = 0
 
-    with open('data/netzpolitik.jsonl', 'r') as fi:
+    with open('data/netzpolitik.jsonl', 'r', encoding="utf-8") as fi:
         for line in fi:
             js = json.loads(line)
             keys.add(js['id'])
 
-    with open('data/netzpolitik.jsonl', 'r') as read_fi:
-        with open('data/judgement_list_netzpolitik.jsonl', 'w') as out_fi:
+    with open('data/netzpolitik.jsonl', 'r', encoding="utf-8") as read_fi:
+        with open('data/judgement_list_netzpolitik.jsonl', 'w', encoding="utf-8") as out_fi:
             for line in read_fi:
                 js = json.loads(line)
                 try:

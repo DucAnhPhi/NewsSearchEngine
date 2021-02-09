@@ -11,7 +11,7 @@ class KeywordsMatchExperiment():
         self.retrieval_count_avg = 0.
 
         judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_netzpolitik.jsonl"
-        with open(judgement_location, "r") as f:
+        with open(judgement_location, "r", encoding="utf-8") as f:
             for line in f:
                 judgment = json.loads(line)
                 try:

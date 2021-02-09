@@ -37,7 +37,7 @@ if __name__ == "__main__":
         print("Initialize twfp vector storage.\n")
         vs_twfp = VectorStorage()
         print("Add items from file...\n")
-        with open(f"{data_location}/netzpolitik.jsonl", 'r') as data_file:
+        with open(f"{data_location}/netzpolitik.jsonl", 'r', encoding="utf-8") as data_file:
             emb_batch = []
             id_batch: StringList = []
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         print("Initialize keywords vector storage.\n")
         vs_keywords = VectorStorage()
         print("Add items from file...\n")
-        with open(f"{data_location}/netzpolitik.jsonl", 'r') as data_file:
+        with open(f"{data_location}/netzpolitik.jsonl", 'r', encoding="utf-8") as data_file:
             emb_batch_key = []
             id_batch_key: StringList = []
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         vs_keywords.save(storage_location_keywords)
 
     # build query
-    with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r") as f:
+    with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r", encoding="utf-8") as f:
         for line in f:
             judgment = json.loads(line)
             try:

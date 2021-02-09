@@ -22,7 +22,7 @@ if __name__ == "__main__":
     print("Initialize twfp vector storage.\n")
     vs_twfp = VectorStorage()
     print("Add items from file...\n")
-    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r') as data_file:
+    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r', encoding="utf-8") as data_file:
         emb_batch: VectorList = []
         id_batch: StringList = []
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     print("Initialize keywords vector storage.\n")
     vs_keywords = VectorStorage()
     print("Add items from file...\n")
-    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r') as data_file:
+    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r', encoding="utf-8") as data_file:
         emb_batch_key: VectorList = []
         id_batch_key: StringList = []
 

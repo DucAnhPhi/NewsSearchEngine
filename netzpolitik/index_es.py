@@ -86,16 +86,15 @@ if __name__ == "__main__":
                 quit()
             yield data_dict
 
-    script_location = Path(__file__).absolute().parent.parent
-    data_location = script_location / 'data' / 'netzpolitik.jsonl'
+    data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
     print("Counting...")
-    with data_location.open() as f:
+    with open(f"{data_location}/netzpolitik.jsonl", "r", encoding="utf-8") as f:
         lines = 0
         for line in f:
             lines += 1
 
     print("Indexing...")
-    with data_location.open() as f:
+    with open(f"{data_location}/netzpolitik.jsonl", "r", encoding="utf-8") as f:
         helpers.bulk(es, doc_generator(f, lines), request_timeout=30)
 
     es.indices.put_settings(index=args.index_name,

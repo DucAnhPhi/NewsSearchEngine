@@ -5,13 +5,13 @@ if __name__ == "__main__":
     topic_dict = {}
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
     # generate topic dictionary
-    with open(f"{data_location}/wapo_newsir18-topics.txt", "r") as f:
+    with open(f"{data_location}/wapo_newsir18-topics.txt", "r", encoding="utf-8") as f:
         for line in f:
             topic = line.strip().split(" ")
             topic_dict[topic[0]] = topic[1]
     # generate judgement list with translated topic ids
-    with open(f"{data_location}/wapo_bqrels.exp-gains.txt", "r") as fin:
-        with open(f"{data_location}/judgement_list_wapo.jsonl", "w") as fout:
+    with open(f"{data_location}/wapo_bqrels.exp-gains.txt", "r", encoding="utf-8") as fin:
+        with open(f"{data_location}/judgement_list_wapo.jsonl", "w", encoding="utf-8") as fout:
             jl = {}
             for line in fin:
                 orig_judg = line.strip().split(" ")
