@@ -13,9 +13,13 @@
 - handle scaling vector storage (max elements)
 - implement webapp with async component and model server
 - log queries and clicks for judgement list and popularity metric
+- fix output path for scraper
+- refactor netzpolitik indexing
 
 ## Installation
 * Install Python 3.6.9 (if not already installed)
+
+* On Windows: [Install Microsoft Build Tools for C++](https://visualstudio.microsoft.com/de/visual-cpp-build-tools/)
 
 * Install [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html)
 
@@ -69,9 +73,9 @@ You can speed up the encoding of embeddings if your machine has a [CUDA-enabled 
 The following datasets were used to evaluate all experiments in this repository. Please download the following datasets if you want to reproduce our experiments:
 
 - To reproduce our experiments with the *TREC Washington Post Corpus (WAPO)*, request the dataset [here](https://trec.nist.gov/data/wapost/) and store the **.jl** file in the **data/** folder
-- To reproduce our experiments with *netzpolitik.org* run the following command to scrape all articles from 2012 to 2020 (the output is going to be stored in **data/netzpolitik.jsonl**):
+- To reproduce our experiments with *netzpolitik.org* run the following command in the parent directory of the project, to scrape all articles from 2012 to 2020 (the output is going to be stored in **data/netzpolitik.jsonl**):
 ```
-scrapy runspider scraper_netzpolitik.py
+python -m NewsSearchEngine.netzpolitik.scraper
 ```
 
 ### Index Datasets
