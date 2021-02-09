@@ -2,6 +2,7 @@ import scrapy
 from scrapy.selector import Selector
 from ..typings import StringList
 from .parser import ParserNetzpolitik
+from scrapy.crawler import CrawlerProcess
 
 baseurl = "https://netzpolitik.org/"
 num_pages = {
@@ -45,3 +46,8 @@ class NetzpolitikScraper(scrapy.Spider):
         for element in response.css(LINK_SELECTOR):
             link = element.css('a ::attr(href)').extract_first()
             yield scrapy.Request(link, ParserNetzpolitik.parse_article)
+
+if __name__ == "__main__":
+    process = CrawlerProcess()
+    process.crawl(NetzpolitikScraper)
+    process.start()
