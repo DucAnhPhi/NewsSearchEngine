@@ -6,6 +6,7 @@ import gzip
 import json
 import re
 import sys
+import os
 import traceback
 from tqdm import tqdm
 from pathlib import Path
