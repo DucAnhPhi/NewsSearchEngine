@@ -1,10 +1,12 @@
 import os
 import json
 from elasticsearch import Elasticsearch
+from ..parser import ParserNetzpolitik
 
 class KeywordsMatchExperiment():
-    def __init__(self):
+    def __init__(self, size, keywords_tf_idf = False):
         self.es = Elasticsearch()
+        self.parser = ParserNetzpolitik(self.es)
         self.index = "netzpolitik"
         self.count = 0
         self.recall_avg = 0.
@@ -19,25 +21,43 @@ class KeywordsMatchExperiment():
                         index=self.index,
                         id=judgment["id"]
                     ))["_source"]
-                    query = " ".join(query_article["keywords"])
-                    if len(query) == 0:
-                        continue
-                    self.count += 1
-                    results = self.es.search(
-                        index = self.index,
-                        body = {
-                            "query": {
-                                "multi_match": {
-                                    "fields": [ "title", "subtitle", "body" ],
-                                    "query": query
+                    results = []
+                    if keywords_tf_idf:
+                        query = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgment["id"]))
+                        self.count += 1
+                        results = (self.es.search(
+                            size = size,
+                            index = self.index,
+                            body = {
+                                "query": {
+                                    "query_string": {
+                                        "fields": [ "title", "subtitle", "body" ],
+                                        "query": query
+                                    }
                                 }
                             }
-                        }
-                    )
+                        ))["hits"]["hits"]
+                    else:
+                        query = " OR ".join(query_article["keywords"])
+                        if len(query) == 0:
+                            continue
+                        self.count += 1
+                        results = (self.es.search(
+                            size = size,
+                            index = self.index,
+                            body = {
+                                "query": {
+                                    "query_string": {
+                                        "fields": [ "title", "subtitle", "body" ],
+                                        "query": query
+                                    }
+                                }
+                            }
+                        ))["hits"]["hits"]
                     recall = 0.
-                    self.retrieval_count_avg += len(results["hits"]["hits"])
-                    for res in results["hits"]["hits"]:
-                        if res["_id"] in query_article["references"]:
+                    self.retrieval_count_avg += len(results)
+                    for res in results:
+                        if res["_id"] != judgment["id"] and res["_id"] in query_article["references"]:
                             recall += 1
                     recall /= len(query_article["references"])
                     self.recall_avg += recall
@@ -52,11 +72,16 @@ class KeywordsMatchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
 
 if __name__ == "__main__":
-    # Keyword match query recall avg: 0.089381
-    # Retrieval Count Avg: 10.0515
-    exp = KeywordsMatchExperiment()
+    exp = KeywordsMatchExperiment(200)
     print("----------------------------------------------------------------")
     print("Index articles in Elasticsearch.")
-    print("Query by multi match query with concatenated keywords.")
+    print("Query by string query with concatenated pre-annotated keywords.")
+    exp.print_stats()
+    print("----------------------------------------------------------------")
+
+    exp = KeywordsMatchExperiment(200, True)
+    print("----------------------------------------------------------------")
+    print("Index articles in Elasticsearch.")
+    print("Query by string query with concatenated tf-idf keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")

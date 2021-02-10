@@ -4,6 +4,46 @@ from ..typings import StringList
 from ..parser_interface import ParserInterface
 
 class ParserNetzpolitik(ParserInterface):
+
+    def __init__(self, es = None):
+        self.es = es
+
+    def get_keywords_tf_idf(self, index, article_id):
+        # use separate request, otherwise the filter body applies for all fields
+        title_termvector = self.es.termvectors(
+            index = index,
+            id = article_id,
+            term_statistics = True,
+            fields = ["title", "subtitle"],
+            body = {
+                "filter": {
+                    "min_term_freq": 1,
+                    "min_doc_freq": 1,
+                    "max_num_terms": 3
+                }
+            }
+        )
+        body_termvector = self.es.termvectors(
+            index = index,
+            id = article_id,
+            term_statistics = True,
+            fields = ["body"],
+            body = {
+                "filter": {
+                    "min_term_freq": 2,
+                    "min_doc_freq": 5,
+                    "max_num_terms": 25
+                }
+            }
+        )
+        keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
+        keywords_subtitle = []
+        if "subtitle" in title_termvector["term_vectors"]:
+            keywords_subtitle = list(title_termvector["term_vectors"]["subtitle"]["terms"].keys())
+        keywords_body = list(body_termvector["term_vectors"]["body"]["terms"].keys())
+        combined = list(set(keywords_title + keywords_subtitle + keywords_body))
+        return combined
+
     @staticmethod
     def parse_article(response):
         body_with_linebreaks = re.sub(r"<[\/]p>|<[\/]h[1-6]>|<br\s*[\/]?>|<[\/]figcaption>|<[\/]li>", "\n", response.text)
