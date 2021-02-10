@@ -10,7 +10,8 @@ from ...typings import NearestNeighborList
 from ..parser import ParserNetzpolitik
 
 class SemanticSearchExperiment():
-    def __init__(self, parser, index_emb_func, query_emb_func, storage_file, keywords_tf_idf=False, size=100):
+    def __init__(self, es, parser, index_emb_func, query_emb_func, storage_file, keywords_tf_idf=False, size=100):
+        self.es = es
         self.parser = parser
         self.index = "netzpolitik"
         self.count = 0
@@ -100,6 +101,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_keywords_embedding,
@@ -114,6 +116,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of extracted tf-idf keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_keywords_embedding,
@@ -129,6 +132,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ first paragraph
     # Query:                embedding of titles w/ first paragraph
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_first_paragraph_with_titles_embedding,
         fe.get_first_paragraph_with_titles_embedding,
@@ -143,6 +147,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_titles_embedding,
@@ -157,6 +162,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of titles w/ first paragraph
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_first_paragraph_with_titles_embedding,
@@ -171,6 +177,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of titles w/ section titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_titles_w_section_titles_embedding,
@@ -185,6 +192,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_keywords_embedding,
@@ -199,6 +207,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles
     # Query:                embedding of extracted tf-idf keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_embedding,
         fe.get_keywords_embedding,
@@ -214,6 +223,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ first paragraph
     # Query:                embedding of titles w/ first paragraph
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_first_paragraph_with_titles_embedding,
         fe.get_first_paragraph_with_titles_embedding,
@@ -228,6 +238,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ first paragraph
     # Query:                embedding of titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_first_paragraph_with_titles_embedding,
         fe.get_titles_embedding,
@@ -242,6 +253,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ first paragraph
     # Query:                embedding of titles w/ section titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_first_paragraph_with_titles_embedding,
         fe.get_titles_w_section_titles_embedding,
@@ -256,6 +268,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ first paragraph
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_first_paragraph_with_titles_embedding,
         fe.get_keywords_embedding,
@@ -270,6 +283,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ first paragraph
     # Query:                embedding of extracted tf-idf keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_first_paragraph_with_titles_embedding,
         fe.get_keywords_embedding,
@@ -285,6 +299,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ section titles
     # Query:                embedding of titles w/ section titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_w_section_titles_embedding,
         fe.get_titles_w_section_titles_embedding,
@@ -299,6 +314,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ section titles
     # Query:                embedding of titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_w_section_titles_embedding,
         fe.get_titles_embedding,
@@ -313,6 +329,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ section titles
     # Query:                embedding of titles w/ first paragraph
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_w_section_titles_embedding,
         fe.get_first_paragraph_with_titles_embedding,
@@ -327,6 +344,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ section titles
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_w_section_titles_embedding,
         fe.get_keywords_embedding,
@@ -341,6 +359,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of titles w/ section titles
     # Query:                embedding of extracted tf-idf keywords
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_titles_w_section_titles_embedding,
         fe.get_keywords_embedding,
@@ -358,6 +377,7 @@ if __name__ == "__main__":
     # Recall Avg:           0.110762
     # Retrieval Count Avg:  100
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_keywords_embedding,
@@ -374,6 +394,7 @@ if __name__ == "__main__":
     # Recall Avg:           0.110762
     # Retrieval Count Avg:  100
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_keywords_embedding,
@@ -389,6 +410,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of pre-annotated keywords
     # Query:                embedding of titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_titles_embedding,
@@ -403,6 +425,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of extracted tf-idf keywords
     # Query:                embedding of titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_titles_embedding,
@@ -418,6 +441,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of pre-annotated keywords
     # Query:                embedding of titles w/ section titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_titles_w_section_titles_embedding,
@@ -432,6 +456,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of extracted tf-idf keywords
     # Query:                embedding of titles w/ section titles
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_titles_w_section_titles_embedding,
@@ -447,6 +472,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of pre-annotated keywords
     # Query:                embedding of titles w/ first paragraph
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_first_paragraph_with_titles_embedding,
@@ -461,6 +487,7 @@ if __name__ == "__main__":
     # Index articles by:    embedding of extracted tf-idf keywords
     # Query:                embedding of titles w/ first paragraph
     exp = SemanticSearchExperiment(
+        es,
         parser,
         fe.get_keywords_embedding,
         fe.get_first_paragraph_with_titles_embedding,
