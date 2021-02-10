@@ -36,12 +36,14 @@ if __name__ == "__main__":
                 'title': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'german'
+                    'analyzer': 'german',
+                    'term_vector': 'yes'
                 },
                 'subtitle': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'german'
+                    'analyzer': 'german',
+                    'term_vector': 'yes'
                 },
                 'published': {
                     'type': 'date',
@@ -50,7 +52,8 @@ if __name__ == "__main__":
                 'body': {
                     'type': 'text',
                     'similarity': 'BM25',
-                    'analyzer': 'german'
+                    'analyzer': 'german',
+                    'term_vector': 'yes'
                 },
                 'raw_body': {
                     'type': 'object',
