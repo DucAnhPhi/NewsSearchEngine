@@ -7,10 +7,12 @@ from ...netzpolitik.parser import ParserNetzpolitik
 from ...feature_extraction import FeatureExtraction
 from ...embedding.model import EmbeddingModel
 from ...typings import NearestNeighborList
+from ..parser import ParserNetzpolitik
 
 class SemanticSearchExperiment():
-    def __init__(self, index_emb_func, query_emb_func, storage_file):
+    def __init__(self, index_emb_func, query_emb_func, storage_file, keywords_tf_idf=False, size=100):
         self.es = Elasticsearch()
+        self.parser = ParserNetzpolitik(es)
         self.index = "netzpolitik"
         self.count = 0
         self.recall_avg = 0.
@@ -57,11 +59,13 @@ class SemanticSearchExperiment():
                         index=self.index,
                         id=judgment["id"]
                     ))["_source"]
+                    if keywords_tf_idf:
+                        query_article["keywords"] = self.parser.get_keywords_tf_idf(self.index, judgment["id"])
                     query = query_emb_func(query_article)
                     if query == None:
                         self.count -= 1
                         continue
-                    nearest_n: NearestNeighborList = self.vs.get_k_nearest([query],100)
+                    nearest_n: NearestNeighborList = self.vs.get_k_nearest([query],size)
                     result_ids = [list(nn.keys())[0] for nn in nearest_n[0]]
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
