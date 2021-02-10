@@ -3,7 +3,9 @@ from scrapy.selector import Selector
 from ..typings import StringList
 from .parser import ParserNetzpolitik
 from scrapy.crawler import CrawlerProcess
+import os
 
+data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
 baseurl = "https://netzpolitik.org/"
 num_pages = {
     '2012': 71,
@@ -32,7 +34,7 @@ class NetzpolitikScraper(scrapy.Spider):
     custom_settings = {
         'FEEDS': {
             # store huge amount of data in JSON Lines format. See: https://jsonlines.org/
-            'data/netzpolitik.jsonl': {
+            f'{data_location}/netzpolitik.jsonl': {
                 'format': 'jsonlines',
                 'encoding': 'utf8'
             }
