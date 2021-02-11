@@ -20,7 +20,7 @@ if __name__ == "__main__":
     storage_location_keywords = f"{data_location}/wapo_vs_keywords.bin"
 
     print("Initialize twfp vector storage.\n")
-    vs_twfp = VectorStorage()
+    vs_twfp = VectorStorage(num_elements=500000)
     print("Add items from file...\n")
     with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r', encoding="utf-8") as data_file:
         emb_batch: VectorList = []
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     vs_twfp.save(storage_location_twfp)
 
     print("Initialize keywords vector storage.\n")
-    vs_keywords = VectorStorage()
+    vs_keywords = VectorStorage(num_elements=500000)
     print("Add items from file...\n")
     with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r', encoding="utf-8") as data_file:
         emb_batch_key: VectorList = []
