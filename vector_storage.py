@@ -25,7 +25,7 @@ class VectorStorage():
         self.embedder = EmbeddingModel()
         self.storage = Hnswlib(space='cosine', dim = dim)
 
-        if path is not None:
+        if path != None:
             self.storage.load_index(path, max_elements=num_elements)
         else:
             self.storage.init_index(max_elements=num_elements, ef_construction = EF_CONSTRUCTION, M = M)

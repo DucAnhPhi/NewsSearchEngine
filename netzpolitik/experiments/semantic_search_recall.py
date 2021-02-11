@@ -42,12 +42,12 @@ class SemanticSearchExperiment():
                     emb_batch.append(emb)
                     id_batch.append(article["id"])
 
-                    if len(emb_batch) is 1000:
+                    if len(emb_batch) == 1000:
                         self.vs.add_items(emb_batch, id_batch)
                         emb_batch = []
                         id_batch = []
 
-                if len(emb_batch) is not 0:
+                if len(emb_batch) != 0:
                     self.vs.add_items(emb_batch, id_batch)
             self.vs.save(storage_location)
 

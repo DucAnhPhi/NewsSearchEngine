@@ -36,12 +36,12 @@ if __name__ == "__main__":
             emb_batch.append(emb)
             id_batch.append(article_id)
 
-            if len(emb_batch) is 1000:
+            if len(emb_batch) == 1000:
                 vs_twfp.add_items(emb_batch, id_batch)
                 emb_batch = []
                 id_batch = []
 
-        if len(emb_batch) is not 0:
+        if len(emb_batch) != 0:
             vs_twfp.add_items(emb_batch, id_batch)
 
     vs_twfp.save(storage_location_twfp)
@@ -63,11 +63,11 @@ if __name__ == "__main__":
             emb_batch_key.append(emb)
             id_batch_key.append(article_id)
 
-            if len(emb_batch_key) is 1000:
+            if len(emb_batch_key) == 1000:
                 vs_keywords.add_items(emb_batch_key, id_batch_key)
                 emb_batch_key = []
                 id_batch_key = []
 
-        if len(emb_batch_key) is not 0:
+        if len(emb_batch_key) != 0:
             vs_keywords.add_items(emb_batch_key, id_batch_key)
     vs_keywords.save(storage_location_keywords)

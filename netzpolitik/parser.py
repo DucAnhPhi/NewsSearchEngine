@@ -92,7 +92,7 @@ class ParserNetzpolitik(ParserInterface):
         title = article["title"]
         subtitle = article["subtitle"]
         text = ""
-        if subtitle is None:
+        if subtitle == None:
             text += title.strip() + " " + first_p.strip()
         else:
             text += subtitle.strip() + " " + title.strip() + " " + first_p.strip()

@@ -43,7 +43,7 @@ class ParserWAPO(ParserInterface):
     @staticmethod
     def get_first_content_by_type(jsarr, t):
         for block in jsarr:
-            if block is not None and block["type"] == t:
+            if block != None and block["type"] == t:
                 return block["content"]
         return None
 
@@ -51,7 +51,7 @@ class ParserWAPO(ParserInterface):
     def get_first_paragraph(jsarr):
         first_p = ""
         for block in jsarr:
-            if block is not None and block["type"] == "sanitized_html":
+            if block != None and block["type"] == "sanitized_html":
                 first_p += f"{block['content']} "
                 if block["subtype"] == "paragraph" and len(first_p) > 50:
                     return first_p.strip()
@@ -59,7 +59,7 @@ class ParserWAPO(ParserInterface):
 
     @staticmethod
     def get_all_content_by_type(jsarr, t, field="content"):
-        strings = [c[field] for c in jsarr if c is not None and c["type"] == t and field in c and c[field] is not None]
+        strings = [c[field] for c in jsarr if c != None and c["type"] == t and field in c and c[field] != None]
         if strings:
             return " ".join(strings)
         else:

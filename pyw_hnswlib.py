@@ -16,7 +16,7 @@ class Hnswlib():
         self.index.init_index(max_elements = max_elements, ef_construction = ef_construction, M = M)
 
     def add_items(self, data: VectorList, ids=None):
-        if ids is not None:
+        if ids != None:
             assert len(data) == len(ids)
         num_added = len(data)
         with self.lock:
@@ -24,7 +24,7 @@ class Hnswlib():
             self.cur_ind += num_added
         int_labels = []
 
-        if ids is not None:
+        if ids != None:
             for dl in ids:
                 int_labels.append(start)
                 self.dict_labels[start] = dl
