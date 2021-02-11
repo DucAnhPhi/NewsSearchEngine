@@ -34,12 +34,8 @@ class VectorStorage():
         # higher ef leads to better accuracy, but slower search
         self.storage.set_ef(150) # ef should always be > k
 
-    def add_items(self, emb_batch, id_batch):
-        self.storage.add_items(emb_batch, id_batch)
-
     def save(self, path: str):
         self.storage.save_index(path)
-
 
     def get_k_nearest(self, embeddings: VectorList, k: int) -> NearestNeighborList:
         '''
@@ -55,3 +51,25 @@ class VectorStorage():
                 nn.append(dic)
             nearest.append(nn)
         return nearest
+
+    def add_items_from_file(self, file_path, emb_func):
+        with open(file_path, 'r', encoding="utf-8") as data_file:
+            emb_batch: VectorList = []
+            id_batch: StringList = []
+
+            for line in data_file:
+                raw = json.loads(line)
+                article_id = raw["id"]
+                emb = emb_func(raw)
+                if emb == None:
+                    continue
+                emb_batch.append(emb)
+                id_batch.append(article_id)
+
+                if len(emb_batch) == 1000:
+                    self.storage.add_items(emb_batch, id_batch)
+                    emb_batch = []
+                    id_batch = []
+
+            if len(emb_batch) != 0:
+                self.storage.add_items(emb_batch, id_batch)
