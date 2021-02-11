@@ -13,8 +13,6 @@
 - handle scaling vector storage (max elements)
 - implement webapp with async component and model server
 - log queries and clicks for judgement list and popularity metric
-- fix output path for scraper
-- refactor netzpolitik indexing
 
 ## Installation
 * Install Python 3.6.9 (if not already installed)
