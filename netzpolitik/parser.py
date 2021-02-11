@@ -43,7 +43,7 @@ class ParserNetzpolitik(ParserInterface):
         if "subtitle" in title_termvector["term_vectors"]:
             keywords_subtitle = list(title_termvector["term_vectors"]["subtitle"]["terms"].keys())
         keywords_body = []
-        if "body" in title_termvector["term_vectors"]:
+        if "body" in body_termvector["term_vectors"]:
             keywords_body = list(body_termvector["term_vectors"]["body"]["terms"].keys())
         combined = list(set(keywords_title + keywords_subtitle + keywords_body))
         return combined
