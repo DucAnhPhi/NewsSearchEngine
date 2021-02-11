@@ -36,11 +36,15 @@ class ParserNetzpolitik(ParserInterface):
                 }
             }
         )
-        keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
+        keywords_title = []
+        if "title" in title_termvector["term_vectors"]:
+            keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
         keywords_subtitle = []
         if "subtitle" in title_termvector["term_vectors"]:
             keywords_subtitle = list(title_termvector["term_vectors"]["subtitle"]["terms"].keys())
-        keywords_body = list(body_termvector["term_vectors"]["body"]["terms"].keys())
+        keywords_body = []
+        if "body" in title_termvector["term_vectors"]:
+            keywords_body = list(body_termvector["term_vectors"]["body"]["terms"].keys())
         combined = list(set(keywords_title + keywords_subtitle + keywords_body))
         return combined
 

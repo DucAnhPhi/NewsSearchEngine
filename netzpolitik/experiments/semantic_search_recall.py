@@ -10,7 +10,7 @@ from ...typings import NearestNeighborList
 from ..parser import ParserNetzpolitik
 
 class SemanticSearchExperiment():
-    def __init__(self, es, parser, index_emb_func, query_emb_func, storage_file, keywords_tf_idf=False, size=100):
+    def __init__(self, es, parser, query_emb_func, storage_file, keywords_tf_idf=False, size=100):
         self.es = es
         self.parser = parser
         self.index = "netzpolitik"
