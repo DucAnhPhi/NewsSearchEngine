@@ -68,7 +68,7 @@ class ParserNetzpolitik(ParserInterface):
         body_with_linebreaks = re.sub(r"<[\/]p>|<[\/]h[1-6]>|<br\s*[\/]?>|<[\/]figcaption>|<[\/]li>", "\n", response.text)
         soup = BeautifulSoup(body_with_linebreaks, 'lxml')
         soup_raw = BeautifulSoup(response.text, 'lxml')
-        title = response.css('.entry-title ::text').extract_first()
+        title = soup.title.text
         published = response.css('.published ::text').extract_first()
         authors = response.css('.entry-meta a[rel="author"] ::text').extract()
         categories = response.css('.entry-footer__category a[rel="tag"] ::text').extract()
@@ -96,7 +96,7 @@ class ParserNetzpolitik(ParserInterface):
     def get_first_paragraph(article) -> str:
         body = article["body"]
         first_p = ""
-        paragraphs = (body.split("\n", 3))[:2]
+        paragraphs = ([p for p in body.split("\n") if p])[:2]
         if len(paragraphs[0]) < 70:
             first_p += " ".join(paragraphs)
         else:

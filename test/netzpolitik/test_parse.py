@@ -54,7 +54,7 @@ class TestParserNetzpolitik():
         fake_response = fake_response_from_file(
             'html/netzpolitik_2020.html', url=article_id)
         parsed = next(self.parser.parse_article(fake_response))
-        expected_k = ['Kartellbehörden', 'Konzerne', 'EU', 'Rechnungshof', 'Facebook', 'Amazon', 'Google', 'Apple', 'konnten', 'Marktvorteil', 'Kommission', 'Fusionen', 'Wettbewerbsrechts', 'nennt', 'ersten', 'Verfahren', 'Bericht', 'oft', 'Hand', 'eingreife', 'WhatsApp', 'Unternehmen', 'neu', 'Definitionen', 'Europas']
+        expected_k = ['EU', 'Rechnungshof', 'Kartellbehörden', 'Konzerne', 'Facebook', 'Amazon', 'Google', 'Apple', 'konnten', 'Marktvorteil', 'Kommission', 'Fusionen', 'Wettbewerbsrechts', 'nennt', 'ersten', 'Verfahren', 'Bericht', 'oft', 'Hand', 'eingreife', 'WhatsApp', 'Unternehmen', 'neu', 'Definitionen', 'Europas']
         combined = [parsed["title"], parsed["body"]]
         combined_text = " ".join([t for t in combined if t])
         actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
@@ -66,7 +66,7 @@ class TestParserNetzpolitik():
         fake_response = fake_response_from_file(
             'html/netzpolitik_2020.html', url='https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/')
         parsed = next(self.parser.parse_article(fake_response))
-        assert parsed["title"] == "Kartellbehörden sollen Tech-Konzerne härter anfassen"
+        assert parsed["title"] == "EU-Rechnungshof: Kartellbehörden sollen Tech-Konzerne härter anfassen"
         assert set(parsed["authors"]) == {"Serafin Dinges"}
         assert parsed["published"] == "19-11-2020"
         assert set(parsed["categories"]) == {"Netzpolitik"}
@@ -111,7 +111,7 @@ class TestParserNetzpolitik():
         fake_response = fake_response_from_file(
             'html/netzpolitik_2019.html', url='https://netzpolitik.org/2019/npp191-off-the-record-die-tiktok-recherche-und-ein-neues-gesicht/')
         parsed = next(self.parser.parse_article(fake_response))
-        assert parsed["title"] == "Die TikTok-Recherche und ein neues Gesicht"
+        assert parsed["title"] == "NPP 191 Off The Record: Die TikTok-Recherche und ein neues Gesicht"
         assert set(parsed["authors"]) == {"Markus Reuter", "Chris Köver"}
         assert parsed["published"] == "07-12-2019"
         assert set(parsed["categories"]) == {"Netzpolitik Podcast"}
@@ -127,7 +127,7 @@ class TestParserNetzpolitik():
             "https://www.washingtonpost.com/technology/2019/09/15/tiktoks-beijing-roots-fuel-censorship-suspicion-it-builds-huge-us-audience/",
             "https://www.theguardian.com/technology/2019/sep/25/revealed-how-tiktok-censors-videos-that-do-not-please-beijing",
             "https://netzpolitik.org/podcast/",
-            "https://cdn.netzpolitik.org/wp-upload/2019/12/npp191-offtherecord-tiktok.ogg",
+            "https://netzpolitik.org/wp-upload/2019/12/npp191-offtherecord-tiktok.ogg",
             "https://cdn.netzpolitik.org/wp-upload/2019/12/npp191-offtherecord-tiktok.mp3",
             "spotify:show:2GLuMhSNEFzUIXfx9BDxBt"
         }
