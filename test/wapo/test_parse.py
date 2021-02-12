@@ -25,6 +25,17 @@ class TestParserNetzpolitik():
         intersection = list(set(expected_k) & set(actual_k))
         assert len(intersection) == len(expected_k)
 
+    def test_get_keywords_tf_idf_denormalized(self):
+        raw = self.articles[0]
+        parsed = self.parser.parse_article(raw)
+        expected_k = ['ahead', 'region', 'commuters', 'transportation', 'projects', 'scheduled', 'lanes', 'Beltway', 'open', 'Travelers', 'Road', 'drivers', 'new', 'Intercounty', 'Connector', 'congestion', 'routes', 'Telegraph', 'Bridge', 'Metro', 'riders', 'trains', 'Line', 'maintenance', 'stations', 'fare', 'construction', 'Avenue']
+        combined = [parsed["title"], parsed["text"]]
+        combined_text = " ".join([t for t in combined if t])
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, raw["id"], combined_text)
+        intersection = list(set(expected_k) & set(actual_k))
+        assert len(intersection) == len(expected_k)
+        assert "".join(expected_k) == "".join(actual_k)
+
     def test_parse_article_2012(self):
         raw = self.articles[0]
         parsed = self.parser.parse_article(raw)

@@ -44,6 +44,24 @@ class ParserWAPO(ParserInterface):
         combined = list(set(keywords_title + keywords_text))
         return combined
 
+    def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True):
+        normalized = self.get_keywords_tf_idf(index, article_id)
+
+        def denorm(text, kw):
+            query = kw
+            match = re.search(rf"\b{query}([\wöüäß]+)?\b", text, flags=re.IGNORECASE)
+            while match == None:
+                query = query[:-1]
+                match = re.search(rf"\b{query}([\wöüäß]+)?\b", text, flags=re.IGNORECASE)
+                if len(query) == 1 and match == None:
+                    return ""
+            return (match.group(0), match.start())
+
+        denormalized = list(set([denorm(text, keyw) for keyw in normalized if len(denorm(text, keyw)[0]) > 0]))
+        if keep_order:
+            denormalized.sort(key=lambda tupl: tupl[1])
+        return [tupl[0] for tupl in denormalized]
+
     @staticmethod
     def get_first_content_by_type(jsarr, t):
         for block in jsarr:

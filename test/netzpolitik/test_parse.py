@@ -38,16 +38,30 @@ class TestParserNetzpolitik():
     def setup_class(self):
         self.es = Elasticsearch()
         self.parser = ParserNetzpolitik(self.es)
+        self.index = "netzpolitik"
 
     def test_get_keywords_tf_idf(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2020.html', url='https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/')
         parsed = next(self.parser.parse_article(fake_response))
         expected_k = ["eu", "rechnungshof", "amazon", "appl", "bericht", "definition", "eingreif", "erst", "europaisch", "facebook", "fusion", "googl", "hand", "kartell", "kommission", "konnt", "konzern", "markt", "nennt", "neu", "oft", "unternehm", "verfahr", "wettbewerbsrecht", "whatsapp"]
-        actual_k = self.parser.get_keywords_tf_idf("netzpolitik", "https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/")
+        actual_k = self.parser.get_keywords_tf_idf(self.index, "https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/")
         intersection = list(set(expected_k) & set(actual_k))
         assert len(intersection) == len(expected_k)
-    
+
+    def test_get_keywords_tf_idf_denormalized(self):
+        article_id = 'https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/'
+        fake_response = fake_response_from_file(
+            'html/netzpolitik_2020.html', url=article_id)
+        parsed = next(self.parser.parse_article(fake_response))
+        expected_k = ['Kartellbehörden', 'Konzerne', 'EU', 'Rechnungshof', 'Facebook', 'Amazon', 'Google', 'Apple', 'konnten', 'Marktvorteil', 'Kommission', 'Fusionen', 'Wettbewerbsrechts', 'nennt', 'ersten', 'Verfahren', 'Bericht', 'oft', 'Hand', 'eingreife', 'WhatsApp', 'Unternehmen', 'neu', 'Definitionen', 'Europas']
+        combined = [parsed["title"], parsed["subtitle"], parsed["body"]]
+        combined_text = " ".join([t for t in combined if t])
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
+        intersection = list(set(expected_k) & set(actual_k))
+        assert len(intersection) == len(expected_k)
+        assert "".join(expected_k) == "".join(actual_k)
+
     def test_parse_2020(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2020.html', url='https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/')

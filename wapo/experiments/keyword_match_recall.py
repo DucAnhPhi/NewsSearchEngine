@@ -29,12 +29,6 @@ class KeywordsMatchExperiment():
                     continue
                 try:
                     self.count += 1
-                    #results = self.s.query(
-                    #    MoreLikeThis(
-                    #        like={'_id': judgement["id"], '_index': self.index},
-                    #        fields=["title", "text"]
-                    #    )
-                    #).execute()
                     query_keywords = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
                     results = (self.es.search(
                         size = 200,
