@@ -1,6 +1,7 @@
 import pytest
 import os
 from scrapy.http import HtmlResponse, Request
+from elasticsearch import Elasticsearch
 from ...netzpolitik.scraper import NetzpolitikScraper
 from ...netzpolitik.parser import ParserNetzpolitik
 
@@ -33,11 +34,24 @@ def fake_response_from_file(file_name, url=None):
 
 
 class TestParserNetzpolitik():
+    @classmethod
+    def setup_class(self):
+        self.es = Elasticsearch()
+        self.parser = ParserNetzpolitik(self.es)
+
+    def test_get_keywords_tf_idf(self):
+        fake_response = fake_response_from_file(
+            'html/netzpolitik_2020.html', url='https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/')
+        parsed = next(self.parser.parse_article(fake_response))
+        expected_k = ["eu", "rechnungshof", "amazon", "appl", "bericht", "definition", "eingreif", "erst", "europaisch", "facebook", "fusion", "googl", "hand", "kartell", "kommission", "konnt", "konzern", "markt", "nennt", "neu", "oft", "unternehm", "verfahr", "wettbewerbsrecht", "whatsapp"]
+        actual_k = self.parser.get_keywords_tf_idf("netzpolitik", "https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/")
+        intersection = list(set(expected_k) & set(actual_k))
+        assert len(intersection) == len(expected_k)
     
     def test_parse_2020(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2020.html', url='https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Kartellbehörden sollen Tech-Konzerne härter anfassen"
         assert parsed["subtitle"] == "EU-Rechnungshof"
         assert set(parsed["authors"]) == {"Serafin Dinges"}
@@ -73,17 +87,17 @@ class TestParserNetzpolitik():
             "Den Markt neu definieren",
             "Neue Regulierungen stehen in Aussicht"
         ]
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "EU-Rechnungshof Kartellbehörden sollen Tech-Konzerne härter anfassen Facebook, Amazon, Google und Apple konnten jahrelang ungehindert ihren Marktvorteil ausbauen. Wenn reguliert wurde, dann nur träge. Ein Sonderbericht des EU-Rechnungshofs zieht ein kritisches Fazit."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text, expected_text
 
     def test_parse_2019(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2019.html', url='https://netzpolitik.org/2019/npp191-off-the-record-die-tiktok-recherche-und-ein-neues-gesicht/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Die TikTok-Recherche und ein neues Gesicht"
         assert parsed["subtitle"] == "NPP 191 Off The Record"
         assert set(parsed["authors"]) == {"Markus Reuter", "Chris Köver"}
@@ -109,17 +123,17 @@ class TestParserNetzpolitik():
         expected_section_titles = [
             "Shownotes"
         ]
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "NPP 191 Off The Record Die TikTok-Recherche und ein neues Gesicht Lustige Videos, heile Welt. Die Videoplattform TikTok ist das am schnellsten wachsende soziale Netzwerk. Wir haben seit August über Moderation und Inhaltskontrolle auf der chinesischen Plattform recherchiert – und geben im Podcast nun einen Blick hinter die Kulissen."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text, expected_text
 
     def test_parse_2018(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2018.html', url='https://netzpolitik.org/2018/die-it-tools-des-bamf-fehler-vorprogrammiert/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Die IT-Tools des BAMF: Fehler vorprogrammiert"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Anna Biselli"}
@@ -163,17 +177,17 @@ class TestParserNetzpolitik():
             "Bedienungs- und Interpretationsfehler sind vorprogrammiert",
             "Handyauswertungen sind nur in 35 Prozent der Fälle überhaupt verwertbar"
         ]
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "Die IT-Tools des BAMF: Fehler vorprogrammiert Das Bundesamt für Migration und Flüchtlinge (BAMF) will mit Auswertungen von Smartphones sowie Namens- und Dialektanalysen herausfinden, woher Geflüchtete kommen. Die Schulungen, die BAMF-Mitarbeiter dazu durchlaufen, geben ihnen jedoch kaum Anhaltspunkte, wie sie die Ergebnisse ihrer digitalen Untersuchungen interpretieren sollen. Wir veröffentlichen die Dokumente."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text
 
     def test_parse_2017(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2017.html', url='https://netzpolitik.org/2017/ein-text-den-ich-noch-nicht-lesen-kann-erlebnisbericht-eines-neulings-auf-dem-chaos-communication-congress/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Ein Text, den ich noch nicht lesen kann. Erlebnisbericht eines Neulings auf dem Chaos Communication Congress"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Stefanie Talaska"}
@@ -204,17 +218,17 @@ class TestParserNetzpolitik():
             "Alles ist Text, der verstanden werden will.",
             "„Es würde mir schon reichen, einfach Hardware anzufassen.“"
         ]
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "Ein Text, den ich noch nicht lesen kann. Erlebnisbericht eines Neulings auf dem Chaos Communication Congress Teil II Was ist das? Was sagt er da? Was machen die da? Der Congress-Neuling schnappt Dinge auf, hört zu und beobachtet. Es ergibt sich ein Text, der nicht all zu leicht zu verstehen ist."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text
 
     def test_parse_2016(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2016.html', url='https://netzpolitik.org/2016/interview-kampf-der-abmahnindustrie/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Interview: Kampf der Abmahnindustrie"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Ingo Dachwitz"}
@@ -251,17 +265,17 @@ class TestParserNetzpolitik():
             "Den Spieß umdrehen: Kostenrisiko für Abmahner",
             "Hoffnung auf Rechtssicherheit für offene Netze"
         ]
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "Interview: Kampf der Abmahnindustrie Nach wie vor verdienen Anwälte mit automatisierten Urheberrechtsabmahnungen gutes Geld. Dabei bedienen sie sich unsauberer Methoden, sagen die Initiatoren des „Abmahnbeantworters“. Auf dem 33C3 schlagen sie vor, den Spieß umzudrehen und die Kanzleien hinter den Massenabmahnungen selbst zur Kasse zu bitten."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text
 
     def test_parse_2015(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2015.html', url='https://netzpolitik.org/2015/32c3-ein-abgrund-von-landesverrat/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "#32c3: Ein Abgrund von #Landesverrat"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Markus Beckedahl"}
@@ -284,16 +298,16 @@ class TestParserNetzpolitik():
         }
         assert set(parsed["references"]) == refs or refs.issubset(set(parsed["references"]))
         expected_section_titles = []
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "#32c3: Ein Abgrund von #Landesverrat Auf dem 32. Chaos Communication Congress hab ich nochmal die Ermittlungen wegen Landesverrats gegen uns zusammengefasst und auch ein kleines Fazit gezogen. Die halbe Stunde Vortrag findet sich hier in der CCC-Mediathek und auf Youtube."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text
 
     def test_parse_2014(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2014.html', url='https://netzpolitik.org/2014/netzpolitischer-jahresrueckblick-2014-dezember/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Netzpolitischer Jahresrückblick 2014: Dezember"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Anna Biselli"}
@@ -332,16 +346,16 @@ class TestParserNetzpolitik():
         }
         assert set(parsed["references"]) == refs or refs.issubset(set(parsed["references"]))
         expected_section_titles = []
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "Netzpolitischer Jahresrückblick 2014: Dezember Heute endet das Jahr 2014 und damit auch unser Jahresrückblick. In den letzten zwei Wochen haben wir jeden Tag auf je einen Monat des Jahres zurückgeblickt und geschaut, was im und um das Netz wichtig war."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text
 
     def test_parse_2013(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2013.html', url='https://netzpolitik.org/2013/vorsatz-fuer-2014-mithelfen-das-urheberrecht-zu-modernisieren/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Vorsatz für 2014: Mithelfen das Urheberrecht zu modernisieren!"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Leonhard Dobusch"}
@@ -365,16 +379,16 @@ class TestParserNetzpolitik():
         }
         assert set(parsed["references"]) == refs or refs.issubset(set(parsed["references"]))
         expected_section_titles = []
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "Vorsatz für 2014: Mithelfen das Urheberrecht zu modernisieren! Das netzpolitische Jahr 2014 beginnt auf europäischer Ebene mit einer öffentlichen Konsultation zur Evaluierung der EU-Urheberrechtsrichtline. Und kaum ein Rechtsbestand ist derart überarbeitungsbedürftig wie das europäische Urheberrecht. Gleichzeitig ist die Teilnahme an so einer Konsultation gerade für Laien oft schwierig, weil die Fragenkataloge lang und unübersichtlich sind – und das, obwohl gerade der Input von „normalen“ InternetnutzerInnen besonders gefragt ist."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text
 
     def test_parse_2012(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_2012.html', url='https://netzpolitik.org/2012/raubkopierer-sind-verbrecher-im-zdf-schleichwerbung-bei-soko-stuttgart/')
-        parsed = next(ParserNetzpolitik.parse_article(fake_response))
+        parsed = next(self.parser.parse_article(fake_response))
         assert parsed["title"] == "Raubkopierer sind Verbrecher im ZDF: Schleichwerbung bei SOKO Stuttgart?"
         assert parsed["subtitle"] == None
         assert set(parsed["authors"]) == {"Leonhard Dobusch"}
@@ -402,8 +416,8 @@ class TestParserNetzpolitik():
         }
         assert set(parsed["references"]) == refs or refs.issubset(set(parsed["references"]))
         expected_section_titles = []
-        actual_section_titles = ParserNetzpolitik.get_section_titles(parsed)
+        actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "Raubkopierer sind Verbrecher im ZDF: Schleichwerbung bei SOKO Stuttgart? Der öffentlich-rechtliche Rundfunk in Deutschland bekleckert sich als Mitglied der „Deutschen Content Allianz“ nicht gerade mit Ruhm wenn es um eine zeitgemäße Reform des Urheberrechts geht und die ARD bewegte sich auch in diesem Themenfeld bereits hart an der Grenze zur Schleichwerbung."
-        actual_text = ParserNetzpolitik.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
         assert actual_text == expected_text

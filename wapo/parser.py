@@ -7,7 +7,7 @@ class ParserWAPO(ParserInterface):
     def __init__(self, es = None):
         self.es = es
 
-    def get_keywords(self, index, article_id):
+    def get_keywords_tf_idf(self, index, article_id):
         # use separate request, otherwise the filter body applies for both fields
         title_termvector = self.es.termvectors(
             index = index,
@@ -35,8 +35,12 @@ class ParserWAPO(ParserInterface):
                 }
             }
         )
-        keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
-        keywords_text = list(text_termvector["term_vectors"]["text"]["terms"].keys())
+        keywords_title = []
+        keywords_text = []
+        if "title" in title_termvector["term_vectors"]:
+            keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
+        if "text" in text_termvector["term_vectors"]:
+            keywords_text = list(text_termvector["term_vectors"]["text"]["terms"].keys())
         combined = list(set(keywords_title + keywords_text))
         return combined
 

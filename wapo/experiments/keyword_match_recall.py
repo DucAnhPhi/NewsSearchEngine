@@ -35,7 +35,7 @@ class KeywordsMatchExperiment():
                     #        fields=["title", "text"]
                     #    )
                     #).execute()
-                    query_keywords = " OR ".join(self.parser.get_keywords(self.index, judgement["id"]))
+                    query_keywords = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
                     results = (self.es.search(
                         size = 200,
                         index = self.index,

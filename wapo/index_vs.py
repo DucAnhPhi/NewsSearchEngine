@@ -56,7 +56,7 @@ if __name__ == "__main__":
         for line in data_file:
             raw = json.loads(line)
             article_id = raw["id"]
-            article["keywords"] = parser.get_keywords(index, article_id)
+            article["keywords"] = parser.get_keywords_tf_idf(index, article_id)
             emb = fe.get_keywords_embedding(article)
             if emb == None:
                 continue

@@ -1,19 +1,29 @@
 import pytest
 import os
 import json
+from elasticsearch import Elasticsearch
 from ...wapo.parser import ParserWAPO
 
 
 class TestParserNetzpolitik():
     @classmethod
     def setup_class(self):
-        self.parser = ParserWAPO()
+        self.es = Elasticsearch()
+        self.parser = ParserWAPO(self.es)
         self.index = "wapo_clean"
         file_location = f"{os.path.abspath(os.path.join(__file__, os.pardir))}/test_articles_raw.jsonl"
         self.articles = []
         with open(file_location, "r", encoding="utf-8") as f:
             for line in f:
                 self.articles.append(json.loads(line))
+
+    def test_get_keywords_tf_idf(self):
+        raw = self.articles[0]
+        parsed = self.parser.parse_article(raw)
+        expected_k = ["ahead", "commut", "region", "avenu", "beltwai", "bridg", "congest", "connector", "construct", "driver", "fare", "intercounti", "lane", "line", "mainten", "metro", "new", "open", "project", "rider", "road", "rout", "schedul", "station", "telegraph", "train", "transport", "travel"]
+        actual_k = self.parser.get_keywords_tf_idf(self.index, raw["id"])
+        intersection = list(set(expected_k) & set(actual_k))
+        assert len(intersection) == len(expected_k)
 
     def test_parse_article_2012(self):
         raw = self.articles[0]
