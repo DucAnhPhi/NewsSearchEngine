@@ -1,6 +1,3 @@
-import sys
-sys.path.append("..")
-
 from sentence_transformers import models, util, SentenceTransformer
 from sentence_transformers import SentenceTransformer
 import torch
