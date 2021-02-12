@@ -42,7 +42,7 @@ class TestRetrieval():
             body = {
                 "query": {
                     "multi_match": {
-                        "fields": [ "title", "subtitle", "body" ],
+                        "fields": [ "title", "body" ],
                         "query": " ".join(keywords)
                     }
                 }

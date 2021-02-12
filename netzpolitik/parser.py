@@ -14,7 +14,7 @@ class ParserNetzpolitik(ParserInterface):
             index = index,
             id = article_id,
             term_statistics = True,
-            fields = ["title", "subtitle"],
+            fields = ["title"],
             body = {
                 "filter": {
                     "min_term_freq": 1,
@@ -39,13 +39,10 @@ class ParserNetzpolitik(ParserInterface):
         keywords_title = []
         if "title" in title_termvector["term_vectors"]:
             keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
-        keywords_subtitle = []
-        if "subtitle" in title_termvector["term_vectors"]:
-            keywords_subtitle = list(title_termvector["term_vectors"]["subtitle"]["terms"].keys())
         keywords_body = []
         if "body" in body_termvector["term_vectors"]:
             keywords_body = list(body_termvector["term_vectors"]["body"]["terms"].keys())
-        combined = list(set(keywords_title + keywords_subtitle + keywords_body))
+        combined = list(set(keywords_title + keywords_body))
         return combined
 
     def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True):
@@ -71,7 +68,6 @@ class ParserNetzpolitik(ParserInterface):
         body_with_linebreaks = re.sub(r"<[\/]p>|<[\/]h[1-6]>|<br\s*[\/]?>|<[\/]figcaption>|<[\/]li>", "\n", response.text)
         soup = BeautifulSoup(body_with_linebreaks, 'lxml')
         soup_raw = BeautifulSoup(response.text, 'lxml')
-        subtitle = response.css('.entry-subtitle ::text').extract_first()
         title = response.css('.entry-title ::text').extract_first()
         published = response.css('.published ::text').extract_first()
         authors = response.css('.entry-meta a[rel="author"] ::text').extract()
@@ -86,7 +82,6 @@ class ParserNetzpolitik(ParserInterface):
         article = {
             'id': response.url,
             'title': title,
-            'subtitle': subtitle,
             'published': published.lstrip()[:10].replace(".", "-"),
             'authors': authors,
             'categories': categories,
@@ -112,22 +107,13 @@ class ParserNetzpolitik(ParserInterface):
     def get_first_paragraph_with_titles(article) -> str:
         first_p = ParserNetzpolitik.get_first_paragraph(article)
         title = article["title"]
-        subtitle = article["subtitle"]
-        text = ""
-        if subtitle == None:
-            text += title.strip() + " " + first_p.strip()
-        else:
-            text += subtitle.strip() + " " + title.strip() + " " + first_p.strip()
+        text = f"{title.strip()} {first_p.strip()}"
         return text
 
     @staticmethod
     def get_titles(article) -> str:
         title = article["title"]
-        subtitle = article["subtitle"]
-        text = title
-        if subtitle != None:
-            text = f"{subtitle.strip()} {title.strip()}"
-        return text
+        return title.strip()
 
     @staticmethod
     def get_line_separated_text_tokens(article) -> StringList:

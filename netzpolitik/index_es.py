@@ -39,12 +39,6 @@ if __name__ == "__main__":
                     'analyzer': 'german',
                     'term_vector': 'yes'
                 },
-                'subtitle': {
-                    'type': 'text',
-                    'similarity': 'BM25',
-                    'analyzer': 'german',
-                    'term_vector': 'yes'
-                },
                 'published': {
                     'type': 'date',
                     'format': 'dd-MM-yyyy'

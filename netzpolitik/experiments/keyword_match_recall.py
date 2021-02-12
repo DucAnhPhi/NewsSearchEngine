@@ -22,38 +22,25 @@ class KeywordsMatchExperiment():
                         id=judgment["id"]
                     ))["_source"]
                     results = []
+                    query = " OR ".join(query_article["keywords"])
                     if keywords_tf_idf:
                         query = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgment["id"]))
-                        self.count += 1
-                        results = (self.es.search(
-                            size = size,
-                            index = self.index,
-                            body = {
-                                "query": {
-                                    "query_string": {
-                                        "fields": [ "title", "subtitle", "body" ],
-                                        "query": query
-                                    }
-                                }
-                            }
-                        ))["hits"]["hits"]
-                    else:
-                        query = " OR ".join(query_article["keywords"])
-                        if len(query) == 0:
+                    if len(query) == 0:
                             continue
-                        self.count += 1
-                        results = (self.es.search(
-                            size = size,
-                            index = self.index,
-                            body = {
-                                "query": {
-                                    "query_string": {
-                                        "fields": [ "title", "subtitle", "body" ],
-                                        "query": query
-                                    }
+                    self.count += 1
+                    results = (self.es.search(
+                        size = size,
+                        index = self.index,
+                        body = {
+                            "query": {
+                                "query_string": {
+                                    "fields": [ "title", "body" ],
+                                    "query": query,
+                                    "analyzer": "german"
                                 }
                             }
-                        ))["hits"]["hits"]
+                        }
+                    ))["hits"]["hits"]
                     recall = 0.
                     self.retrieval_count_avg += len(results)
                     for res in results:

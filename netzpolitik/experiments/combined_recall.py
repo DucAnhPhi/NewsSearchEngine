@@ -112,7 +112,7 @@ if __name__ == "__main__":
                         body = {
                             "query": {
                                 "multi_match": {
-                                    "fields": [ "title", "subtitle", "body" ],
+                                    "fields": [ "title", "body" ],
                                     "query": keyword_match_query
                                 }
                             }
