@@ -19,6 +19,16 @@ class FeatureExtraction():
         mean_dist = np.mean(dists)
         return mean_dist
 
+    def get_keywords_similarity(self, article):
+        text_tokens = article["keywords"]
+        keywords_similarity = 2 # max cosine distance
+        if len(text_tokens) > 1:
+            token_embeddings = [self.embedder.encode(token) for token in text_tokens]
+            keywords_similarity = FeatureExtraction.mean_of_pairwise_cosine_distances(token_embeddings)
+        else:
+            keywords_similarity = 0
+        return keywords_similarity
+
     def get_first_paragraph_with_titles_embedding(self, article) -> Optional[Vector]:
         emb = None
         if article != None:
@@ -38,15 +48,6 @@ class FeatureExtraction():
         result = result.strip()
         return self.embedder.encode(result)
 
-    def get_keywords_similarity(self, article):
-        text_tokens = article["keywords"]
-        keywords_similarity = 2 # max cosine distance
-        if len(text_tokens) > 1:
-            token_embeddings = [self.embedder.encode(token) for token in text_tokens]
-            keywords_similarity = FeatureExtraction.mean_of_pairwise_cosine_distances(token_embeddings)
-        else:
-            keywords_similarity = 0
-        return keywords_similarity
 
     def get_keywords_embedding(self, article) -> Optional[Vector]:
         keywords = article["keywords"]

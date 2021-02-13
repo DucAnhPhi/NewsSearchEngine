@@ -1,25 +1,10 @@
-from sentence_transformers import models, util, SentenceTransformer
-from sentence_transformers import SentenceTransformer
-import torch
-import numpy as np
-import os
-import nvidia_smi
+from sentence_transformers import models, SentenceTransformer
 from ..typings import Vector
 
 class EmbeddingModel():
+    # make sure you have > 2GB of free VRAM to enable CUDA
     def __init__(self, lang = "de", device="cpu"):
-        nvidia_smi.nvmlInit()
-
-        handle = nvidia_smi.nvmlDeviceGetHandleByIndex(0)
-        free_memory = nvidia_smi.nvmlDeviceGetMemoryInfo(handle).free
-
-        # disable GPU usage if VRAM < 2GB
-        if free_memory > 2e9:
-            if torch.cuda.is_available():
-                device = "cuda"
-
         # Initialize model based on selected language
-
         if lang == "de":
             # load BERT model from Hugging Face
             word_embedding_model = models.Transformer('bert-base-german-cased')
