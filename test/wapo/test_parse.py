@@ -11,7 +11,7 @@ class TestParserNetzpolitik():
         self.es = Elasticsearch()
         self.parser = ParserWAPO(self.es)
         self.index = "wapo_clean"
-        file_location = f"{os.path.abspath(os.path.join(__file__, os.pardir))}/test_articles_raw.jsonl"
+        file_location = f"{os.path.abspath(os.path.join(__file__, os.pardir, os.pardir, os.pardir))}/data/test_articles_raw.jsonl"
         self.articles = []
         with open(file_location, "r", encoding="utf-8") as f:
             for line in f:
