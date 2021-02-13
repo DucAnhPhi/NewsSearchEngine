@@ -29,27 +29,26 @@ class FeatureExtraction():
             keywords_similarity = 0
         return keywords_similarity
 
-    def get_first_paragraph_with_titles_embedding(self, article) -> Optional[Vector]:
+    def get_embedding_of_title_with_first_paragraph(self, article) -> Optional[Vector]:
         emb = None
         if article != None:
-            combined_text = self.parser.get_first_paragraph_with_titles(article)
+            combined_text = self.parser.get_title_with_first_paragraph(article)
             emb = self.embedder.encode(combined_text)
         return emb
 
-    def get_titles_embedding(self, article) -> Vector:
-        titles = self.parser.get_titles(article)
+    def get_embedding_of_title(self, article) -> Vector:
+        titles = self.parser.get_title(article)
         return self.embedder.encode(titles)
 
-    def get_titles_w_section_titles_embedding(self, article) -> Vector:
-        titles_str = self.parser.get_titles(article)
+    def get_embedding_of_title_with_section_titles(self, article) -> Vector:
+        titles_str = self.parser.get_title(article)
         section_titles = self.parser.get_section_titles(article)
         section_titles_str = " ".join(section_titles)
         result = f"{titles_str} {section_titles_str}"
         result = result.strip()
         return self.embedder.encode(result)
 
-
-    def get_keywords_embedding(self, article) -> Optional[Vector]:
+    def get_embedding_of_keywords(self, article) -> Optional[Vector]:
         keywords = article["keywords"]
         if len(keywords) == 0:
             return None

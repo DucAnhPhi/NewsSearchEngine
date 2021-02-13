@@ -19,7 +19,7 @@ if __name__ == "__main__":
     print("Initialize WAPO vector storage of embeddings of titles w/ first paragraph.\n")
     def embedding_func_twfp(raw):
         article = parser.parse_article(raw)
-        return fe.get_first_paragraph_with_titles_embedding(article)
+        return fe.get_embedding_of_title_with_first_paragraph(article)
     vs_twfp = VectorStorage(num_elements=500000)
     vs_twfp.add_items_from_file(articles_path, embedding_func_twfp)
     vs_twfp.save(f"{data_location}/wapo_vs_twfp.bin")
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         combined_text = " ".join([t for t in combined if t])
         article["keywords"] = parser.get_keywords_tf_idf_denormalized(index, article_id, combined_text)
         #article["keywords"] = parser.get_keywords_tf_idf(index, article_id)
-        return fe.get_keywords_embedding(article)
+        return fe.get_embedding_of_keywords(article)
     vs_keywords = VectorStorage(num_elements=500000)
     vs_keywords.add_items_from_file(articles_path, embedding_func_keywords)
     vs_keywords.save(f"{data_location}/wapo_vs_keywords.bin")

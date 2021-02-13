@@ -104,14 +104,14 @@ class ParserNetzpolitik(ParserInterface):
         return first_p.replace("  ", " ")
 
     @staticmethod
-    def get_first_paragraph_with_titles(article) -> str:
+    def get_title_with_first_paragraph(article) -> str:
         first_p = ParserNetzpolitik.get_first_paragraph(article)
         title = article["title"]
         text = f"{title.strip()} {first_p.strip()}"
         return text
 
     @staticmethod
-    def get_titles(article) -> str:
+    def get_title(article) -> str:
         title = article["title"]
         return title.strip()
 
@@ -121,10 +121,18 @@ class ParserNetzpolitik(ParserInterface):
         tokens = body.split("\n")
         tokens = [ token for token in tokens if len(token.split()) > 0 ]
         return tokens
-    
+
     @staticmethod
     def get_section_titles(article) -> StringList:
         soup = BeautifulSoup(article['raw_body'], 'lxml')
         titles = soup.find_all('h3') + soup.find_all('h2')
         titles = [title.get_text() for title in titles]
+        titles = [title.strip() for title in titles if title]
         return titles
+    
+    @staticmethod
+    def get_title_with_section_titles(article) -> str:
+        title = ParserNetzpolitik.get_title(article)
+        section_titles = ParserNetzpolitik.get_section_titles(article)
+        combined = f"{title} {' '.join(section_titles)}"
+        return combined

@@ -21,35 +21,8 @@ class SemanticSearchExperiment():
         # init vector storage
         data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
         storage_location = f"{data_location}/{storage_file}"
-        if os.path.isfile(storage_location):
-            print("Loading vector storage from file...\n")
-            self.vs = VectorStorage(storage_location)
-        else:
-            print("Initialize vector storage.\n")
-            self.vs = VectorStorage()
-            print("Add items from file...\n")
-            with open(f"{data_location}/netzpolitik.jsonl", 'r', encoding="utf-8") as data_file:
-                emb_batch: VectorList = []
-                id_batch: StringList = []
-
-                for line in data_file:
-                    article = json.loads(line)
-                    if keywords_tf_idf:
-                        article["keywords"] = self.parser.get_keywords_tf_idf(self.index, judgment["id"])
-                    emb = index_emb_func(article)
-                    if emb == None:
-                        continue
-                    emb_batch.append(emb)
-                    id_batch.append(article["id"])
-
-                    if len(emb_batch) == 1000:
-                        self.vs.add_items(emb_batch, id_batch)
-                        emb_batch = []
-                        id_batch = []
-
-                if len(emb_batch) != 0:
-                    self.vs.add_items(emb_batch, id_batch)
-            self.vs.save(storage_location)
+        print("Loading vector storage from file...\n")
+        self.vs = VectorStorage(storage_location)
 
         # build query
         with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r", encoding="utf-8") as f:
@@ -62,7 +35,7 @@ class SemanticSearchExperiment():
                         id=judgment["id"]
                     ))["_source"]
                     if keywords_tf_idf:
-                        query_article["keywords"] = self.parser.get_keywords_tf_idf(self.index, judgment["id"])
+                        query_article["keywords"] = self.parser.get_keywords_tf_idf_de(self.index, judgment["id"])
                     query = query_emb_func(query_article)
                     if query == None:
                         self.count -= 1
@@ -88,11 +61,11 @@ class SemanticSearchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
 
 if __name__ == "__main__":
-    storage_file_twfp = "storage_titles_w_first_p.bin"
-    storage_file_keywords_annotated = "storage_keywords_annotated.bin"
-    storage_file_keywords_tf_idf = "storage_keywords_tf_idf.bin"
-    storage_file_section_titles = "storage_section_titles.bin"
-    storage_file_titles = "storage_titles.bin"
+    storage_file_twfp = "netzpolitik_vs_twfp.bin"
+    storage_file_keywords_annotated = "netzpolitik_vs_annotated_k.bin"
+    storage_file_keywords_tf_idf = "netzpolitik_vs_extracted_k.bin"
+    storage_file_section_titles = "netzpolitik_vs_section_titles.bin"
+    storage_file_titles = "netzpolitik_vs_titles.bin"
     es = Elasticsearch()
     parser = ParserNetzpolitik(es)
     em = EmbeddingModel()
@@ -103,8 +76,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_titles
     )
     print("----------------------------------------------------------------")
@@ -118,8 +90,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_titles,
         keywords_tf_idf=True
     )
@@ -134,8 +105,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_first_paragraph_with_titles_embedding,
-        fe.get_first_paragraph_with_titles_embedding,
+        fe.get_embedding_of_title_with_first_paragraph,
         storage_file_twfp
     )
     print("----------------------------------------------------------------")
@@ -149,8 +119,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_titles_embedding,
+        fe.get_embedding_of_title,
         storage_file_titles
     )
     print("----------------------------------------------------------------")
@@ -164,8 +133,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_first_paragraph_with_titles_embedding,
+        fe.get_embedding_of_title_with_first_paragraph,
         storage_file_titles
     )
     print("----------------------------------------------------------------")
@@ -179,8 +147,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_titles_w_section_titles_embedding,
+        fe.get_embedding_of_title_with_section_titles,
         storage_file_titles
     )
     print("----------------------------------------------------------------")
@@ -194,8 +161,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_titles
     )
     print("----------------------------------------------------------------")
@@ -209,8 +175,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_titles,
         keywords_tf_idf=True
     )
@@ -225,8 +190,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_first_paragraph_with_titles_embedding,
-        fe.get_first_paragraph_with_titles_embedding,
+        fe.get_embedding_of_title_with_first_paragraph,
         storage_file_twfp
     )
     print("----------------------------------------------------------------")
@@ -240,8 +204,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_first_paragraph_with_titles_embedding,
-        fe.get_titles_embedding,
+        fe.get_embedding_of_title,
         storage_file_twfp
     )
     print("----------------------------------------------------------------")
@@ -255,8 +218,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_first_paragraph_with_titles_embedding,
-        fe.get_titles_w_section_titles_embedding,
+        fe.get_embedding_of_title_with_section_titles,
         storage_file_twfp
     )
     print("----------------------------------------------------------------")
@@ -270,8 +232,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_first_paragraph_with_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_twfp
     )
     print("----------------------------------------------------------------")
@@ -285,8 +246,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_first_paragraph_with_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_twfp,
         keywords_tf_idf=True
     )
@@ -301,8 +261,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_w_section_titles_embedding,
-        fe.get_titles_w_section_titles_embedding,
+        fe.get_embedding_of_title_with_section_titles,
         storage_file_section_titles
     )
     print("----------------------------------------------------------------")
@@ -316,8 +275,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_w_section_titles_embedding,
-        fe.get_titles_embedding,
+        fe.get_embedding_of_title,
         storage_file_section_titles
     )
     print("----------------------------------------------------------------")
@@ -331,8 +289,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_w_section_titles_embedding,
-        fe.get_first_paragraph_with_titles_embedding,
+        fe.get_embedding_of_title_with_first_paragraph,
         storage_file_section_titles
     )
     print("----------------------------------------------------------------")
@@ -346,8 +303,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_w_section_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_section_titles
     )
     print("----------------------------------------------------------------")
@@ -361,8 +317,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_titles_w_section_titles_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_section_titles,
         keywords_tf_idf=True
     )
@@ -379,8 +334,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_keywords_annotated
     )
     print("----------------------------------------------------------------")
@@ -396,8 +350,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_keywords_embedding,
+        fe.get_embedding_of_keywords,
         storage_file_keywords_tf_idf,
         keywords_tf_idf=True
     )
@@ -412,8 +365,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_titles_embedding,
+        fe.get_embedding_of_title,
         storage_file_keywords_annotated
     )
     print("----------------------------------------------------------------")
@@ -427,8 +379,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_titles_embedding,
+        fe.get_embedding_of_title,
         storage_file_keywords_tf_idf,
         keywords_tf_idf=True
     )
@@ -443,8 +394,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_titles_w_section_titles_embedding,
+        fe.get_embedding_of_title_with_section_titles,
         storage_file_keywords_annotated
     )
     print("----------------------------------------------------------------")
@@ -458,8 +408,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_titles_w_section_titles_embedding,
+        fe.get_embedding_of_title_with_section_titles,
         storage_file_keywords_tf_idf,
         keywords_tf_idf=True
     )
@@ -474,8 +423,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_first_paragraph_with_titles_embedding,
+        fe.get_embedding_of_title_with_first_paragraph,
         storage_file_keywords_annotated
     )
     print("----------------------------------------------------------------")
@@ -489,8 +437,7 @@ if __name__ == "__main__":
     exp = SemanticSearchExperiment(
         es,
         parser,
-        fe.get_keywords_embedding,
-        fe.get_first_paragraph_with_titles_embedding,
+        fe.get_embedding_of_title_with_first_paragraph,
         storage_file_keywords_tf_idf
     )
     print("----------------------------------------------------------------")

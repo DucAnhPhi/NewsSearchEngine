@@ -59,16 +59,16 @@ class KeywordsMatchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
 
 if __name__ == "__main__":
-    exp = KeywordsMatchExperiment(200)
+    exp = KeywordsMatchExperiment(200, True)
     print("----------------------------------------------------------------")
     print("Index articles in Elasticsearch.")
     print("Query by string query with concatenated pre-annotated keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")
 
-    exp = KeywordsMatchExperiment(200, True)
-    print("----------------------------------------------------------------")
-    print("Index articles in Elasticsearch.")
-    print("Query by string query with concatenated tf-idf keywords.")
-    exp.print_stats()
-    print("----------------------------------------------------------------")
+    #exp = KeywordsMatchExperiment(200, True)
+    #print("----------------------------------------------------------------")
+    #print("Index articles in Elasticsearch.")
+    #print("Query by string query with concatenated tf-idf keywords.")
+    #exp.print_stats()
+    #print("----------------------------------------------------------------")

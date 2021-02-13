@@ -104,13 +104,14 @@ if __name__ == "__main__":
 
     print("Counting...")
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
-    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r', encoding="utf-8") as f:
+    articles_location = f"{data_location}/TREC_Washington_Post_collection.v3.jl"
+    with open(articles_location, 'r', encoding="utf-8") as f:
         lines = 0
         for line in f:
             lines += 1
 
     print("Indexing...")
-    with open(f"{data_location}/TREC_Washington_Post_collection.v3.jl", 'r', encoding="utf-8") as f:
+    with open(articles_location, 'r', encoding="utf-8") as f:
         helpers.bulk(es, doc_generator(f, lines), request_timeout=30)
 
     es.indices.put_settings(index=args.index_name,

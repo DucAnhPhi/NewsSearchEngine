@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
             for line in data_file:
                 article = json.loads(line)
-                emb = fe.get_first_paragraph_with_titles_embedding(article)
+                emb = fe.get_embedding_of_title_with_first_paragraph(article)
                 if emb == None:
                     continue
                 emb_batch.append(emb)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
             for line in data_file:
                 article = json.loads(line)
-                emb = fe.get_keywords_embedding(article)
+                emb = fe.get_embedding_of_keywords(article)
                 if emb == None:
                     continue
                 emb_batch_key.append(emb)
@@ -96,8 +96,8 @@ if __name__ == "__main__":
                     index=index,
                     id=judgment["id"]
                 ))["_source"]
-                twfp_emb_query = fe.get_first_paragraph_with_titles_embedding(query_article)
-                keyword_emb_query = fe.get_keywords_embedding(query_article)
+                twfp_emb_query = fe.get_embedding_of_title_with_first_paragraph(query_article)
+                keyword_emb_query = fe.get_embedding_of_keywords(query_article)
                 keyword_match_query = " ".join(query_article["keywords"])
                 combined_result_ids: StringList = []
                 if twfp_emb_query != None:

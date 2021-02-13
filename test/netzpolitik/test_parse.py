@@ -104,7 +104,7 @@ class TestParserNetzpolitik():
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "EU-Rechnungshof Kartellbehörden sollen Tech-Konzerne härter anfassen Facebook, Amazon, Google und Apple konnten jahrelang ungehindert ihren Marktvorteil ausbauen. Wenn reguliert wurde, dann nur träge. Ein Sonderbericht des EU-Rechnungshofs zieht ein kritisches Fazit."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text, expected_text
 
     def test_parse_2019(self):
@@ -139,7 +139,7 @@ class TestParserNetzpolitik():
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "NPP 191 Off The Record Die TikTok-Recherche und ein neues Gesicht Lustige Videos, heile Welt. Die Videoplattform TikTok ist das am schnellsten wachsende soziale Netzwerk. Wir haben seit August über Moderation und Inhaltskontrolle auf der chinesischen Plattform recherchiert – und geben im Podcast nun einen Blick hinter die Kulissen."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text, expected_text
 
     def test_parse_2018(self):
@@ -192,7 +192,7 @@ class TestParserNetzpolitik():
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "Die IT-Tools des BAMF: Fehler vorprogrammiert Das Bundesamt für Migration und Flüchtlinge (BAMF) will mit Auswertungen von Smartphones sowie Namens- und Dialektanalysen herausfinden, woher Geflüchtete kommen. Die Schulungen, die BAMF-Mitarbeiter dazu durchlaufen, geben ihnen jedoch kaum Anhaltspunkte, wie sie die Ergebnisse ihrer digitalen Untersuchungen interpretieren sollen. Wir veröffentlichen die Dokumente."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text
 
     def test_parse_2017(self):
@@ -232,7 +232,7 @@ class TestParserNetzpolitik():
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "Ein Text, den ich noch nicht lesen kann. Erlebnisbericht eines Neulings auf dem Chaos Communication Congress Teil II Was ist das? Was sagt er da? Was machen die da? Der Congress-Neuling schnappt Dinge auf, hört zu und beobachtet. Es ergibt sich ein Text, der nicht all zu leicht zu verstehen ist."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text
 
     def test_parse_2016(self):
@@ -278,7 +278,7 @@ class TestParserNetzpolitik():
         assert len(expected_section_titles) == len(actual_section_titles)
         assert set(expected_section_titles) == set(actual_section_titles)
         expected_text = "Interview: Kampf der Abmahnindustrie Nach wie vor verdienen Anwälte mit automatisierten Urheberrechtsabmahnungen gutes Geld. Dabei bedienen sie sich unsauberer Methoden, sagen die Initiatoren des „Abmahnbeantworters“. Auf dem 33C3 schlagen sie vor, den Spieß umzudrehen und die Kanzleien hinter den Massenabmahnungen selbst zur Kasse zu bitten."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text
 
     def test_parse_2015(self):
@@ -309,7 +309,7 @@ class TestParserNetzpolitik():
         actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "#32c3: Ein Abgrund von #Landesverrat Auf dem 32. Chaos Communication Congress hab ich nochmal die Ermittlungen wegen Landesverrats gegen uns zusammengefasst und auch ein kleines Fazit gezogen. Die halbe Stunde Vortrag findet sich hier in der CCC-Mediathek und auf Youtube."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text
 
     def test_parse_2014(self):
@@ -356,7 +356,7 @@ class TestParserNetzpolitik():
         actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "Netzpolitischer Jahresrückblick 2014: Dezember Heute endet das Jahr 2014 und damit auch unser Jahresrückblick. In den letzten zwei Wochen haben wir jeden Tag auf je einen Monat des Jahres zurückgeblickt und geschaut, was im und um das Netz wichtig war."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text
 
     def test_parse_2013(self):
@@ -388,7 +388,7 @@ class TestParserNetzpolitik():
         actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "Vorsatz für 2014: Mithelfen das Urheberrecht zu modernisieren! Das netzpolitische Jahr 2014 beginnt auf europäischer Ebene mit einer öffentlichen Konsultation zur Evaluierung der EU-Urheberrechtsrichtline. Und kaum ein Rechtsbestand ist derart überarbeitungsbedürftig wie das europäische Urheberrecht. Gleichzeitig ist die Teilnahme an so einer Konsultation gerade für Laien oft schwierig, weil die Fragenkataloge lang und unübersichtlich sind – und das, obwohl gerade der Input von „normalen“ InternetnutzerInnen besonders gefragt ist."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text
 
     def test_parse_2012(self):
@@ -424,5 +424,5 @@ class TestParserNetzpolitik():
         actual_section_titles = self.parser.get_section_titles(parsed)
         assert len(expected_section_titles) == len(actual_section_titles)
         expected_text = "Raubkopierer sind Verbrecher im ZDF: Schleichwerbung bei SOKO Stuttgart? Der öffentlich-rechtliche Rundfunk in Deutschland bekleckert sich als Mitglied der „Deutschen Content Allianz“ nicht gerade mit Ruhm wenn es um eine zeitgemäße Reform des Urheberrechts geht und die ARD bewegte sich auch in diesem Themenfeld bereits hart an der Grenze zur Schleichwerbung."
-        actual_text = self.parser.get_first_paragraph_with_titles(parsed)
+        actual_text = self.parser.get_title_with_first_paragraph(parsed)
         assert actual_text == expected_text

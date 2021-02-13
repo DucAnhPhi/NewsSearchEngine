@@ -138,7 +138,7 @@ class ParserWAPO(ParserInterface):
         return source_block
 
     @staticmethod
-    def get_first_paragraph_with_titles(article) -> str:
+    def get_title_with_first_paragraph(article) -> str:
         first_p = article["text"][0:article["offset_first_paragraph"]]
         title = article["title"]
         text = title.strip() + " " + first_p.strip()

@@ -18,7 +18,7 @@ if __name__ == "__main__":
         print("Initialize vector storage.\n")
         vs = VectorStorage()
         print("Add items from file...\n")
-        vs.add_items_from_file(f"{pathlib.Path(__file__).parent.absolute()}/data/netzpolitik.jsonl", fe.get_first_paragraph_with_titles_embedding)
+        vs.add_items_from_file(f"{pathlib.Path(__file__).parent.absolute()}/data/netzpolitik.jsonl", fe.get_embedding_of_title_with_first_paragraph)
         vs.save(storage_location)
     while True:
         data = input("Get news based on your text: \n")
