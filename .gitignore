@@ -2,6 +2,8 @@ __pycache__/
 data/*.bin
 data/*.pkl
 data/*.txt
+!data/wapo_bqrels.exp-gains.txt
+!data/wapo_newsir18-topics.txt
 data/TREC_Washington_Post_collection.v3.jl
 data/netzpolitik.jsonl
 .vscode/

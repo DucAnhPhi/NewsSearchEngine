@@ -113,7 +113,7 @@ For the background linking task in 2018 (TREC 2018), TREC provided:
 - [50 test topics for background linking task](https://trec.nist.gov/data/news/2018/newsir18-topics.txt)
 - [relevance judgments for backgroundlinking task (with exponential gain values)](https://trec.nist.gov/data/news/2018/bqrels.exp-gains.txt)
 
-We put both sets together in a more usable [JSON Lines Format](https://jsonlines.org/) in **data/judgement_list_wapo**.
+We put both sets together in a more usable [JSON Lines Format](https://jsonlines.org/) in **data/judgement_list_wapo.jsonl** by using the following script: **wapo/judgement_list.py**.
 
 According to the [TREC 2020 News Track Guidelines](http://trec-news.org/guidelines-2020.pdf) we removed articles from the dataset which are labeled in the "kicker" field as "Opinion", "Letters to the Editor", or "The Post's View", as they are **not relevant**. Additionally we removed articles which are labeled in the "kicker" field as "Test" as they contain "Lorem ipsum" text, thus being irrelevant aswell.
 After the filtering only 487,322 news articles remain, which is a decrease in size by 27%.
