@@ -58,6 +58,8 @@ rm -rf env
 You can speed up the encoding of embeddings if your machine has a [CUDA-enabled GPU](https://developer.nvidia.com/cuda-gpus) with atleast 2GB of free video memory:
 - Install [CUDA](https://developer.nvidia.com/cuda-downloads)
 
+Please reinstall pytorch with the your current CUDA version selected (also select Pip as the Package) [here](https://pytorch.org/get-started/locally/)
+
 
 ## Run experiments
 
