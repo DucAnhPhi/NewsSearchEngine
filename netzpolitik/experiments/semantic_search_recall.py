@@ -40,7 +40,7 @@ class SemanticSearchExperiment():
                     if query == None:
                         self.count -= 1
                         continue
-                    nearest_n: NearestNeighborList = self.vs.get_k_nearest([query],size)
+                    nearest_n: NearestNeighborList = self.vs.get_k_nearest(query,size)
                     result_ids = [list(nn.keys())[0] for nn in nearest_n[0]]
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)

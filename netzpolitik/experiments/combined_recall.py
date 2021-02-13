@@ -101,10 +101,10 @@ if __name__ == "__main__":
                 keyword_match_query = " ".join(query_article["keywords"])
                 combined_result_ids: StringList = []
                 if twfp_emb_query != None:
-                    nearest_n_twfp: NearestNeighborList = vs_twfp.get_k_nearest([twfp_emb_query],100)
+                    nearest_n_twfp: NearestNeighborList = vs_twfp.get_k_nearest(twfp_emb_query,100)
                     combined_result_ids = combined_result_ids + [list(nn.keys())[0] for nn in nearest_n_twfp[0]]
                 if keyword_emb_query != None:
-                    nearest_n_keywords: NearestNeighborList = vs_keywords.get_k_nearest([keyword_emb_query], 100)
+                    nearest_n_keywords: NearestNeighborList = vs_keywords.get_k_nearest(keyword_emb_query, 100)
                     combined_result_ids = combined_result_ids + [list(nn.keys())[0] for nn in nearest_n_keywords[0]]
                 if len(keyword_match_query) > 0:
                     results = es.search(

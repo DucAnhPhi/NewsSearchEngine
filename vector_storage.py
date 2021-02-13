@@ -33,11 +33,11 @@ class VectorStorage():
     def save(self, path: str):
         self.storage.save_index(path)
 
-    def get_k_nearest(self, embeddings: VectorList, k: int) -> NearestNeighborList:
+    def get_k_nearest(self, embedding: Vector, k: int) -> NearestNeighborList:
         '''
         embeddings (shape:N*dim). Returns a numpy array of (shape: N*K)
         '''
-        labels, distances = self.storage.knn_query(embeddings, k)
+        labels, distances = self.storage.knn_query([embedding], k)
         nearest: NearestNeighborList = []
         for row_i, row in enumerate(labels):
             nn = []

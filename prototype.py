@@ -22,7 +22,7 @@ if __name__ == "__main__":
         vs.save(storage_location)
     while True:
         data = input("Get news based on your text: \n")
-        recs = vs.get_k_nearest([data], 5)
+        recs = vs.get_k_nearest(data, 5)
         print("-----------------------------------------")
         print("Your recommendations: \n")
         for rec in recs:
