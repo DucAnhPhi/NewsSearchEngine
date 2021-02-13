@@ -14,5 +14,13 @@ class ParserInterface(metaclass=abc.ABCMeta):
             NotImplemented)
 
     @abc.abstractstaticmethod
+    def get_title(article) -> str:
+        raise NotImplementedError
+
+    @abc.abstractstaticmethod
+    def get_title_with_section_titles(article) -> str:
+        raise NotImplementedError
+
+    @abc.abstractstaticmethod
     def get_title_with_first_paragraph(article) -> str:
         raise NotImplementedError

@@ -138,6 +138,18 @@ class ParserWAPO(ParserInterface):
         return source_block
 
     @staticmethod
+    def get_title(article) -> str:
+        title = article["title"]
+        return title.strip()
+
+    @staticmethod
+    def get_title_with_section_titles(article) -> str:
+        title = ParserWAPO.get_title(article)
+        section_titles = " ".join(article["section_titles"])
+        combined = f"{title} {section_titles}"
+        return combined
+
+    @staticmethod
     def get_title_with_first_paragraph(article) -> str:
         first_p = article["text"][0:article["offset_first_paragraph"]]
         title = article["title"]

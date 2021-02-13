@@ -8,7 +8,7 @@ class ParserNetzpolitik(ParserInterface):
     def __init__(self, es = None):
         self.es = es
 
-    def get_keywords_tf_idf(self, index, article_id):
+    def get_keywords_tf_idf(self, index, article_id) -> StringList:
         # use separate request, otherwise the filter body applies for all fields
         title_termvector = self.es.termvectors(
             index = index,
@@ -45,7 +45,7 @@ class ParserNetzpolitik(ParserInterface):
         combined = list(set(keywords_title + keywords_body))
         return combined
 
-    def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True):
+    def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True) -> StringList:
         normalized = self.get_keywords_tf_idf(index, article_id)
 
         def denorm(text, kw):
@@ -136,3 +136,7 @@ class ParserNetzpolitik(ParserInterface):
         section_titles = ParserNetzpolitik.get_section_titles(article)
         combined = f"{title} {' '.join(section_titles)}"
         return combined
+
+    @staticmethod
+    def get_keywords_annotated(article) -> StringList:
+        return article["keywords"]

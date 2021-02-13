@@ -9,10 +9,8 @@
 ## TODOs
 - get strong baseline retrieval method with high recall
 - implement LTR
-- support more outlets
 - handle scaling vector storage (max elements)
-- implement webapp with async component and model server
-- log queries and clicks for judgement list and popularity metric
+- support more outlets
 
 ## Installation
 * Install Python 3.6.9 (if not already installed)
