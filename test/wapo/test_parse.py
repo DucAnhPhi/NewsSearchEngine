@@ -40,6 +40,19 @@ class TestParserNetzpolitik():
         raw = self.articles[0]
         parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "The year ahead for D.C. region’s commuters"
+        expected_sections = [
+            "HOT lanes",
+            "Intercounty Connector",
+            "Beltway/Telegraph Road",
+            "Federal base realignment",
+            "11th Street Bridge",
+            "Metro map makeover",
+            "Metro maintenance",
+            "Metro fare increase?"
+            "More road work",
+            "Riders, walkers, bikers"
+        ]
+        assert "".join(parsed["section_titles"]) == "".join(expected_sections)
         assert parsed["offset_first_paragraph"] == 281
         assert parsed["date"] == 1325444842000
         assert parsed["kicker"] == "Local"
@@ -52,6 +65,14 @@ class TestParserNetzpolitik():
         raw = self.articles[1]
         parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Business Digest: Sears to spin off Lands’ End, last-minute bid to block airline merger fails"
+        expected_sections = [
+            "RETAIL",
+            "Sears will spin off its Lands’ End unit",
+            "AIRLINES",
+            "Bid to block merger of AMR, US Air fails",
+            "Also in Business"
+        ]
+        assert "".join(parsed["section_titles"]) == "".join(expected_sections)
         assert parsed["offset_first_paragraph"] == 195
         assert parsed["date"] == 1386378264000
         assert parsed["kicker"] == "Business"
@@ -64,6 +85,8 @@ class TestParserNetzpolitik():
         raw = self.articles[2]
         parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Hawaii election to be held Friday in precincts closed by storm"
+        expected_sections = []
+        assert "".join(parsed["section_titles"]) == "".join(expected_sections)
         assert parsed["offset_first_paragraph"] == 273
         assert parsed["date"] == 1407851892000
         assert parsed["kicker"] == "Post Politics"
@@ -76,6 +99,8 @@ class TestParserNetzpolitik():
         raw = self.articles[3]
         parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Japan and South Korea argue over a chocolate-covered pretzel stick"
+        expected_sections = []
+        assert "".join(parsed["section_titles"]) == "".join(expected_sections)
         assert parsed["offset_first_paragraph"] == 224
         assert parsed["date"] == 1447248899000
         assert parsed["kicker"] == "WorldViews"
@@ -88,6 +113,11 @@ class TestParserNetzpolitik():
         raw = self.articles[4]
         parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "Why party bosses can’t contain Trump"
+        expected_sections = [
+            "Let the People Rule"
+            "Theodore Roosevelt and the Birth of the Presidential Primary"
+        ]
+        assert "".join(parsed["section_titles"]) == "".join(expected_sections)
         assert parsed["offset_first_paragraph"] == 85
         assert parsed["date"] == 1454106524000
         assert parsed["kicker"] == "Opinions"
@@ -100,6 +130,14 @@ class TestParserNetzpolitik():
         raw = self.articles[5]
         parsed = self.parser.parse_article(raw)
         assert parsed["title"] == "A bold paint color and neutral furniture turns a dreary room into a cozy retreat"
+        expected_sections = [
+            "THE CHALLENGE",
+            "THE PROPOSED SOLUTION",
+            "BORDEN’S SUGGESTIONS",
+            "SPLURGE OR SAVE",
+            "SHOPPING GUIDE"
+        ]
+        assert "".join(parsed["section_titles"]) == "".join(expected_sections)
         assert parsed["offset_first_paragraph"] == 565
         assert parsed["date"] == 1490835610000
         assert parsed["kicker"] == "Home & Garden"

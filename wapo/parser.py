@@ -88,6 +88,11 @@ class ParserWAPO(ParserInterface):
             return None
 
     @staticmethod
+    def get_section_titles(jsarr):
+        titles = [c["content"] for c in jsarr if c != None and c["type"] == "sanitized_html" and (c["subtype"] == "subhead" or c["subtype"] == "sublabel") and "content" in c and c["content"] != None]
+        return titles
+
+    @staticmethod
     def is_not_relevant(kicker: str):
         is_not_relevant = False
         if kicker:
@@ -103,6 +108,7 @@ class ParserWAPO(ParserInterface):
     @staticmethod
     def parse_article(raw):
         text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
+        section_titles = ParserWAPO.get_section_titles(raw["contents"])
         first_p = ParserWAPO.get_first_paragraph(raw['contents'])
         first_p = re.sub('<.*?>', ' ', first_p)
         first_p = first_p.strip()
@@ -120,6 +126,7 @@ class ParserWAPO(ParserInterface):
             return None
         source_block = {
             "title": title,
+            "section_titles": section_titles,
             "offset_first_paragraph": len(first_p),
             "date": raw['published_date'],
             "kicker": kicker,
