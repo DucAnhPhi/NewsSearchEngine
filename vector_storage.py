@@ -2,10 +2,6 @@ from .pyw_hnswlib import Hnswlib
 import json
 from .typings import Vector, VectorList, StringList, NearestNeighborList
 from .embedding.model import EmbeddingModel
-from typing import Callable, Optional, TypeVar
-
-# Generic Type
-T = TypeVar('T')
 
 NUM_ELEMENTS = 20000
 DIMS = 768
