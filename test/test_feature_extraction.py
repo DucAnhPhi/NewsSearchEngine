@@ -21,71 +21,55 @@ class TestFeatureExtraction():
         assert abs(0.9770 - FeatureExtraction.mean_of_pairwise_cosine_distances(ems)) < 1e-4
 
     def test_keywords_similarity_DE(self):
-        article_sim = {
-            "keywords": [
-                "Huhn",
-                "Ei",
-                "Vogel",
-                "Geflügel"
-            ]
-        }
-        article_diff = {
-            "keywords": [
-                "Code",
-                "Geflügel",
-                "Siebträger",
-                "Donald Trump"
-            ]
-        }
-        ss_sim = self.fe_DE.get_keywords_similarity(article_sim)
-        ss_diff = self.fe_DE.get_keywords_similarity(article_diff)
+        keywords_sim = [
+            "Huhn",
+            "Ei",
+            "Vogel",
+            "Geflügel"
+        ]
+        keywords_diff = [
+            "Code",
+            "Geflügel",
+            "Siebträger",
+            "Donald Trump"
+        ]
+        ss_sim = self.fe_DE.get_keywords_similarity(keywords_sim)
+        ss_diff = self.fe_DE.get_keywords_similarity(keywords_diff)
         assert ss_sim < ss_diff
 
     def test_keywords_similarity_empty_DE(self):
-        empty = {
-            "keywords": []
-        }
+        empty = []
         ss = self.fe_DE.get_keywords_similarity(empty)
         assert ss == 0
 
     def test_keywords_similarity_one_DE(self):
-        empty = {
-            "keywords": ["test"]
-        }
+        empty = ["test"]
         ss = self.fe_DE.get_keywords_similarity(empty)
         assert ss == 0
 
     def test_keywords_similarity_EN(self):
-        article_sim = {
-            "keywords": [
-                "Chicken",
-                "Egg",
-                "Bird",
-                "Poultry"
-            ]
-        }
-        article_diff = {
-            "keywords": [
-                "Code",
-                "Poultry",
-                "Portafilter",
-                "Donald Trump"
-            ]
-        }
-        ss_sim = self.fe_EN.get_keywords_similarity(article_sim)
-        ss_diff = self.fe_EN.get_keywords_similarity(article_diff)
+        keywords_sim = [
+            "Chicken",
+            "Egg",
+            "Bird",
+            "Poultry"
+        ]
+        keywords_diff = [
+            "Code",
+            "Poultry",
+            "Portafilter",
+            "Donald Trump"
+        ]
+        ss_sim = self.fe_EN.get_keywords_similarity(keywords_sim)
+        ss_diff = self.fe_EN.get_keywords_similarity(keywords_diff)
         assert ss_sim < ss_diff
 
     def test_keywords_similarity_empty_EN(self):
-        empty = {
-            "keywords": []
-        }
+        empty = []
         ss = self.fe_EN.get_keywords_similarity(empty)
         assert ss == 0
 
     def test_keywords_similarity_one_EN(self):
-        empty = {
-            "keywords": ["test"]
-        }
+        empty = ["test"]
         ss = self.fe_EN.get_keywords_similarity(empty)
         assert ss == 0
