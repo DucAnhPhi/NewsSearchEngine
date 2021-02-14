@@ -23,8 +23,8 @@ class EmbeddingModel():
             self.model.max_seq_length = 512
 
         if lang == "en":
-            # available pre-trained models: https://www.sbert.net/docs/pretrained-models/msmarco-v2.html
-            self.model = SentenceTransformer('msmarco-distilbert-base-v2', device = device)
+            # available pre-trained models: https://docs.google.com/spreadsheets/d/14QplCdTCDwEmTqrn1LH4yrbKvdogK4oQvYO1K1aPR5M/edit#gid=0
+            self.model = SentenceTransformer('stsb-distilbert-base', device = device)
             self.model.max_seq_length = 512
 
         if lang not in supported_languages:

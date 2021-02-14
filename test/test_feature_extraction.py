@@ -7,7 +7,7 @@ import numpy as np
 class TestFeatureExtraction():
     @classmethod
     def setup_class(self):
-        self.embedder_DE = EmbeddingModel()
+        self.embedder_DE = EmbeddingModel(lang="de")
         self.embedder_EN = EmbeddingModel(lang="en")
         self.fe_DE = FeatureExtraction(self.embedder_DE, None)
         self.fe_EN = FeatureExtraction(self.embedder_EN, None)

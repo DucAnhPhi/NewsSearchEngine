@@ -13,7 +13,8 @@ class VectorStorage():
         dim = 768,
         ef_construction = 200,
         m = 100,
-        ef = 150
+        ef = 150,
+        persist = True
     ):
         self.storage = Hnswlib(space='cosine', dim = dim)
         self.storage_location = storage_location
@@ -26,6 +27,7 @@ class VectorStorage():
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
         self.storage.set_ef(ef) # ef should always be > k
+        self.persist = persist
 
     def get_k_nearest(self, embedding: Vector, k: int) -> NearestNeighborList:
         '''
@@ -63,4 +65,5 @@ class VectorStorage():
 
             if len(emb_batch) != 0:
                 self.storage.add_items(emb_batch, id_batch)
-        self.storage.save_index(self.storage_location)
+        if self.persist:
+            self.storage.save_index(self.storage_location)
