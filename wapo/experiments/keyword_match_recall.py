@@ -2,36 +2,33 @@ import os
 import json
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
-from elasticsearch_dsl.query import MoreLikeThis
 from ..parser import ParserWAPO
 from pprint import pprint
 
 class KeywordsMatchExperiment():
-    def __init__(self):
-        self.es = Elasticsearch()
-        self.parser = ParserWAPO(self.es)
-        self.index = "wapo_clean"
-        self.s = Search(using=self.es, index=self.index)
-        # specify search size to 100
-        self.s = self.s[:100]
+    def __init__(self, es, parser, index, size, judgement_list_path):
+        self.es = es
+        self.parser = parser
+        self.index = index
         self.count = 0
         self.recall_avg = 0.
         self.retrieval_count_avg = 0.
+        self.min_recall = 1.
+        self.max_recall = 0.
         self.rel_cutoff = 4
 
-        judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo.jsonl"
-        with open(judgement_location, "r", encoding="utf-8") as f:
+        with open(judgement_list_path, "r", encoding="utf-8") as f:
             for line in f:
                 judgement = json.loads(line)
                 # apply relevance cutoff
-                filtered = [ref for ref in judgement["references"] if int(ref["exp_rel"]) >= self.rel_cutoff]
-                if len(filtered) == 0:
+                relevant_articles = [ref for ref in judgement["references"] if int(ref["exp_rel"]) >= self.rel_cutoff]
+                if len(relevant_articles) == 0:
                     continue
                 try:
-                    self.count += 1
                     query_keywords = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
+                    self.count += 1
                     results = (self.es.search(
-                        size = 200,
+                        size = size,
                         index = self.index,
                         body = {
                             "query": {
@@ -47,16 +44,18 @@ class KeywordsMatchExperiment():
                     for res in results:
                         if res["_id"] == judgement["id"]:
                             continue
-                        for ref in filtered:
+                        for ref in relevant_articles:
                             if ref["id"] == res["_id"]:
                                 recall += 1
                                 break
-                    recall /= len(filtered)
-                    print(recall, judgement["id"])
+                    recall /= len(relevant_articles)
                     self.recall_avg += recall
+                    if recall < self.min_recall:
+                        self.min_recall = recall
+                    if recall > self.max_recall:
+                        self.max_recall = recall
                 except:
-                    print("err")
-                    self.count -= 1
+                    # query article not found
                     continue
         self.recall_avg /= self.count
         self.retrieval_count_avg /= self.count
@@ -64,8 +63,22 @@ class KeywordsMatchExperiment():
     def print_stats(self):
         print(f"Recall Avg: {self.recall_avg}")
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
+        print(f"Min Recall: {self.min_recall}")
+        print(f"Max Recall: {self.max_recall}")
 
 if __name__ == "__main__":
+    es = Elasticsearch()
+    parser = ParserWAPO(es)
+    index = "wapo_clean"
+    judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo.jsonl"
+
+    exp = KeywordsMatchExperiment(es, parser, index, 200, judgement_location)
+    print("WAPO Keyword Match Retrieval Experiment")
+    print("----------------------------------------------------------------")
+    print("Query by string query with concatenated extracted tf-idf keywords.")
+    exp.print_stats()
+    print("----------------------------------------------------------------")
+
     # MLT results:
     # Keyword match query recall avg: 0.632946
     # Retrieval Count Avg: 100
@@ -97,10 +110,3 @@ if __name__ == "__main__":
     # Custom query, using termvectors:
     # Keyword match query recall avg: 0.764501
     # Retrieval Count Avg: 400
-    exp = KeywordsMatchExperiment()
-    print("----------------------------------------------------------------")
-    print("Outlet: WAPO")
-    print("Index articles in Elasticsearch.")
-    print("Perform 'More Like This' Query")
-    exp.print_stats()
-    print("----------------------------------------------------------------")
