@@ -3,7 +3,8 @@ from ..typings import Vector
 
 class EmbeddingModel():
     # make sure you have > 2GB of free VRAM to enable CUDA
-    def __init__(self, lang = "de", device="cpu"):
+    def __init__(self, lang, device="cpu"):
+        supported_languages = ["de", "en"]
         # Initialize model based on selected language
         if lang == "de":
             # load BERT model from Hugging Face
@@ -25,6 +26,9 @@ class EmbeddingModel():
             # available pre-trained models: https://www.sbert.net/docs/pretrained-models/msmarco-v2.html
             self.model = SentenceTransformer('msmarco-distilbert-base-v2', device = device)
             self.model.max_seq_length = 512
+
+        if lang not in supported_languages:
+            raise ValueError(f"language: {lang} not supported.")
 
     def encode(self, text:str) -> Vector:
         return (self.model.encode(text, convert_to_tensor=False, batch_size=8)).tolist()
