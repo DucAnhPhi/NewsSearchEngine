@@ -1,37 +1,31 @@
-from .pyw_hnswlib import Hnswlib
 import json
+import os
+from .pyw_hnswlib import Hnswlib
 from .typings import Vector, VectorList, StringList, NearestNeighborList
 from .embedding.model import EmbeddingModel
-
-NUM_ELEMENTS = 20000
-DIMS = 768
-EF_CONSTRUCTION = 200
-M = 100
 
 class VectorStorage():
 
     def __init__(
-        self, 
-        path: str = None,
-        dim=DIMS,
-        num_elements=NUM_ELEMENTS
+        self,
+        storage_location,
+        max_elements,
+        dim = 768,
+        ef_construction = 200,
+        m = 100,
+        ef = 150
     ):
-        self.dim = dim
-        self.num_elements = num_elements
-        self.embedder = EmbeddingModel()
         self.storage = Hnswlib(space='cosine', dim = dim)
+        self.storage_location = storage_location
 
-        if path != None:
-            self.storage.load_index(path, max_elements=num_elements)
+        if os.path.isfile(storage_location):
+            self.storage.load_index(storage_location, max_elements=max_elements)
         else:
-            self.storage.init_index(max_elements=num_elements, ef_construction = EF_CONSTRUCTION, M = M)
+            self.storage.init_index(max_elements=max_elements, ef_construction = ef_construction, M = m)
 
         # Controlling the recall by setting ef:
         # higher ef leads to better accuracy, but slower search
-        self.storage.set_ef(150) # ef should always be > k
-
-    def save(self, path: str):
-        self.storage.save_index(path)
+        self.storage.set_ef(ef) # ef should always be > k
 
     def get_k_nearest(self, embedding: Vector, k: int) -> NearestNeighborList:
         '''
@@ -69,3 +63,4 @@ class VectorStorage():
 
             if len(emb_batch) != 0:
                 self.storage.add_items(emb_batch, id_batch)
+        self.storage.save_index(self.storage_location)
