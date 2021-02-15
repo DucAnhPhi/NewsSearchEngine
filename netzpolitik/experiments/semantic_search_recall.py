@@ -10,48 +10,47 @@ from ...typings import NearestNeighborList
 from ..parser import ParserNetzpolitik
 
 class SemanticSearchExperiment():
-    def __init__(self, es, parser, query_emb_func, storage_file, keywords_tf_idf=False, size=100):
+    def __init__(self, es, index, size, get_query_func, vector_storage_location, judgement_list_path):
         self.es = es
-        self.parser = parser
-        self.index = "netzpolitik"
+        self.index = index
         self.count = 0
         self.recall_avg = 0.
         self.retrieval_count_avg = 0.
+        self.min_recall = 1.
+        self.max_recall = 0.
 
-        # init vector storage
-        data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
-        storage_location = f"{data_location}/{storage_file}"
-        print("Loading vector storage from file...\n")
-        self.vs = VectorStorage(storage_location)
+        # load vector storage from file
+        self.vs = VectorStorage(vector_storage_location)
 
-        # build query
-        with open(f"{data_location}/judgement_list_netzpolitik.jsonl", "r", encoding="utf-8") as f:
-            for line in (f):
-                judgment = json.loads(line)
+        with open(judgement_list_path, "r", encoding="utf-8") as f:
+            for line in f:
+                judgement = json.loads(line)
                 try:
-                    self.count += 1
-                    query_article = (self.es.get(
+                    query_article_raw = (self.es.get(
                         index=self.index,
-                        id=judgment["id"]
-                    ))["_source"]
-                    if keywords_tf_idf:
-                        query_article["keywords"] = self.parser.get_keywords_tf_idf_de(self.index, judgment["id"])
-                    query = query_emb_func(query_article)
-                    if query == None:
-                        self.count -= 1
+                        id=judgement["id"]
+                    ))
+                    query = get_query_func(query_article_raw)
+                    if not query:
                         continue
+                    self.count += 1
                     nearest_n: NearestNeighborList = self.vs.get_k_nearest(query,size)
                     result_ids = [list(nn.keys())[0] for nn in nearest_n[0]]
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
                     for res_id in result_ids:
-                        if res_id in query_article["references"]:
+                        if res_id == judgement["id"]:
+                            continue
+                        if res_id in judgement["references"]:
                             recall += 1
-                    recall /= len(query_article["references"])
+                    recall /= len(judgement["references"])
                     self.recall_avg += recall
+                    if recall < self.min_recall:
+                        self.min_recall = recall
+                    if recall > self.max_recall:
+                        self.max_recall = recall
                 except:
-                    # cannot find query article
-                    self.count -= 1
+                    # query article not found
                     continue
         self.recall_avg /= self.count
         self.retrieval_count_avg /= self.count
@@ -59,271 +58,231 @@ class SemanticSearchExperiment():
     def print_stats(self):
         print(f"Recall Avg: {self.recall_avg}")
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
+        print(f"Min Recall: {self.min_recall}")
+        print(f"Max Recall: {self.max_recall}")
 
 if __name__ == "__main__":
-    storage_file_twfp = "netzpolitik_vs_twfp.bin"
-    storage_file_keywords_annotated = "netzpolitik_vs_annotated_k.bin"
-    storage_file_keywords_tf_idf = "netzpolitik_vs_extracted_k.bin"
-    storage_file_section_titles = "netzpolitik_vs_section_titles.bin"
-    storage_file_titles = "netzpolitik_vs_titles.bin"
     es = Elasticsearch()
     parser = ParserNetzpolitik(es)
-    em = EmbeddingModel()
+    em = EmbeddingModel(lang="de")
     fe = FeatureExtraction(em, parser)
+    index = "netzpolitik"
+    size = 100
+    data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
+    judgement_list_path = f"{data_location}/judgement_list_netzpolitik.jsonl"
+    vs_title = f"{data_location}/netzpolitik_vs_title.bin"
+    vs_title_with_section_titles = f"{data_location}/netzpolitik_vs_title_with_section_titles.bin"
+    vs_title_with_first_paragraph = f"{data_location}/netzpolitik_vs_title_with_first_paragraph.bin"
+    vs_annotated_k = f"{data_location}/netzpolitik_vs_annotated_k.bin"
+    vs_extracted_k_normalized = f"{data_location}/netzpolitik_vs_extracted_k_normalized.bin"
+    vs_extracted_k_denormalized = f"{data_location}/netzpolitik_vs_extracted_k_denormalized.bin"
+    vs_extracted_k_denormalized_ordered = f"{data_location}/netzpolitik_vs_extracted_k_denormalized_ordered.bin"
 
-    # Index articles by:    embedding of titles
+    def get_embedding_of_title(es_doc):
+        return fe.get_embedding_of_title(es_doc["_source"])
+
+    def get_embedding_of_title_with_first_paragraph(es_doc):
+        return fe.get_embedding_of_title_with_first_paragraph(es_doc["_source"])
+
+    def get_embedding_of_title_with_section_titles(es_doc):
+        return fe.get_embedding_of_title_with_section_titles(es_doc["_source"])
+
+    def get_embedding_of_annotated_keywords(es_doc):
+        keywords = es_doc["_source"]["keywords"]
+        query = " ".join(keywords)
+        if not query:
+            return None
+        return em.encode(query)
+
+    # Index articles by:    embedding of title
+    # Query:                embedding of title
+    exp = SemanticSearchExperiment(
+        es,
+        index,
+        size,
+        get_embedding_of_title,
+        vs_title,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of title")
+    print("Query:               embedding of title")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of title
+    # Query:                embedding of title w/ first paragraph
+    exp = SemanticSearchExperiment(
+        es,
+        index,
+        size,
+        get_embedding_of_title_with_first_paragraph,
+        vs_title,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of title")
+    print("Query:               embedding of title w/ first paragraph")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of title
+    # Query:                embedding of title w/ section titles
+    exp = SemanticSearchExperiment(
+        es,
+        index,
+        size,
+        get_embedding_of_title_with_section_titles,
+        vs_title,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of title")
+    print("Query:               embedding of title w/ section titles")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of title
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_titles
+        index,
+        size,
+        get_embedding_of_annotated_keywords,
+        vs_title,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
+    print("Index articles by:   embedding of title")
     print("Query:               embedding of pre-annotated keywords")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles
-    # Query:                embedding of extracted tf-idf keywords
+    # Index articles by:    embedding of title w/ first paragraph
+    # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_titles,
-        keywords_tf_idf=True
+        index,
+        size,
+        get_embedding_of_title_with_first_paragraph,
+        vs_title_with_first_paragraph,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
-    print("Query:               embedding of extracted tf-idf keywords")
+    print("Index articles by:   embedding of title w/ first paragraph")
+    print("Query:               embedding of title w/ first paragraph")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles w/ first paragraph
-    # Query:                embedding of titles w/ first paragraph
+    # Index articles by:    embedding of title w/ first paragraph
+    # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_title_with_first_paragraph,
-        storage_file_twfp
+        index,
+        size,
+        get_embedding_of_title,
+        vs_title_with_first_paragraph,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ first paragraph")
-    print("Query:               embedding of titles w/ first paragraph")
+    print("Index articles by:   embedding of title w/ first paragraph")
+    print("Query:               embedding of title")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles
-    # Query:                embedding of titles
+    # Index articles by:    embedding of title w/ first paragraph
+    # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_title,
-        storage_file_titles
+        index,
+        size,
+        get_embedding_of_title_with_section_titles,
+        vs_title_with_first_paragraph,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
-    print("Query:               embedding of titles")
+    print("Index articles by:   embedding of title w/ first paragraph")
+    print("Query:               embedding of title w/ section titles")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles
-    # Query:                embedding of titles w/ first paragraph
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_first_paragraph,
-        storage_file_titles
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
-    print("Query:               embedding of titles w/ first paragraph")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles
-    # Query:                embedding of titles w/ section titles
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_section_titles,
-        storage_file_titles
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
-    print("Query:               embedding of titles w/ section titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles
+    # Index articles by:    embedding of title w/ first paragraph
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_titles
+        index,
+        size,
+        get_embedding_of_annotated_keywords,
+        vs_title_with_first_paragraph,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
+    print("Index articles by:   embedding of title w/ first paragraph")
     print("Query:               embedding of pre-annotated keywords")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles
-    # Query:                embedding of extracted tf-idf keywords
+    # Index articles by:    embedding of title w/ section titles
+    # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_titles,
-        keywords_tf_idf=True
+        index,
+        size,
+        get_embedding_of_title_with_section_titles,
+        vs_title_with_section_titles,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles")
-    print("Query:               embedding of extracted tf-idf keywords")
+    print("Index articles by:   embedding of title w/ section titles")
+    print("Query:               embedding of title w/ section titles")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles w/ first paragraph
-    # Query:                embedding of titles w/ first paragraph
+    # Index articles by:    embedding of title w/ section titles
+    # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_title_with_first_paragraph,
-        storage_file_twfp
+        index,
+        size,
+        get_embedding_of_title,
+        vs_title_with_section_titles,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ first paragraph")
-    print("Query:               embedding of titles w/ first paragraph")
+    print("Index articles by:   embedding of title w/ section titles")
+    print("Query:               embedding of title")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles w/ first paragraph
-    # Query:                embedding of titles
+    # Index articles by:    embedding of title w/ section titles
+    # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_title,
-        storage_file_twfp
+        index,
+        size,
+        get_embedding_of_title_with_first_paragraph,
+        vs_title_with_section_titles,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ first paragraph")
-    print("Query:               embedding of titles")
+    print("Index articles by:   embedding of title w/ section titles")
+    print("Query:               embedding of title w/ first paragraph")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of titles w/ first paragraph
-    # Query:                embedding of titles w/ section titles
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_section_titles,
-        storage_file_twfp
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ first paragraph")
-    print("Query:               embedding of titles w/ section titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ first paragraph
+    # Index articles by:    embedding of title w/ section titles
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_twfp
+        index,
+        size,
+        get_embedding_of_annotated_keywords,
+        vs_title_with_section_titles,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ first paragraph")
+    print("Index articles by:   embedding of title w/ section titles")
     print("Query:               embedding of pre-annotated keywords")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ first paragraph
-    # Query:                embedding of extracted tf-idf keywords
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_twfp,
-        keywords_tf_idf=True
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ first paragraph")
-    print("Query:               embedding of extracted tf-idf keywords")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ section titles
-    # Query:                embedding of titles w/ section titles
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_section_titles,
-        storage_file_section_titles
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ section titles")
-    print("Query:               embedding of titles w/ section titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ section titles
-    # Query:                embedding of titles
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title,
-        storage_file_section_titles
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ section titles")
-    print("Query:               embedding of titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ section titles
-    # Query:                embedding of titles w/ first paragraph
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_first_paragraph,
-        storage_file_section_titles
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ section titles")
-    print("Query:               embedding of titles w/ first paragraph")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ section titles
-    # Query:                embedding of pre-annotated keywords
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_section_titles
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ section titles")
-    print("Query:               embedding of pre-annotated keywords")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of titles w/ section titles
-    # Query:                embedding of extracted tf-idf keywords
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_section_titles,
-        keywords_tf_idf=True
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of titles w/ section titles")
-    print("Query:               embedding of extracted tf-idf keywords")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
@@ -333,9 +292,11 @@ if __name__ == "__main__":
     # Retrieval Count Avg:  100
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_keywords_annotated
+        index,
+        size,
+        get_embedding_of_annotated_keywords,
+        vs_annotated_k,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
     print("Index articles by:   embedding of pre-annotated keywords")
@@ -343,105 +304,50 @@ if __name__ == "__main__":
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
-    # Index articles by:    embedding of extracted tf-idf keywords
-    # Query:                embedding of extracted tf-idf keywords
-    # Recall Avg:           0.110762
-    # Retrieval Count Avg:  100
+    # Index articles by:    embedding of pre-annotated keywords
+    # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_keywords,
-        storage_file_keywords_tf_idf,
-        keywords_tf_idf=True
+        index,
+        size,
+        get_embedding_of_title,
+        vs_annotated_k,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of extracted tf-idf keywords")
-    print("Query:               embedding of extracted tf-idf keywords")
+    print("Index articles by:   embedding of pre-annotated keywords")
+    print("Query:               embedding of title")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
     # Index articles by:    embedding of pre-annotated keywords
-    # Query:                embedding of titles
+    # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_title,
-        storage_file_keywords_annotated
+        index,
+        size,
+        get_embedding_of_title_with_section_titles,
+        vs_annotated_k,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
     print("Index articles by:   embedding of pre-annotated keywords")
-    print("Query:               embedding of titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of extracted tf-idf keywords
-    # Query:                embedding of titles
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title,
-        storage_file_keywords_tf_idf,
-        keywords_tf_idf=True
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of extracted tf-idf keywords")
-    print("Query:               embedding of titles")
+    print("Query:               embedding of title w/ section titles")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
 
     # Index articles by:    embedding of pre-annotated keywords
-    # Query:                embedding of titles w/ section titles
+    # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        parser,
-        fe.get_embedding_of_title_with_section_titles,
-        storage_file_keywords_annotated
+        index,
+        size,
+        get_embedding_of_title_with_first_paragraph,
+        vs_annotated_k,
+        judgement_list_path
     )
     print("----------------------------------------------------------------")
     print("Index articles by:   embedding of pre-annotated keywords")
-    print("Query:               embedding of titles w/ section titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of extracted tf-idf keywords
-    # Query:                embedding of titles w/ section titles
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_section_titles,
-        storage_file_keywords_tf_idf,
-        keywords_tf_idf=True
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of extracted tf-idf keywords")
-    print("Query:               embedding of titles w/ section titles")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of pre-annotated keywords
-    # Query:                embedding of titles w/ first paragraph
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_first_paragraph,
-        storage_file_keywords_annotated
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of pre-annotated keywords")
-    print("Query:               embedding of titles w/ first paragraph")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
-
-    # Index articles by:    embedding of extracted tf-idf keywords
-    # Query:                embedding of titles w/ first paragraph
-    exp = SemanticSearchExperiment(
-        es,
-        parser,
-        fe.get_embedding_of_title_with_first_paragraph,
-        storage_file_keywords_tf_idf
-    )
-    print("----------------------------------------------------------------")
-    print("Index articles by:   embedding of extracted tf-idf keywords")
-    print("Query:               embedding of titles w/ first paragraph")
+    print("Query:               embedding of title w/ first paragraph")
     exp.print_stats()
     print("----------------------------------------------------------------\n")

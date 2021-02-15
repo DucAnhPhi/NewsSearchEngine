@@ -111,7 +111,7 @@ The TREC Washington Post Corpus contains 671,947 news articles and blog posts fr
 For the background linking task in 2018 (TREC 2018), TREC provided:
 
 - [50 test topics for background linking task](https://trec.nist.gov/data/news/2018/newsir18-topics.txt)
-- [relevance judgments for backgroundlinking task (with exponential gain values)](https://trec.nist.gov/data/news/2018/bqrels.exp-gains.txt)
+- [relevance judgements for backgroundlinking task (with exponential gain values)](https://trec.nist.gov/data/news/2018/bqrels.exp-gains.txt)
 
 We put both sets together in a more usable [JSON Lines Format](https://jsonlines.org/) in **data/judgement_list_wapo.jsonl** by using the following script: **wapo/judgement_list.py**.
 

@@ -17,12 +17,12 @@ class KeywordsMatchExperiment():
             for line in f:
                 judgement = json.loads(line)
                 try:
-                    query_article_raw = (self.es.get(
+                    query_article_es = (self.es.get(
                         index=self.index,
                         id=judgement["id"]
                     ))
-                    query = get_query_func(query_article_raw)
-                    if len(query) == 0:
+                    query = get_query_func(query_article_es)
+                    if not query:
                         continue
                     self.count += 1
                     results = (self.es.search(
@@ -38,12 +38,13 @@ class KeywordsMatchExperiment():
                             }
                         }
                     ))["hits"]["hits"]
+                    result_ids = [res["_id"] for res in results]
                     recall = 0.
-                    self.retrieval_count_avg += len(results)
-                    for res in results:
-                        if res["_id"] == judgement["id"]:
+                    self.retrieval_count_avg += len(result_ids)
+                    for res_id in result_ids:
+                        if res_id == judgement["id"]:
                             continue
-                        if res["_id"] in judgement["references"]:
+                        if res_id in judgement["references"]:
                             recall += 1
                     recall /= len(judgement["references"])
                     self.recall_avg += recall
@@ -71,8 +72,8 @@ if __name__ == "__main__":
 
     print("Netzpolitik Keyword Match Retrieval Experiment")
 
-    def get_query_from_annotated_keywords(raw):
-        keywords = raw["_source"]["keywords"]
+    def get_query_from_annotated_keywords(es_doc):
+        keywords = es_doc["_source"]["keywords"]
         return " OR ".join(keywords)
     exp = KeywordsMatchExperiment(es, index, 200, get_query_from_annotated_keywords, judgement_location)
     print("----------------------------------------------------------------")
@@ -80,8 +81,8 @@ if __name__ == "__main__":
     exp.print_stats()
     print("----------------------------------------------------------------")
 
-    def get_query_from_tf_idf_keywords(raw):
-        keywords = parser.get_keywords_tf_idf(index, raw["_id"])
+    def get_query_from_tf_idf_keywords(es_doc):
+        keywords = parser.get_keywords_tf_idf(index, es_doc["_id"])
         return " OR ".join(keywords)
     exp = KeywordsMatchExperiment(es, index, 200, get_query_from_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
@@ -89,9 +90,9 @@ if __name__ == "__main__":
     exp.print_stats()
     print("----------------------------------------------------------------")
 
-    def get_query_from_annotated_and_tf_idf_keywords(raw):
-        annotated = raw["_source"]["keywords"]
-        extracted = parser.get_keywords_tf_idf(index, raw["_id"])
+    def get_query_from_annotated_and_tf_idf_keywords(es_doc):
+        annotated = es_doc["_source"]["keywords"]
+        extracted = parser.get_keywords_tf_idf(index, es_doc["_id"])
         return " OR ".join(annotated + extracted)
     exp = KeywordsMatchExperiment(es, index, 200, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
