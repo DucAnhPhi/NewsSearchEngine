@@ -24,7 +24,6 @@ jmespath==0.10.0
 joblib==1.0.0
 littleutils==0.2.2
 lxml==4.6.2
-nltk==3.5
 numpy==1.19.4
 nvidia-ml-py3==7.352.0
 packaging==20.8

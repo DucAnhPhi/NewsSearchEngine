@@ -8,12 +8,16 @@ import re
 import sys
 import os
 import json
-import nltk
-from nltk.corpus import stopwords
 from tqdm import tqdm
 from .parser import ParserWAPO
 
 if __name__ == "__main__":
+    stopwords_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data/english_stopwords_nltk.txt"
+    stopwords = []
+    with open(stopwords_location, "r", encoding="utf-8") as f:
+        for line in f:
+            stopwords.append(line.strip())
+
     parser = ParserWAPO()
     index_name = "wapo_clean"
     p = argparse.ArgumentParser(description='Index WashingtonPost docs to ElasticSearch')
@@ -38,7 +42,7 @@ if __name__ == "__main__":
                 "filter": {
                     "english_stop": {
                         "type":       "stop",
-                        "stopwords":  stopwords.words('english')
+                        "stopwords":  stopwords
                     },
                     "english_stemmer": {
                         "type":       "stemmer",
