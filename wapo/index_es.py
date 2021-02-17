@@ -96,8 +96,8 @@ if __name__ == "__main__":
 
     def doc_generator(f, num_docs):
         for line in tqdm(f, total=num_docs):
-            js = json.loads(line)
-            article_source = parser.parse_article(js)
+            raw = json.loads(line)
+            article_source = parser.parse_article(raw)
             if article_source != None:
                 data_dict = {
                     "_index": index_name,
