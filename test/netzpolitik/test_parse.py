@@ -56,6 +56,18 @@ class TestParserNetzpolitik():
         actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
         assert "".join(expected_k) == "".join(actual_k)
 
+    def test_get_keywords_tf_idf_denormalized_2(self):
+        article_id = 'https://netzpolitik.org/2012/polizei-und-dienste-fadeln-uberwachung-und-herausgabe-von-cloud-daten-ein/'
+        fake_response = fake_response_from_file(
+            'html/netzpolitik_2012_2.html', url=article_id
+        )
+        parsed = next(self.parser.parse_article(fake_response))
+        expected_k = ['und', 'Dienste', 'fädeln', 'Herausgabe', 'Cloud', 'Daten', 'Bundesamt', 'Verfassungsschutz', 'geht', 'Arbeitsgruppen', 'Bundesnetzagentur', 'ETSI', 'BKA', 'Telekommunikationsüberwachung', 'Lawful', 'Interception', 'erarbeiteten', 'Anbieter', 'Bundespolizeien', 'befasst', 'SFZ', 'TK', 'Computing', 'Ausland', 'Sicherung', 'Europarates']
+        combined = [self.parser.get_title(parsed), parsed["body"]]
+        combined_text = " ".join([t for t in combined if t])
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
+        assert "".join(expected_k) == "".join(actual_k)
+
     def test_parse_empty(self):
         fake_response = fake_response_from_file(
             'html/netzpolitik_empty_body.html', url='https://netzpolitik.org/2012/digitale-solidaritat-perspektiven-der-netzpolitik/'
