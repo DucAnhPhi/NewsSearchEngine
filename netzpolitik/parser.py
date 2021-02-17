@@ -97,6 +97,8 @@ class ParserNetzpolitik(ParserInterface):
         body = article["body"]
         first_p = ""
         paragraphs = ([p for p in body.split("\n") if p])[:2]
+        if len(paragraphs) == 0:
+            return first_p
         if len(paragraphs[0]) < 70:
             first_p += " ".join(paragraphs)
         else:
@@ -106,21 +108,14 @@ class ParserNetzpolitik(ParserInterface):
     @staticmethod
     def get_title_with_first_paragraph(article) -> str:
         first_p = ParserNetzpolitik.get_first_paragraph(article)
-        title = article["title"]
+        title = ParserNetzpolitik.get_title(article)
         text = f"{title.strip()} {first_p.strip()}"
-        return text
+        return text.strip()
 
     @staticmethod
     def get_title(article) -> str:
         title = article["title"]
         return title.strip()
-
-    @staticmethod
-    def get_line_separated_text_tokens(article) -> StringList:
-        body = article["body"]
-        tokens = body.split("\n")
-        tokens = [ token for token in tokens if len(token.split()) > 0 ]
-        return tokens
 
     @staticmethod
     def get_section_titles(article) -> StringList:
@@ -135,7 +130,7 @@ class ParserNetzpolitik(ParserInterface):
         title = ParserNetzpolitik.get_title(article)
         section_titles = ParserNetzpolitik.get_section_titles(article)
         combined = f"{title} {' '.join(section_titles)}"
-        return combined
+        return combined.strip()
 
     @staticmethod
     def get_keywords_annotated(article) -> StringList:

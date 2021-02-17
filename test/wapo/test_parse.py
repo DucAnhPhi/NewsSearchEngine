@@ -29,7 +29,7 @@ class TestParserNetzpolitik():
         raw = self.articles[0]
         parsed = self.parser.parse_article(raw)
         expected_k = ['ahead', 'region', 'commuters', 'transportation', 'projects', 'scheduled', 'lanes', 'Beltway', 'open', 'Travelers', 'Road', 'drivers', 'new', 'Intercounty', 'Connector', 'congestion', 'routes', 'Telegraph', 'Bridge', 'Metro', 'riders', 'trains', 'Line', 'maintenance', 'stations', 'fare', 'construction', 'Avenue']
-        combined = [parsed["title"], parsed["text"]]
+        combined = [self.parser.get_title(parsed), parsed["text"]]
         combined_text = " ".join([t for t in combined if t])
         actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, raw["id"], combined_text)
         intersection = list(set(expected_k) & set(actual_k))
@@ -54,7 +54,7 @@ class TestParserNetzpolitik():
             "Riders, walkers, bikers"
         ]
         expected_title_with_section_titles = f"{expected_title} {' '.join(expected_sections)}"
-        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles
+        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles.strip()
         assert parsed["offset_first_paragraph"] == 281
         assert parsed["date"] == 1325444842000
         assert parsed["kicker"] == "Local"
@@ -76,7 +76,7 @@ class TestParserNetzpolitik():
             "Also in Business"
         ]
         expected_title_with_section_titles = f"{expected_title} {' '.join(expected_sections)}"
-        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles
+        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles.strip()
         assert parsed["offset_first_paragraph"] == 195
         assert parsed["date"] == 1386378264000
         assert parsed["kicker"] == "Business"
@@ -92,7 +92,7 @@ class TestParserNetzpolitik():
         assert self.parser.get_title(parsed) == expected_title
         expected_sections = []
         expected_title_with_section_titles = f"{expected_title} {' '.join(expected_sections)}"
-        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles
+        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles.strip()
         assert parsed["offset_first_paragraph"] == 273
         assert parsed["date"] == 1407851892000
         assert parsed["kicker"] == "Post Politics"
@@ -108,7 +108,7 @@ class TestParserNetzpolitik():
         assert self.parser.get_title(parsed) == expected_title
         expected_sections = []
         expected_title_with_section_titles = f"{expected_title} {' '.join(expected_sections)}"
-        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles
+        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles.strip()
         assert parsed["offset_first_paragraph"] == 224
         assert parsed["date"] == 1447248899000
         assert parsed["kicker"] == "WorldViews"
@@ -127,7 +127,7 @@ class TestParserNetzpolitik():
             "Theodore Roosevelt and the Birth of the Presidential Primary"
         ]
         expected_title_with_section_titles = f"{expected_title} {' '.join(expected_sections)}"
-        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles
+        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles.strip()
         assert parsed["offset_first_paragraph"] == 85
         assert parsed["date"] == 1454106524000
         assert parsed["kicker"] == "Opinions"
@@ -149,7 +149,7 @@ class TestParserNetzpolitik():
             "SHOPPING GUIDE"
         ]
         expected_title_with_section_titles = f"{expected_title} {' '.join(expected_sections)}"
-        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles
+        assert self.parser.get_title_with_section_titles(parsed) == expected_title_with_section_titles.strip()
         assert parsed["offset_first_paragraph"] == 565
         assert parsed["date"] == 1490835610000
         assert parsed["kicker"] == "Home & Garden"
