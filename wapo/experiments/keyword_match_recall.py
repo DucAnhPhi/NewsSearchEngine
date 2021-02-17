@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from ..parser import ParserWAPO
@@ -67,9 +68,35 @@ class KeywordsMatchExperiment():
         print(f"Max Recall: {self.max_recall}")
 
 if __name__ == "__main__":
-    es = Elasticsearch()
-    parser = ParserWAPO(es)
     index = "wapo_clean"
+
+    p = argparse.ArgumentParser(description='Run Washington Post keyword match retrieval experiments')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default=index, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
+
+    args = p.parse_args()
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
+    parser = ParserWAPO(es)
     judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo.jsonl"
 
     exp = KeywordsMatchExperiment(es, parser, index, 200, judgement_location)

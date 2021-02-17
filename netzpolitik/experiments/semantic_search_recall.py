@@ -1,6 +1,7 @@
 import os.path
 import pathlib
 import json
+import argparse
 from elasticsearch import Elasticsearch
 from ...vector_storage import VectorStorage
 from ...netzpolitik.parser import ParserNetzpolitik
@@ -62,11 +63,36 @@ class SemanticSearchExperiment():
         print(f"Max Recall: {self.max_recall}")
 
 if __name__ == "__main__":
-    es = Elasticsearch()
+    index = "netzpolitik"
+    p = argparse.ArgumentParser(description='Run netzpolitik.org semantic search recall experiments')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default=index, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
+
+    args = p.parse_args()
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
     parser = ParserNetzpolitik(es)
     em = EmbeddingModel(lang="de")
     fe = FeatureExtraction(em, parser)
-    index = "netzpolitik"
     size = 100
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_path = f"{data_location}/judgement_list_netzpolitik.jsonl"
@@ -98,7 +124,7 @@ if __name__ == "__main__":
     # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title,
         vs_title,
@@ -114,7 +140,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_first_paragraph,
         vs_title,
@@ -130,7 +156,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_section_titles,
         vs_title,
@@ -146,7 +172,7 @@ if __name__ == "__main__":
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_annotated_keywords,
         vs_title,
@@ -162,7 +188,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_first_paragraph,
         vs_title_with_first_paragraph,
@@ -178,7 +204,7 @@ if __name__ == "__main__":
     # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title,
         vs_title_with_first_paragraph,
@@ -194,7 +220,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_section_titles,
         vs_title_with_first_paragraph,
@@ -210,7 +236,7 @@ if __name__ == "__main__":
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_annotated_keywords,
         vs_title_with_first_paragraph,
@@ -226,7 +252,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_section_titles,
         vs_title_with_section_titles,
@@ -242,7 +268,7 @@ if __name__ == "__main__":
     # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title,
         vs_title_with_section_titles,
@@ -258,7 +284,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_first_paragraph,
         vs_title_with_section_titles,
@@ -274,7 +300,7 @@ if __name__ == "__main__":
     # Query:                embedding of pre-annotated keywords
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_annotated_keywords,
         vs_title_with_section_titles,
@@ -292,7 +318,7 @@ if __name__ == "__main__":
     # Retrieval Count Avg:  100
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_annotated_keywords,
         vs_annotated_k,
@@ -308,7 +334,7 @@ if __name__ == "__main__":
     # Query:                embedding of title
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title,
         vs_annotated_k,
@@ -324,7 +350,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ section titles
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_section_titles,
         vs_annotated_k,
@@ -340,7 +366,7 @@ if __name__ == "__main__":
     # Query:                embedding of title w/ first paragraph
     exp = SemanticSearchExperiment(
         es,
-        index,
+        args.index_name,
         size,
         get_embedding_of_title_with_first_paragraph,
         vs_annotated_k,

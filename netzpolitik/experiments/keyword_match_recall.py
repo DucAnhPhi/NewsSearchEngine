@@ -1,5 +1,6 @@
 import os
 import json
+import argparse
 from elasticsearch import Elasticsearch
 from ..parser import ParserNetzpolitik
 
@@ -65,9 +66,34 @@ class KeywordsMatchExperiment():
         print(f"Max Recall: {self.max_recall}")
 
 if __name__ == "__main__":
-    es = Elasticsearch()
-    parser = ParserNetzpolitik(es)
     index = "netzpolitik"
+    p = argparse.ArgumentParser(description='Run netzpolitik.org keyword match recall experiments')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default=index, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
+
+    args = p.parse_args()
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
+    parser = ParserNetzpolitik(es)
     judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_netzpolitik.jsonl"
 
     print("Netzpolitik Keyword Match Retrieval Experiment")
@@ -75,16 +101,16 @@ if __name__ == "__main__":
     def get_query_from_annotated_keywords(es_doc):
         keywords = es_doc["_source"]["keywords"]
         return " OR ".join(keywords)
-    exp = KeywordsMatchExperiment(es, index, 200, get_query_from_annotated_keywords, judgement_location)
+    exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_keywords, judgement_location)
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated pre-annotated keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")
 
     def get_query_from_tf_idf_keywords(es_doc):
-        keywords = parser.get_keywords_tf_idf(index, es_doc["_id"])
+        keywords = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
         return " OR ".join(keywords)
-    exp = KeywordsMatchExperiment(es, index, 200, get_query_from_tf_idf_keywords, judgement_location)
+    exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated extracted tf-idf keywords.")
     exp.print_stats()
@@ -92,9 +118,9 @@ if __name__ == "__main__":
 
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
-        extracted = parser.get_keywords_tf_idf(index, es_doc["_id"])
+        extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
         return " OR ".join(annotated + extracted)
-    exp = KeywordsMatchExperiment(es, index, 200, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
+    exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated annotated and extracted tf-idf keywords.")
     exp.print_stats()

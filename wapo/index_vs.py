@@ -5,15 +5,42 @@ from ..vector_storage import VectorStorage
 from elasticsearch import Elasticsearch
 from ..typings import StringList, VectorList
 import os
+import argparse
 import json
 
 if __name__ == "__main__":
-    es = Elasticsearch()
+    index = "wapo_clean"
+
+    p = argparse.ArgumentParser(description='Index Washington Post articles to vector storage')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default=index, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
+
+    args = p.parse_args()
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
     parser = ParserWAPO(es)
     lang = "en"
     em = EmbeddingModel(lang)
     fe = FeatureExtraction(em, parser)
-    index = "wapo_clean"
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
     articles_path = f"{data_location}/TREC_Washington_Post_collection.v3.jl"
     num_elements = 500000

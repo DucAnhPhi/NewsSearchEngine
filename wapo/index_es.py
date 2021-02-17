@@ -12,24 +12,41 @@ from tqdm import tqdm
 from .parser import ParserWAPO
 
 if __name__ == "__main__":
+    parser = ParserWAPO()
+    index_name = "wapo_clean"
+
+    p = argparse.ArgumentParser(description='Index Washington Post articles to ElasticSearch')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default=index_name, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
+
+    args = p.parse_args()
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
     stopwords_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data/english_stopwords_nltk.txt"
     stopwords = []
     with open(stopwords_location, "r", encoding="utf-8") as f:
         for line in f:
             stopwords.append(line.strip())
 
-    parser = ParserWAPO()
-    index_name = "wapo_clean"
-    p = argparse.ArgumentParser(description='Index WashingtonPost docs to ElasticSearch')
-    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
-    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
-    p.add_argument('--index_name', default=index_name, help='index name')
-    p.add_argument('--create', action='store_true')
-
-    args = p.parse_args()
-        
-    es = Elasticsearch(hosts=[{"host": args.host, "port": args.port}],
-                    retry_on_timeout=True, max_retries=10)
     settings = {
         'settings': {
             'index': {
@@ -87,7 +104,7 @@ if __name__ == "__main__":
         }
     }
 
-    if args.create or not es.indices.exists(index=args.index_name):
+    if not es.indices.exists(index=args.index_name):
         try:
             es.indices.create(index=args.index_name, body=settings)
         except TransportError as e:

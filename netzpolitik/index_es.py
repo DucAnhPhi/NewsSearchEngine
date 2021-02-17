@@ -12,16 +12,33 @@ from tqdm import tqdm
 from pathlib import Path
 
 if __name__ == "__main__":
+    index = "netzpolitik"
     p = argparse.ArgumentParser(description='Index netzpolitik.org articles to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
-    p.add_argument('--index_name', default='netzpolitik', help='index name')
-    p.add_argument('--create', action='store_true')
+    p.add_argument('--index_name', default=index, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
 
     args = p.parse_args()
-        
-    es = Elasticsearch(hosts=[{"host": args.host, "port": args.port}],
-                    retry_on_timeout=True, max_retries=10)
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
     settings = {
         'settings': {
             'index': {
@@ -57,7 +74,7 @@ if __name__ == "__main__":
         }
     }
 
-    if args.create or not es.indices.exists(index=args.index_name):
+    if not es.indices.exists(index=args.index_name):
         try:
             es.indices.create(index=args.index_name, body=settings)
         except TransportError as e:
