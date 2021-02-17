@@ -70,6 +70,7 @@ if __name__ == "__main__":
     p.add_argument('--index_name', default=index, help='index name')
     p.add_argument('--user', default=None, help='ElasticSearch user')
     p.add_argument('--secret', default=None, help="ElasticSearch secret")
+    p.add_argument('--device', default="cpu", help="(CUDA) device for pytorch")
 
     args = p.parse_args()
 
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         )
 
     parser = ParserNetzpolitik(es)
-    em = EmbeddingModel(lang="de")
+    em = EmbeddingModel(lang="de", device=args.device)
     fe = FeatureExtraction(em, parser)
     size = 100
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
