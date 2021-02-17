@@ -30,22 +30,28 @@ class FeatureExtraction():
 
     def get_embedding_of_title_with_first_paragraph(self, article) -> Optional[Vector]:
         emb = None
-        if article != None:
+        if article:
             combined_text = self.parser.get_title_with_first_paragraph(article)
             emb = self.embedder.encode(combined_text)
         return emb
 
-    def get_embedding_of_title(self, article) -> Vector:
-        titles = self.parser.get_title(article)
-        return self.embedder.encode(titles)
+    def get_embedding_of_title(self, article) -> Optional[Vector]:
+        emb = None
+        if article:
+            titles = self.parser.get_title(article)
+            emb = self.embedder.encode(titles)
+        return emb
 
-    def get_embedding_of_title_with_section_titles(self, article) -> Vector:
-        titles_str = self.parser.get_title(article)
-        section_titles = self.parser.get_section_titles(article)
-        section_titles_str = " ".join(section_titles)
-        result = f"{titles_str} {section_titles_str}"
-        result = result.strip()
-        return self.embedder.encode(result)
+    def get_embedding_of_title_with_section_titles(self, article) -> Optional[Vector]:
+        emb = None
+        if article:
+            titles_str = self.parser.get_title(article)
+            section_titles = self.parser.get_section_titles(article)
+            section_titles_str = " ".join(section_titles)
+            result = f"{titles_str} {section_titles_str}"
+            result = result.strip()
+            emb = self.embedder.encode(result)
+        return emb
 
     def get_embedding_of_keywords(self, keywords: StringList) -> Optional[Vector]:
         if len(keywords) == 0:
