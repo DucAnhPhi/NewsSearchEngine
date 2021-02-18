@@ -118,7 +118,6 @@ if __name__ == "__main__":
             if article_source != None:
                 data_dict = {
                     "_index": index_name,
-                    "_type": '_doc',
                     "_id": raw['id'],
                 }
                 data_dict["_source"] = article_source

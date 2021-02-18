@@ -85,7 +85,7 @@ class ParserNetzpolitik(ParserInterface):
         raw_body = soup_raw.article.header.find_all('p') + soup_raw.find_all('div', class_='entry-content')
         raw_body = "".join([str(tag) for tag in raw_body])
         article = {
-            'id': response.url,
+            'url': response.url,
             'title': title,
             'published': published.lstrip()[:10].replace(".", "-"),
             'authors': authors,

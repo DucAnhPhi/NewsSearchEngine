@@ -86,13 +86,10 @@ if __name__ == "__main__":
             js = json.loads(line)
             try:
                 data_dict = {
-                    "_index": args.index_name,
-                    "_type": '_doc',
-                    "_id": js['id'],
+                    "_index": args.index_name
                 }
 
                 article = js.copy()
-                del article['id']
 
                 data_dict['_source'] = article
 
