@@ -36,6 +36,8 @@ class ParserNetzpolitik(ParserInterface):
                 }
             }
         )
+        if not title_termvector["found"] or not body_termvector["found"]:
+            return []
         keywords_title = []
         if "title" in title_termvector["term_vectors"]:
             keywords_title = list(title_termvector["term_vectors"]["title"]["terms"].keys())
@@ -47,6 +49,9 @@ class ParserNetzpolitik(ParserInterface):
 
     def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True) -> StringList:
         normalized = self.get_keywords_tf_idf(index, article_id)
+
+        if len(normalized) == 0:
+            return normalized
 
         def denorm(text, kw):
             query = kw

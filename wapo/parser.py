@@ -35,6 +35,8 @@ class ParserWAPO(ParserInterface):
                 }
             }
         )
+        if not title_termvector["found"] or not text_termvector["found"]:
+            return []
         keywords_title = []
         keywords_text = []
         if "title" in title_termvector["term_vectors"]:
@@ -46,6 +48,9 @@ class ParserWAPO(ParserInterface):
 
     def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True) -> StringList:
         normalized = self.get_keywords_tf_idf(index, article_id)
+
+        if len(normalized) == 0:
+            return normalized
 
         def denorm(text, kw):
             query = kw
