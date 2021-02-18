@@ -83,19 +83,13 @@ if __name__ == "__main__":
 
     def doc_generator(f, num_docs):
         for line in tqdm(f, total=num_docs):
-            js = json.loads(line)
-            try:
-                data_dict = {
-                    "_index": args.index_name
-                }
-
-                article = js.copy()
-
-                data_dict['_source'] = article
-
-            except Exception:
-                traceback.print_exc(file=sys.stdout)
-                quit()
+            article = json.loads(line)
+            if not article["title"] or not article["body"]:
+                continue
+            data_dict = {
+                "_index": args.index_name
+            }
+            data_dict['_source'] = article
             yield data_dict
 
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
