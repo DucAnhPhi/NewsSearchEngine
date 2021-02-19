@@ -87,21 +87,24 @@ if __name__ == "__main__":
 
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (normalized, unordered).\n")
     def embedding_func_tf_idf_keywords(raw):
-        keyw = parser.get_keywords_tf_idf(args.index_name, raw["id"])
+        article_id = get_article_id(raw)
+        keyw = parser.get_keywords_tf_idf(args.index_name, article_id)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_normalized.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_tf_idf_keywords, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (denormalized, unordered).\n")
     def embedding_func_tf_idf_keywords_denormalized(raw):
-        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, raw["id"], raw["body"], keep_order=False)
+        article_id = get_article_id(raw)
+        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["body"], keep_order=False)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (denormalized, order preserved).\n")
     def embedding_func_tf_idf_keywords_denormalized_ordered(raw):
-        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, raw["id"], raw["body"], keep_order=True)
+        article_id = get_article_id(raw)
+        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["body"], keep_order=True)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized_ordered.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized_ordered, get_article_id)
