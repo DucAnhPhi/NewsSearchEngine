@@ -99,6 +99,9 @@ if __name__ == "__main__":
                 },
                 'date': {
                     'type': 'date'
+                },
+                'url': {
+                    'type': 'keyword'
                 }
             }
         }

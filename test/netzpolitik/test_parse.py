@@ -38,35 +38,73 @@ class TestParserNetzpolitik():
         self.index = "netzpolitik"
 
     def test_get_keywords_tf_idf(self):
+        url = 'https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/'
         fake_response = fake_response_from_file(
-            'html/netzpolitik_2020.html', url='https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/')
+            'html/netzpolitik_2020.html', url=url)
         parsed = next(self.parser.parse_article(fake_response))
-        expected_k = ["kartellbehord", "eu", "rechnungshof", "anfass", "amazon", "appl", "bericht", "definition", "eingreif", "erst", "europaisch", "facebook", "fusion", "googl", "hand", "kartell", "kommission", "konnt", "konzern", "markt", "nennt", "neu", "oft", "unternehm", "verfahr", "wettbewerbsrecht", "whatsapp"]
-        actual_k = self.parser.get_keywords_tf_idf(self.index, "https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/")
+        article_id = (self.es.search(
+            index=self.index,
+            body={
+                "query": {
+                    "term": {
+                        "url": {
+                            "value": url
+                        }
+                    }
+                }
+            }
+        ))["hits"]["hits"][0]["_id"]
+        expected_k = ['eingreif', 'appl', 'neu', 'konzern', 'verfahr', 'besond', 'rechnungshof', 'kartellbehord', 'oft', 'whatsapp', 'kommission', 'europaisch', 'googl', 'fusion', 'erst', 'konnt', 'amazon', 'anfass', 'bericht', 'markt', 'facebook', 'hand', 'wettbewerbsrecht', 'nennt', 'eu', 'wettbewerbsbehord', 'definition', 'unternehm']
+        actual_k = self.parser.get_keywords_tf_idf(self.index, article_id)
         assert set(expected_k) == set(actual_k)
 
     def test_get_keywords_tf_idf_denormalized(self):
-        article_id = 'https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/'
+        url = "https://netzpolitik.org/2020/eu-rechnungshof-kartellbehoerden-sollen-tech-konzerne-haerter-anfassen/"
+        article_id = (self.es.search(
+            index=self.index,
+            body={
+                "query": {
+                    "term": {
+                        "url": {
+                            "value": url
+                        }
+                    }
+                }
+            }
+        ))["hits"]["hits"][0]["_id"]
         fake_response = fake_response_from_file(
-            'html/netzpolitik_2020.html', url=article_id)
-        parsed = next(self.parser.parse_article(fake_response))
-        expected_k = ['EU', 'Rechnungshof', 'Kartellbehörden', 'Konzerne', 'anfassen', 'Facebook', 'Amazon', 'Google', 'Apple', 'konnten', 'Marktvorteil', 'Kommission', 'Fusionen', 'Wettbewerbsrechts', 'nennt', 'ersten', 'Verfahren', 'Bericht', 'oft', 'Hand', 'eingreife', 'WhatsApp', 'Unternehmen', 'neu', 'Definitionen', 'Europas']
-        combined = [self.parser.get_title(parsed), parsed["body"]]
-        combined_text = " ".join([t for t in combined if t])
-        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
-        assert "".join(expected_k) == "".join(actual_k)
-
-    def test_get_keywords_tf_idf_denormalized_2(self):
-        article_id = 'https://netzpolitik.org/2012/polizei-und-dienste-fadeln-uberwachung-und-herausgabe-von-cloud-daten-ein/'
-        fake_response = fake_response_from_file(
-            'html/netzpolitik_2012_2.html', url=article_id
+            'html/netzpolitik_2020.html', url=url
         )
         parsed = next(self.parser.parse_article(fake_response))
-        expected_k = ['und', 'Dienste', 'fädeln', 'Herausgabe', 'Cloud', 'Daten', 'Bundesamt', 'Verfassungsschutz', 'geht', 'Arbeitsgruppen', 'Bundesnetzagentur', 'ETSI', 'BKA', 'Telekommunikationsüberwachung', 'Lawful', 'Interception', 'erarbeiteten', 'Anbieter', 'Bundespolizeien', 'befasst', 'SFZ', 'TK', 'Computing', 'Ausland', 'Sicherung', 'Europarates']
+        expected_k = ['EU', 'Rechnungshof', 'Kartellbehörden', 'Konzerne', 'anfassen', 'Facebook', 'Amazon', 'Google', 'Apple', 'konnten', 'Marktvorteil', 'Kommission', 'Wettbewerbsbehörde', 'Fusionen', 'Besonders', 'Wettbewerbsrechts', 'nennt', 'ersten', 'Verfahren', 'Bericht', 'oft', 'Hand', 'eingreife', 'WhatsApp', 'Unternehmen', 'neu', 'Definitionen', 'Europas']
         combined = [self.parser.get_title(parsed), parsed["body"]]
         combined_text = " ".join([t for t in combined if t])
         actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
-        assert "".join(expected_k) == "".join(actual_k)
+        assert " ".join(expected_k) == " ".join(actual_k)
+
+    def test_get_keywords_tf_idf_denormalized_2(self):
+        url = 'https://netzpolitik.org/2012/polizei-und-dienste-fadeln-uberwachung-und-herausgabe-von-cloud-daten-ein/'
+        article_id = (self.es.search(
+            index=self.index,
+            body={
+                "query": {
+                    "term": {
+                        "url": {
+                            "value": url
+                        }
+                    }
+                }
+            }
+        ))["hits"]["hits"][0]["_id"]
+        fake_response = fake_response_from_file(
+            'html/netzpolitik_2012_2.html', url=url
+        )
+        parsed = next(self.parser.parse_article(fake_response))
+        expected_k = ['und', 'Dienste', 'fädeln', 'Herausgabe', 'Cloud', 'Daten', 'Bundesamt', 'Verfassungsschutz', 'geht', 'ZKA', 'Arbeitsgruppen', 'Bundesnetzagentur', 'ETSI', 'Telekommunikationsüberwachung', 'Lawful', 'Interception', 'Aachener', 'erarbeiteten', 'Anbieter', 'Bundespolizeien', 'befasst', 'SFZ', 'TK', 'Computing', 'Ausland', 'Sicherung', 'Europarates']
+        combined = [self.parser.get_title(parsed), parsed["body"]]
+        combined_text = " ".join([t for t in combined if t])
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
+        assert " ".join(expected_k) == " ".join(actual_k)
 
     def test_parse_empty(self):
         fake_response = fake_response_from_file(

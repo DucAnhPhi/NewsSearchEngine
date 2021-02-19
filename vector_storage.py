@@ -44,16 +44,16 @@ class VectorStorage():
             nearest.append(nn)
         return nearest
 
-    def add_items_from_file(self, file_path, emb_func):
+    def add_items_from_file(self, file_path, emb_func, get_id_func):
         with open(file_path, 'r', encoding="utf-8") as data_file:
             emb_batch: VectorList = []
             id_batch: StringList = []
 
             for line in data_file:
                 raw = json.loads(line)
-                article_id = raw["id"]
+                article_id = get_id_func(raw)
                 emb = emb_func(raw)
-                if emb == None:
+                if emb == None or article_id == None:
                     continue
                 emb_batch.append(emb)
                 id_batch.append(article_id)

@@ -8,7 +8,19 @@ class TestRetrieval():
         self.index = "netzpolitik"
     
     def test_get_article_by_id_es(self):
-        article = self.es.get(index=self.index, id="https://netzpolitik.org/2020/antiviren-amazon-und-ai/")
+        indexed = (self.es.search(
+            index=self.index,
+            body={
+                "query": {
+                    "term": {
+                        "url": {
+                            "value": "https://netzpolitik.org/2020/antiviren-amazon-und-ai/"
+                        }
+                    }
+                }
+            }
+        ))["hits"]["hits"][0]
+        article = self.es.get(index=self.index, id=indexed["_id"])
         print(article["_source"]["keywords"])
         assert len(article["_source"]["keywords"]) != 0
 

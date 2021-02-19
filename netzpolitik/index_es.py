@@ -69,6 +69,9 @@ if __name__ == "__main__":
                 'raw_body': {
                     'type': 'object',
                     'enabled': False
+                },
+                'url': {
+                    'type': 'keyword'
                 }
             }
         }

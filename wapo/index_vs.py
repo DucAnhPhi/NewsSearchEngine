@@ -46,33 +46,36 @@ if __name__ == "__main__":
     articles_path = f"{data_location}/TREC_Washington_Post_collection.v3.jl"
     num_elements = 500000
 
+    def get_article_id(raw):
+        return raw["id"]
+
     print("Initialize WAPO vector storage of embeddings of title.\n")
     def embedding_func_title(raw):
         article = parser.parse_article(raw)
         return fe.get_embedding_of_title(article)
     VectorStorage(f"{data_location}/wapo_vs_title.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_title)
+        .add_items_from_file(articles_path, embedding_func_title, get_article_id)
 
     print("Initialize WAPO vector storage of embeddings of title and section titles.\n")
     def embedding_func_title_with_section_titles(raw):
         article = parser.parse_article(raw)
         return fe.get_embedding_of_title_with_section_titles(article)
     VectorStorage(f"{data_location}/wapo_vs_title_with_section_titles.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_title_with_section_titles)
+        .add_items_from_file(articles_path, embedding_func_title_with_section_titles, get_article_id)
 
     print("Initialize WAPO vector storage of embeddings of title with first paragraph.\n")
     def embedding_func_title_with_first_paragraph(raw):
         article = parser.parse_article(raw)
         return fe.get_embedding_of_title_with_first_paragraph(article)
     VectorStorage(f"{data_location}/wapo_vs_title_with_first_paragraph.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_title_with_first_paragraph)
+        .add_items_from_file(articles_path, embedding_func_title_with_first_paragraph, get_article_id)
 
     print("Initialize WAPO vector storage of embeddings of extracted tf-idf keywords (normalized, unordered).\n")
     def embedding_func_tf_idf_keywords(raw):
         keyw = parser.get_keywords_tf_idf(index, raw["id"])
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_normalized.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords)
+        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords, get_article_id)
 
     print("Initialize WAPO vector storage of embeddings of extracted tf-idf keywords (denormalized, unordered).\n")
     def embedding_func_tf_idf_keywords_denormalized(raw):
@@ -80,7 +83,7 @@ if __name__ == "__main__":
         keyw = parser.get_keywords_tf_idf_denormalized(index, raw["id"], article["body"], keep_order=False)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_denormalized.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized)
+        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized, get_article_id)
 
     print("Initialize WAPO vector storage of embeddings of extracted tf-idf keywords (denormalized, order preserved).\n")
     def embedding_func_tf_idf_keywords_denormalized_ordered(raw):
@@ -88,4 +91,4 @@ if __name__ == "__main__":
         keyw = parser.get_keywords_tf_idf_denormalized(index, raw["id"], article["body"], keep_order=True)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized_ordered)
+        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized_ordered, get_article_id)

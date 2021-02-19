@@ -43,47 +43,65 @@ if __name__ == "__main__":
     articles_path = f"{data_location}/netzpolitik.jsonl"
     num_elements = 20000
 
+    def get_article_id(raw):
+        indexed = (es.search(
+            index=index,
+            body={
+                "query": {
+                    "term": {
+                        "url": {
+                            "value": raw["url"]
+                        }
+                    }
+                }
+            }
+        ))["hits"]["hits"]
+        res = None
+        if indexed and indexed[0]:
+            res = indexed[0]["_id"]
+        return res
+
     print("Initialize netzpolitik vector storage of embeddings of title.\n")
     def embedding_func_title(raw):
         return fe.get_embedding_of_title(raw)
     VectorStorage(f"{data_location}/netzpolitik_vs_title.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_title)
+        .add_items_from_file(articles_path, embedding_func_title, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of title and section titles.\n")
     def embedding_func_title_with_section_titles(raw):
         return fe.get_embedding_of_title_with_section_titles(raw)
     VectorStorage(f"{data_location}/netzpolitik_vs_title_with_section_titles.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_title_with_section_titles)
+        .add_items_from_file(articles_path, embedding_func_title_with_section_titles, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of title with first paragraph.\n")
     def embedding_func_title_with_first_paragraph(raw):
         return fe.get_embedding_of_title_with_first_paragraph(raw)
     VectorStorage(f"{data_location}/netzpolitik_vs_title_with_first_paragraph.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_title_with_first_paragraph)
+        .add_items_from_file(articles_path, embedding_func_title_with_first_paragraph, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of pre-annotated keywords.\n")
     def embedding_func_annotated_keywords(raw):
         return fe.get_embedding_of_keywords(raw)
     VectorStorage(f"{data_location}/netzpolitik_vs_annotated_k.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_annotated_keywords)
+        .add_items_from_file(articles_path, embedding_func_annotated_keywords, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (normalized, unordered).\n")
     def embedding_func_tf_idf_keywords(raw):
         keyw = parser.get_keywords_tf_idf(args.index_name, raw["id"])
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_normalized.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords)
+        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (denormalized, unordered).\n")
     def embedding_func_tf_idf_keywords_denormalized(raw):
         keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, raw["id"], raw["body"], keep_order=False)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized)
+        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized, get_article_id)
 
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (denormalized, order preserved).\n")
     def embedding_func_tf_idf_keywords_denormalized_ordered(raw):
         keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, raw["id"], raw["body"], keep_order=True)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized_ordered.bin", num_elements) \
-        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized_ordered)
+        .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized_ordered, get_article_id)
