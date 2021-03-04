@@ -27,11 +27,20 @@ class SemanticSearchExperiment():
             for line in f:
                 judgement = json.loads(line)
                 try:
-                    query_article_raw = (self.es.get(
-                        index=self.index,
-                        id=judgement["id"]
-                    ))
-                    query = get_query_func(query_article_raw)
+                    query_article_es = (self.es.search(
+                        size = 1,
+                        index = self.index,
+                        body = {
+                            "query": {
+                                "term": {
+                                    "url": {
+                                        "value": judgement["id"]
+                                    }
+                                }
+                            }
+                        }
+                    ))["hits"]["hits"][0]
+                    query = get_query_func(query_article_es)
                     if not query:
                         continue
                     self.count += 1
