@@ -49,9 +49,13 @@ class SemanticSearchExperiment():
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
                     for res_id in result_ids:
-                        if res_id == judgement["id"]:
+                        res_url = self.es.get(
+                            index = self.index,
+                            id=res_id
+                        )["_source"]["url"]
+                        if res_url == judgement["id"]:
                             continue
-                        if res_id in judgement["references"]:
+                        if res_url in judgement["references"]:
                             recall += 1
                     recall /= len(judgement["references"])
                     self.recall_avg += recall
