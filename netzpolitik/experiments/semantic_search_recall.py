@@ -27,19 +27,10 @@ class SemanticSearchExperiment():
             for line in f:
                 judgement = json.loads(line)
                 try:
-                    query_article_es = (self.es.search(
-                        size = 1,
+                    query_article_es = self.es.get(
                         index = self.index,
-                        body = {
-                            "query": {
-                                "term": {
-                                    "url": {
-                                        "value": judgement["id"]
-                                    }
-                                }
-                            }
-                        }
-                    ))["hits"]["hits"][0]
+                        id = judgement["id"]
+                    )
                     query = get_query_func(query_article_es)
                     if not query:
                         continue
@@ -49,13 +40,9 @@ class SemanticSearchExperiment():
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
                     for res_id in result_ids:
-                        res_url = self.es.get(
-                            index = self.index,
-                            id=res_id
-                        )["_source"]["url"]
-                        if res_url == judgement["id"]:
+                        if res_id == judgement["id"]:
                             continue
-                        if res_url in judgement["references"]:
+                        if res_id in judgement["references"]:
                             recall += 1
                     recall /= len(judgement["references"])
                     self.recall_avg += recall

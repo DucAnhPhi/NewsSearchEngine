@@ -17,21 +17,12 @@ class KeywordsMatchCombinedExperiment():
             for line in f:
                 judgement = json.loads(line)
                 try:
-                    query_article = (self.es.search(
-                        size = 1,
+                    query_article = self.es.get(
                         index = self.index,
-                        body = {
-                            "query": {
-                                "term": {
-                                    "url": {
-                                        "value": judgement["id"]
-                                    }
-                                }
-                            }
-                        }
-                    ))["hits"]["hits"][0]
+                        id = judgement["id"]
+                    )
                     results = []
-                    tf_idf_query = " OR ".join(self.parser.get_keywords_tf_idf(self.index, query_article["_id"]))
+                    tf_idf_query = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
                     self.count += 1
                     results = (self.es.search(
                         size = size,
@@ -65,7 +56,7 @@ class KeywordsMatchCombinedExperiment():
                     recall = 0.
                     self.retrieval_count_avg += len(results)
                     for res in results:
-                        if res["_source"]["url"] != judgement["id"] and res["_source"]["url"] in judgement["references"]:
+                        if res["_id"] != judgement["id"] and res["_id"] in judgement["references"]:
                             recall += 1
                     recall /= len(judgement["references"])
                     self.recall_avg += recall

@@ -18,19 +18,10 @@ class KeywordsMatchExperiment():
             for line in f:
                 judgement = json.loads(line)
                 try:
-                    query_article_es = (self.es.search(
-                        size = 1,
+                    query_article_es = self.es.get(
                         index = self.index,
-                        body = {
-                            "query": {
-                                "term": {
-                                    "url": {
-                                        "value": judgement["id"]
-                                    }
-                                }
-                            }
-                        }
-                    ))["hits"]["hits"][0]
+                        id = judgement["id"]
+                    )
                     query = get_query_func(query_article_es)
                     if not query:
                         continue
@@ -48,7 +39,7 @@ class KeywordsMatchExperiment():
                             }
                         }
                     ))["hits"]["hits"]
-                    result_ids = [res["_source"]["url"] for res in results]
+                    result_ids = [res["_id"] for res in results]
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
                     for res_id in result_ids:
