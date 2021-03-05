@@ -94,7 +94,7 @@ class ParserWAPO(ParserInterface):
 
     @staticmethod
     def get_section_titles(jsarr):
-        titles = [c["content"] for c in jsarr if c != None and c["type"] == "sanitized_html" and (c["subtype"] == "subhead" or c["subtype"] == "sublabel") and "content" in c and c["content"] != None]
+        titles = [c["content"] for c in jsarr if c != None and c["type"] == "sanitized_html" and "subtype" in c and (c["subtype"] == "subhead" or c["subtype"] == "sublabel") and "content" in c and c["content"] != None]
         return titles
 
     @staticmethod

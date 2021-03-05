@@ -45,12 +45,8 @@ class FeatureExtraction():
     def get_embedding_of_title_with_section_titles(self, article) -> Optional[Vector]:
         emb = None
         if article:
-            titles_str = self.parser.get_title(article)
-            section_titles = self.parser.get_section_titles(article)
-            section_titles_str = " ".join(section_titles)
-            result = f"{titles_str} {section_titles_str}"
-            result = result.strip()
-            emb = self.embedder.encode(result)
+            titles = self.parser.get_title_with_section_titles(article)
+            emb = self.embedder.encode(titles)
         return emb
 
     def get_embedding_of_keywords(self, keywords: StringList) -> Optional[Vector]:
