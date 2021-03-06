@@ -72,8 +72,11 @@ if __name__ == "__main__":
 
     print("Initialize WAPO vector storage of embeddings of extracted tf-idf keywords (normalized, unordered).\n")
     def embedding_func_tf_idf_keywords(raw):
-        keyw = parser.get_keywords_tf_idf(index, raw["id"])
-        return fe.get_embedding_of_keywords(keyw)
+        article = parser.parse_article(raw)
+        if article:
+            keyw = parser.get_keywords_tf_idf(index, raw["id"])
+            return fe.get_embedding_of_keywords(keyw)
+        return None
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_normalized.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_tf_idf_keywords, get_article_id)
 
