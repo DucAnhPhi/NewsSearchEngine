@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     print("Initialize netzpolitik vector storage of embeddings of pre-annotated keywords.\n")
     def embedding_func_annotated_keywords(raw):
-        return fe.get_embedding_of_keywords(raw)
+        return fe.get_embedding_of_keywords(raw["keywords"])
     VectorStorage(f"{data_location}/netzpolitik_vs_annotated_k.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_annotated_keywords, get_article_id)
 
