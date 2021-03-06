@@ -21,7 +21,7 @@ class SemanticSearchExperiment():
         self.max_recall = 0.
 
         # load vector storage from file
-        self.vs = VectorStorage(vector_storage_location, 500000)
+        self.vs = VectorStorage(vector_storage_location, 20000)
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
             for line in f:
