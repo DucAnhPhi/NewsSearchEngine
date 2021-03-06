@@ -13,6 +13,7 @@ class KeywordsMatchExperiment():
         self.retrieval_count_avg = 0.
         self.min_recall = 1.
         self.max_recall = 0.
+        self.except_count = 0
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -31,10 +32,11 @@ class KeywordsMatchExperiment():
                         index = self.index,
                         body = {
                             "query": {
-                                "query_string": {
+                                "multi_match": {
                                     "fields": [ "title", "body" ],
                                     "query": query,
-                                    "analyzer": "german"
+                                    "analyzer": "german",
+                                    "operator": "or"
                                 }
                             }
                         }
@@ -53,7 +55,9 @@ class KeywordsMatchExperiment():
                         self.min_recall = recall
                     if recall > self.max_recall:
                         self.max_recall = recall
-                except:
+                except Exception as e:
+                    self.except_count += 1
+                    print(e)
                     # query article not found
                     continue
         self.recall_avg /= self.count
@@ -64,6 +68,7 @@ class KeywordsMatchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
         print(f"Min Recall: {self.min_recall}")
         print(f"Max Recall: {self.max_recall}")
+        print(f"exceptions: {self.except_count}")
 
 if __name__ == "__main__":
     index = "netzpolitik"
@@ -100,7 +105,7 @@ if __name__ == "__main__":
 
     def get_query_from_annotated_keywords(es_doc):
         keywords = es_doc["_source"]["keywords"]
-        return " OR ".join(keywords)
+        return " ".join(keywords)
     exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_keywords, judgement_location)
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated pre-annotated keywords.")
@@ -109,7 +114,7 @@ if __name__ == "__main__":
 
     def get_query_from_tf_idf_keywords(es_doc):
         keywords = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " OR ".join(keywords)
+        return " ".join(keywords)
     exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated extracted tf-idf keywords.")
@@ -119,7 +124,7 @@ if __name__ == "__main__":
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " OR ".join(annotated + extracted)
+        return " ".join(annotated + extracted)
     exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated annotated and extracted tf-idf keywords.")

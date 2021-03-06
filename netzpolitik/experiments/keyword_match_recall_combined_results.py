@@ -11,6 +11,7 @@ class KeywordsMatchCombinedExperiment():
         self.count = 0
         self.recall_avg = 0.
         self.retrieval_count_avg = 0.
+        self.except_count = 0
 
         judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_netzpolitik.jsonl"
         with open(judgement_location, "r", encoding="utf-8") as f:
@@ -22,32 +23,34 @@ class KeywordsMatchCombinedExperiment():
                         id = judgement["id"]
                     )
                     results = []
-                    tf_idf_query = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
+                    tf_idf_query = " ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
                     self.count += 1
                     results = (self.es.search(
                         size = size,
                         index = self.index,
                         body = {
                             "query": {
-                                "query_string": {
+                                "multi_match": {
                                     "fields": [ "title", "body" ],
                                     "query": tf_idf_query,
-                                    "analyzer": "german"
+                                    "analyzer": "german",
+                                    "operator": "or"
                                 }
                             }
                         }
                     ))["hits"]["hits"]
-                    annotated_query = " OR ".join(query_article["_source"]["keywords"])
+                    annotated_query = " ".join(query_article["_source"]["keywords"])
                     if annotated_query:
                         annotated_results = (self.es.search(
                             size = size,
                             index = self.index,
                             body = {
                                 "query": {
-                                    "query_string": {
+                                    "multi_match": {
                                         "fields": [ "title", "body" ],
                                         "query": annotated_query,
-                                        "analyzer": "german"
+                                        "analyzer": "german",
+                                        "operator": "or"
                                     }
                                 }
                             }
@@ -60,8 +63,9 @@ class KeywordsMatchCombinedExperiment():
                             recall += 1
                     recall /= len(judgement["references"])
                     self.recall_avg += recall
-                except:
-                    self.count -= 1
+                except Exception as e:
+                    self.except_count += 1
+                    print(e)
                     continue
         self.recall_avg /= self.count
         self.retrieval_count_avg /= self.count
@@ -69,11 +73,12 @@ class KeywordsMatchCombinedExperiment():
     def print_stats(self):
         print(f"Recall Avg: {self.recall_avg}")
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
+        print(f"Exception Count: {self.except_count}")
 
 if __name__ == "__main__":
-    exp = KeywordsMatchCombinedExperiment(100)
     print("----------------------------------------------------------------")
     print("Index articles in Elasticsearch.")
     print("Query by string query with concatenated pre-annotated and extracted tf-idf keywords.")
+    exp = KeywordsMatchCombinedExperiment(100)
     exp.print_stats()
     print("----------------------------------------------------------------")
