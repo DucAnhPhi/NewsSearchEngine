@@ -45,6 +45,7 @@ class VectorStorage():
         return nearest
 
     def add_items_from_file(self, file_path, emb_func, get_id_func):
+        exception_count = 0
         with open(file_path, 'r', encoding="utf-8") as data_file:
             emb_batch: VectorList = []
             id_batch: StringList = []
@@ -54,6 +55,7 @@ class VectorStorage():
                 article_id = get_id_func(raw)
                 emb = emb_func(raw)
                 if emb == None or article_id == None:
+                    exception_count += 1
                     continue
                 emb_batch.append(emb)
                 id_batch.append(article_id)
@@ -67,3 +69,4 @@ class VectorStorage():
                 self.storage.add_items(emb_batch, id_batch)
         if self.persist:
             self.storage.save_index(self.storage_location)
+            print(f"Done. Exception Count: {exception_count}")
