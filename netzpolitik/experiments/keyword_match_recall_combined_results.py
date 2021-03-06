@@ -1,13 +1,14 @@
-import os
+import argparse
 import json
+import os
 from elasticsearch import Elasticsearch
 from ..parser import ParserNetzpolitik
 
 class KeywordsMatchCombinedExperiment():
-    def __init__(self, size):
-        self.es = Elasticsearch()
+    def __init__(self, es, index, size):
+        self.es = es
         self.parser = ParserNetzpolitik(self.es)
-        self.index = "netzpolitik"
+        self.index = index
         self.count = 0
         self.recall_avg = 0.
         self.retrieval_count_avg = 0.
@@ -76,9 +77,36 @@ class KeywordsMatchCombinedExperiment():
         print(f"Exception Count: {self.except_count}")
 
 if __name__ == "__main__":
+    index = "netzpolitik"
+    p = argparse.ArgumentParser(description='Run netzpolitik.org keyword match recall combined results experiments')
+    p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
+    p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
+    p.add_argument('--index_name', default=index, help='index name')
+    p.add_argument('--user', default=None, help='ElasticSearch user')
+    p.add_argument('--secret', default=None, help="ElasticSearch secret")
+
+    args = p.parse_args()
+
+    es = None
+
+    if args.user and args.secret:
+        es = Elasticsearch(
+            hosts = [{"host": args.host, "port": args.port}],
+            http_auth=(args.user, args.secret),
+            scheme="https",
+            retry_on_timeout=True,
+            max_retries=10
+        )
+    else:
+        es = Elasticsearch(
+            hosts=[{"host": args.host, "port": args.port}],
+            retry_on_timeout=True,
+            max_retries=10
+        )
+
     print("----------------------------------------------------------------")
     print("Index articles in Elasticsearch.")
     print("Query by string query with concatenated pre-annotated and extracted tf-idf keywords.")
-    exp = KeywordsMatchCombinedExperiment(100)
+    exp = KeywordsMatchCombinedExperiment(es, index, 100)
     exp.print_stats()
     print("----------------------------------------------------------------")
