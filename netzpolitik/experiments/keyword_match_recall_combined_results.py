@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     print("----------------------------------------------------------------")
     print("Index articles in Elasticsearch.")
-    print("Query by string query with concatenated pre-annotated and extracted tf-idf keywords.")
+    print("Query by multi-match query with concatenated pre-annotated and extracted tf-idf keywords.")
     exp = KeywordsMatchCombinedExperiment(es, index, 100)
     exp.print_stats()
     print("----------------------------------------------------------------")

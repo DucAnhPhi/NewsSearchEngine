@@ -108,7 +108,7 @@ if __name__ == "__main__":
         return " ".join(keywords)
     exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_keywords, judgement_location)
     print("----------------------------------------------------------------")
-    print("Query by string query with concatenated pre-annotated keywords.")
+    print("Query by multi-match query with concatenated pre-annotated keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         return " ".join(keywords)
     exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
-    print("Query by string query with concatenated extracted tf-idf keywords.")
+    print("Query by multi-match query with concatenated extracted tf-idf keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")
 
@@ -127,6 +127,6 @@ if __name__ == "__main__":
         return " ".join(annotated + extracted)
     exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
     print("----------------------------------------------------------------")
-    print("Query by string query with concatenated annotated and extracted tf-idf keywords.")
+    print("Query by multi-match query with concatenated annotated and extracted tf-idf keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")
