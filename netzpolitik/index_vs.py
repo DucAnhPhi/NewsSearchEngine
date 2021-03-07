@@ -88,6 +88,8 @@ if __name__ == "__main__":
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (normalized, unordered).\n")
     def embedding_func_tf_idf_keywords(raw):
         article_id = get_article_id(raw)
+        if not article_id:
+            return None
         keyw = parser.get_keywords_tf_idf(args.index_name, article_id)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_normalized.bin", num_elements) \
@@ -96,6 +98,8 @@ if __name__ == "__main__":
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (denormalized, unordered).\n")
     def embedding_func_tf_idf_keywords_denormalized(raw):
         article_id = get_article_id(raw)
+        if not article_id:
+            return None
         keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["body"], keep_order=False)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized.bin", num_elements) \
@@ -104,6 +108,8 @@ if __name__ == "__main__":
     print("Initialize netzpolitik vector storage of embeddings of extracted tf-idf keywords (denormalized, order preserved).\n")
     def embedding_func_tf_idf_keywords_denormalized_ordered(raw):
         article_id = get_article_id(raw)
+        if not article_id:
+            return None
         keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["body"], keep_order=True)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized_ordered.bin", num_elements) \
