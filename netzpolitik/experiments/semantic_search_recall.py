@@ -1,14 +1,12 @@
-import os.path
-import pathlib
-import json
 import argparse
+import json
+import os
 from elasticsearch import Elasticsearch
+from ..parser import ParserNetzpolitik
 from ...vector_storage import VectorStorage
-from ...netzpolitik.parser import ParserNetzpolitik
 from ...feature_extraction import FeatureExtraction
 from ...embedding.model import EmbeddingModel
 from ...typings import NearestNeighborList
-from ..parser import ParserNetzpolitik
 
 class SemanticSearchExperiment():
     def __init__(self, es, index, size, get_query_func, vector_storage_location, judgement_list_path):
