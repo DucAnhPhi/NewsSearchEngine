@@ -103,41 +103,9 @@ if __name__ == "__main__":
     parser = ParserWAPO(es)
     judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo.jsonl"
 
-    exp = KeywordsMatchExperiment(es, parser, index, 200, judgement_location)
+    exp = KeywordsMatchExperiment(es, parser, index, 300, judgement_location)
     print("WAPO Keyword Match Retrieval Experiment")
     print("----------------------------------------------------------------")
     print("Query by string query with concatenated extracted tf-idf keywords.")
     exp.print_stats()
     print("----------------------------------------------------------------")
-
-    # MLT results:
-    # Keyword match query recall avg: 0.632946
-    # Retrieval Count Avg: 100
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.636238
-    # Retrieval Count Avg: 100
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.678989
-    # Retrieval Count Avg: 150
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.719923
-    # Retrieval Count Avg: 200
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.742124
-    # Retrieval Count Avg: 250
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.752354
-    # Retrieval Count Avg: 300
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.758316
-    # Retrieval Count Avg: 350
-
-    # Custom query, using termvectors:
-    # Keyword match query recall avg: 0.764501
-    # Retrieval Count Avg: 400
