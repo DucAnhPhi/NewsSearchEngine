@@ -17,6 +17,7 @@ class KeywordsMatchExperiment():
         self.min_recall = 1.
         self.max_recall = 0.
         self.rel_cutoff = 4
+        self.exception_count = 0
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -55,8 +56,10 @@ class KeywordsMatchExperiment():
                         self.min_recall = recall
                     if recall > self.max_recall:
                         self.max_recall = recall
-                except:
+                except Exception as e:
                     # query article not found
+                    self.exception_count += 1
+                    print(e)
                     continue
         self.recall_avg /= self.count
         self.retrieval_count_avg /= self.count
@@ -66,6 +69,7 @@ class KeywordsMatchExperiment():
         print(f"Retrieval Count Avg: {self.retrieval_count_avg}")
         print(f"Min Recall: {self.min_recall}")
         print(f"Max Recall: {self.max_recall}")
+        print(f"Exception Count: {self.exception_count}")
 
 if __name__ == "__main__":
     index = "wapo_clean"
