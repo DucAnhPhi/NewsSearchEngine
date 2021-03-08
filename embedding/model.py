@@ -1,5 +1,6 @@
 from sentence_transformers import models, SentenceTransformer
 from ..typings import Vector
+from typing import Optional
 
 class EmbeddingModel():
     # make sure you have > 2GB of free VRAM to enable CUDA
@@ -30,5 +31,7 @@ class EmbeddingModel():
         if lang not in supported_languages:
             raise ValueError(f"language: {lang} not supported.")
 
-    def encode(self, text:str) -> Vector:
+    def encode(self, text:str) -> Optional[Vector]:
+        if not text:
+            return None
         return (self.model.encode(text, convert_to_tensor=False, batch_size=8)).tolist()
