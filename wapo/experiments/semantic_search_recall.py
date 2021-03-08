@@ -28,6 +28,10 @@ class SemanticSearchExperiment():
                 judgement = json.loads(line)
                 # apply relevance cutoff
                 relevant_articles = [ref for ref in judgement["references"] if int(ref["exp_rel"]) >= self.rel_cutoff]
+                if len(relevant_articles) == 0:
+                    self.count += 1
+                    self.min_recall = 0
+                    continue
                 try:
                     query_article_es = self.es.get(
                         index = self.index,
