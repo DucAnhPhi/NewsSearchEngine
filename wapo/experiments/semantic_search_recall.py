@@ -78,6 +78,7 @@ if __name__ == "__main__":
     p.add_argument('--index_name', default=index, help='index name')
     p.add_argument('--user', default=None, help='ElasticSearch user')
     p.add_argument('--secret', default=None, help="ElasticSearch secret")
+    p.add_argument('--device', default="cpu", help="(CUDA) device for pytorch")
 
     args = p.parse_args()
 
