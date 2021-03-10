@@ -20,6 +20,7 @@ class CombinedRecallExperiment():
         self.max_recall = 0.
         self.rel_cutoff = rel_cutoff
         self.exception_count = 0
+        self.add_count_avg = 0
 
         # load vector storage from file
         self.vs = VectorStorage(vector_storage_location, 500000)
@@ -40,10 +41,6 @@ class CombinedRecallExperiment():
                         id = judgement["id"]
                     )
                     self.count += 1
-                    query = get_query_func(query_article_es)
-                    if query:
-                        nearest_n: NearestNeighborList = self.vs.get_k_nearest(query,size)
-                        result_ids = [list(nn.keys())[0] for nn in nearest_n[0]]
                     keywords = self.parser.get_keywords_tf_idf(self.index, judgement["id"])
                     if keywords:
                         query_keywords = " OR ".join(keywords)
@@ -59,9 +56,15 @@ class CombinedRecallExperiment():
                                 }
                             }
                         ))["hits"]["hits"]
-                        for res in k_results:
-                            if res["_id"] not in result_ids:
-                                result_ids.append(res["_id"])
+                        result_ids = [res["_id"] for res in k_results]
+                    query = get_query_func(query_article_es)
+                    if query:
+                        nearest_n: NearestNeighborList = self.vs.get_k_nearest(query,size)
+                        e_results = [list(nn.keys())[0] for nn in nearest_n[0]]
+                        for res in e_results:
+                            if res not in result_ids:
+                                self.add_count_avg += 1
+                                result_ids.append(res)
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
                     for res_id in result_ids:
@@ -91,6 +94,7 @@ class CombinedRecallExperiment():
         print(f"Min Recall: {self.min_recall}")
         print(f"Max Recall: {self.max_recall}")
         print(f"Exception Count: {self.exception_count}")
+        print(f"Newly added articles avg: {self.add_count_avg}")
 
 if __name__ == "__main__":
     index = "wapo_clean"
