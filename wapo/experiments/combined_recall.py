@@ -142,6 +142,7 @@ if __name__ == "__main__":
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_path = f"{data_location}/judgement_list_wapo.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
+    vs_title_with_first_paragraph = f"{data_location}/wapo_vs_title_with_first_paragraph.bin"
 
     def get_embedding_of_extracted_keywords_denormalized_ordered(es_doc):
         keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["text"], keep_order=True)
@@ -150,7 +151,13 @@ if __name__ == "__main__":
             return None
         return em.encode(query)
 
-    exp = CombinedRecallExperiment(
+    def get_embedding_of_title(es_doc):
+        return fe.get_embedding_of_title(es_doc["_source"])
+
+    def get_embedding_of_title_with_first_paragraph(es_doc):
+        return fe.get_embedding_of_title_with_first_paragraph(es_doc["_source"])
+
+    exp1 = CombinedRecallExperiment(
         es,
         parser,
         index,
@@ -165,5 +172,41 @@ if __name__ == "__main__":
     print("Semantic Search configuration:")
     print("Index articles by:   embedding of extracted denormalized keywords (order preserved)")
     print("Query:               embedding of extracted denormalized keywords (order preserved)")
-    exp.print_stats()
+    exp1.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    exp2 = CombinedRecallExperiment(
+        es,
+        parser,
+        index,
+        size,
+        get_embedding_of_title_with_first_paragraph,
+        vs_title_with_first_paragraph,
+        judgement_list_path,
+        rel_cutoff
+    )
+    print("----------------------------------------------------------------")
+    print("Run combined retrieval method using keyword matching and semantic search.")
+    print("Semantic Search configuration:")
+    print("Index articles by:   embedding of title with first paragraph")
+    print("Query:               embedding of title with first paragraph")
+    exp2.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    exp3 = CombinedRecallExperiment(
+        es,
+        parser,
+        index,
+        size,
+        get_embedding_of_title,
+        vs_title_with_first_paragraph,
+        judgement_list_path,
+        rel_cutoff
+    )
+    print("----------------------------------------------------------------")
+    print("Run combined retrieval method using keyword matching and semantic search.")
+    print("Semantic Search configuration:")
+    print("Index articles by:   embedding of title with first paragraph")
+    print("Query:               embedding of title")
+    exp3.print_stats()
     print("----------------------------------------------------------------\n")
