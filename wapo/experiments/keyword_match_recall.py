@@ -25,10 +25,17 @@ class KeywordsMatchExperiment():
                 # apply relevance cutoff
                 relevant_articles = [ref for ref in judgement["references"] if int(ref["exp_rel"]) >= self.rel_cutoff]
                 if len(relevant_articles) == 0:
+                    self.count += 1
+                    self.min_recall = 0
                     continue
                 try:
-                    query_keywords = " OR ".join(self.parser.get_keywords_tf_idf(self.index, judgement["id"]))
+                    keywords = self.parser.get_keywords_tf_idf(self.index, judgement["id"])
+                    if not keywords:
+                        print(f"no keywords found for id: {judgement['id']}")
+                        self.exception_count += 1
+                        continue
                     self.count += 1
+                    query_keywords = " OR ".join(keywords)
                     results = (self.es.search(
                         size = size,
                         index = self.index,
