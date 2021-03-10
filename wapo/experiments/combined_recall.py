@@ -87,6 +87,7 @@ class CombinedRecallExperiment():
                     continue
         self.recall_avg /= self.count
         self.retrieval_count_avg /= self.count
+        self.add_count_avg /= self.count
 
     def print_stats(self):
         print(f"Recall Avg: {self.recall_avg}")
