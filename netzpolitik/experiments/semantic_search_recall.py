@@ -637,3 +637,67 @@ if __name__ == "__main__":
     print("Query:               embedding of extracted keywords (denormalized, order preserved)")
     exp.print_stats()
     print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of extracted keywords (denormalized, order preserved)
+    # Query:                embedding of title
+    exp = SemanticSearchExperiment(
+        es,
+        args.index_name,
+        size,
+        get_embedding_of_title,
+        vs_extracted_k_denormalized_ordered,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of extracted keywords (denormalized, order preserved)")
+    print("Query:               embedding of title")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of extracted keywords (denormalized, order preserved)
+    # Query:                embedding of title w/ first paragraph
+    exp = SemanticSearchExperiment(
+        es,
+        args.index_name,
+        size,
+        get_embedding_of_title_with_first_paragraph,
+        vs_extracted_k_denormalized_ordered,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of extracted keywords (denormalized, order preserved)")
+    print("Query:               embedding of title w/ first paragraph")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of extracted keywords (denormalized, order preserved)
+    # Query:                embedding of title w/ section titles
+    exp = SemanticSearchExperiment(
+        es,
+        args.index_name,
+        size,
+        get_embedding_of_title_with_section_titles,
+        vs_extracted_k_denormalized_ordered,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of extracted keywords (denormalized, order preserved)")
+    print("Query:               embedding of title w/ section titles")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    # Index articles by:    embedding of extracted keywords (denormalized, order preserved)
+    # Query:                embedding of pre-annotated keywords
+    exp = SemanticSearchExperiment(
+        es,
+        args.index_name,
+        size,
+        get_embedding_of_annotated_keywords,
+        vs_extracted_k_denormalized_ordered,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Index articles by:   embedding of extracted keywords (denormalized, order preserved)")
+    print("Query:               embedding of pre-annotated keywords")
+    exp.print_stats()
+    print("----------------------------------------------------------------\n")
