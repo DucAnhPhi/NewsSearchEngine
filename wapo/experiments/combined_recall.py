@@ -21,6 +21,7 @@ class CombinedRecallExperiment():
         self.rel_cutoff = rel_cutoff
         self.exception_count = 0
         self.add_count_avg = 0
+        self.recall_improvement_avg = 0.
 
         # load vector storage from file
         self.vs = VectorStorage(vector_storage_location, 500000)
@@ -63,7 +64,11 @@ class CombinedRecallExperiment():
                         e_results = [list(nn.keys())[0] for nn in nearest_n[0]]
                         for res in e_results:
                             if res not in result_ids:
-                                self.add_count_avg += 1
+                                for ref in relevant_articles:
+                                    if ref["id"] == res:
+                                        self.add_count_avg += 1
+                                        self.recall_improvement_avg += 1/len(relevant_articles)
+                                        break
                                 result_ids.append(res)
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
@@ -88,6 +93,7 @@ class CombinedRecallExperiment():
         self.recall_avg /= self.count
         self.retrieval_count_avg /= self.count
         self.add_count_avg /= self.count
+        self.recall_improvement_avg /= self.count
 
     def print_stats(self):
         print(f"Recall Avg: {self.recall_avg}")
@@ -95,7 +101,8 @@ class CombinedRecallExperiment():
         print(f"Min Recall: {self.min_recall}")
         print(f"Max Recall: {self.max_recall}")
         print(f"Exception Count: {self.exception_count}")
-        print(f"Newly added articles avg: {self.add_count_avg}")
+        print(f"Avg Recall improvement with semantic search: {self.recall_improvement_avg}")
+        print(f"Avg different results introduced with semantic search: {self.add_count_avg}")
 
 if __name__ == "__main__":
     index = "wapo_clean"
@@ -130,7 +137,7 @@ if __name__ == "__main__":
     parser = ParserWAPO(es)
     em = EmbeddingModel(lang="en", device=args.device)
     fe = FeatureExtraction(em, parser)
-    size = 200
+    size = 300
     rel_cutoff = 4
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_path = f"{data_location}/judgement_list_wapo.jsonl"
