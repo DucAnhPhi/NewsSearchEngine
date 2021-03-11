@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from elasticsearch import Elasticsearch
+from datetime import *
 from ..parser import ParserWAPO
 from ...vector_storage import VectorStorage
 from ...feature_extraction import FeatureExtraction
@@ -9,7 +10,7 @@ from ...embedding.model import EmbeddingModel
 from ...typings import NearestNeighborList
 
 class CombinedRecallExperiment():
-    def __init__(self, es, parser, index, size, get_query_func, vector_storage_location, judgement_list_path, rel_cutoff):
+    def __init__(self, es, parser, index, size, get_query_func, vector_storage_location, judgement_list_path, rel_cutoff, filter_by_time=False):
         self.es = es
         self.parser = parser
         self.index = index
@@ -57,7 +58,12 @@ class CombinedRecallExperiment():
                                 }
                             }
                         ))["hits"]["hits"]
-                        result_ids = [res["_id"] for res in k_results]
+                        if filter_by_time:
+                            for res in k_results:
+                                if res["_source"]["date"] < query_article_es["_source"]["date"]:
+                                    result_ids.append(res["_id"])
+                        else:
+                            result_ids = [res["_id"] for res in k_results]
                     query = get_query_func(query_article_es)
                     if query:
                         nearest_n: NearestNeighborList = self.vs.get_k_nearest(query,size)
@@ -69,7 +75,15 @@ class CombinedRecallExperiment():
                                         self.add_count_avg += 1
                                         self.recall_improvement_avg += 1/len(relevant_articles)
                                         break
-                                result_ids.append(res)
+                                if filter_by_time:
+                                    res_article_es = self.es.get(
+                                        index = self.index,
+                                        id = res
+                                    )
+                                    if res_article_es["_source"]["date"] < query_article_es["_source"]["date"]:
+                                        result_ids.append(res)
+                                else:
+                                    result_ids.append(res)
                     recall = 0.
                     self.retrieval_count_avg += len(result_ids)
                     for res_id in result_ids:
@@ -165,7 +179,8 @@ if __name__ == "__main__":
         get_embedding_of_extracted_keywords_denormalized_ordered,
         vs_extracted_k_denormalized_ordered,
         judgement_list_path,
-        rel_cutoff
+        rel_cutoff,
+        True
     )
     print("----------------------------------------------------------------")
     print("Run combined retrieval method using keyword matching and semantic search.")
@@ -183,7 +198,8 @@ if __name__ == "__main__":
         get_embedding_of_title_with_first_paragraph,
         vs_title_with_first_paragraph,
         judgement_list_path,
-        rel_cutoff
+        rel_cutoff,
+        True
     )
     print("----------------------------------------------------------------")
     print("Run combined retrieval method using keyword matching and semantic search.")
@@ -201,7 +217,8 @@ if __name__ == "__main__":
         get_embedding_of_title,
         vs_title_with_first_paragraph,
         judgement_list_path,
-        rel_cutoff
+        rel_cutoff,
+        True
     )
     print("----------------------------------------------------------------")
     print("Run combined retrieval method using keyword matching and semantic search.")

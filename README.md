@@ -7,10 +7,9 @@
 - [Author](#author)
 
 ## TODOs
-- get strong baseline retrieval method with high recall
+- implement filtering
 - implement LTR
 - handle scaling vector storage (max elements)
-- support more outlets
 
 ## Installation
 * Install Python 3.6.9 (if not already installed)
