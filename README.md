@@ -124,42 +124,7 @@ The relevance values map to the following judgments:
 We put both sets together in a more usable [JSON Lines Format](https://jsonlines.org/) in **data/judgement_list_wapo.jsonl** by using the following script: **wapo/judgement_list.py**.
 
 According to the [TREC 2020 News Track Guidelines](http://trec-news.org/guidelines-2020.pdf) we removed articles from the dataset which are labeled in the "kicker" field as "Opinion", "Letters to the Editor", or "The Post's View", as they are **not relevant**. Additionally we removed articles which are labeled in the "kicker" field as "Test" as they contain "Lorem ipsum" text, thus being irrelevant aswell.
-After the filtering only 487,322 news articles remain, which is a decrease in size by 27%.
-
-It is important to note, that 5 articles listed in the [50 test topics for background linking task](https://trec.nist.gov/data/news/2018/newsir18-topics.txt) are missing in the dataset:
-
-```
-# available
-<top>
-<num> Number: 321 </num>
-<docid>9171debc316e5e2782e0d2404ca7d09d</docid>
-<url>https://www.washingtonpost.com/news/worldviews/wp/2016/09/01/women-are-half-of-the-world-but-only-22-percent-of-its-parliaments/<url>
-</top>
-
-# not available
-<top>
-<num> Number: 823 </num>
-<docid>c109cc839f2d2414251471c48ae5515c</docid>
-<url>https://www.washingtonpost.com/news/to-your-health/wp/2016/09/21/superbug-mrsa-may-be-spreading-through-tainted-poultry/2695269178/</url>
-</top>
-
-# available
-<num> Number: 812 </num>
-<docid>dcd1560bd13a0b665b95d3ba27cc960c</docid>
-<url>https://www.washingtonpost.com/news/morning-mix/wp/2016/05/23/after-years-of-alleged-bullying-an-ohio-teen-killed-herself-is-her-school-district-responsible/<url>
-
-# available
-<num> Number: 811 </num>
-<docid>a244d1e0cfd916a2af76b6a6c785b017</docid>
-<url>https://www.washingtonpost.com/news/morning-mix/wp/2015/07/22/car-hacking-just-got-real-hackers-disable-suv-on-busy-highway/</url>
-
-# not available
-<num> Number: 803 </num>
-<docid>cad56e871cd0bca6cc77e97ffe246258</docid>
-<url>https://www.washingtonpost.com/news/wonk/wp/2016/05/11/the-middle-class-is-shrinking-just-about-everywhere-in-america/4/</url>
-```
-
-We added the 3 of the missing but available articles in the **wapo/index_es.py** script.
+After the filtering 629381 news articles remain, which is a decrease in size by 6.3%.
 
 
 ## Run unit tests

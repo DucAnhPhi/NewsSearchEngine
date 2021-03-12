@@ -127,13 +127,13 @@ class ParserWAPO(ParserInterface):
             title.strip()
         kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
         # ignore not relevant docs
-        if ("published_date" not in raw) or (not title) or (not text) or ParserWAPO.is_not_relevant(kicker):
+        if (not title) or (not text) or ParserWAPO.is_not_relevant(kicker):
             return None
         source_block = {
             "title": title,
             "section_titles": section_titles,
             "offset_first_paragraph": len(first_p),
-            "date": raw['published_date'],
+            "date": ParserWAPO.get_first_content_by_type(raw['contents'], 'date'),
             "kicker": kicker,
             "author": raw['author'],
             "text": text or '',

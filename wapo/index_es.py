@@ -142,11 +142,3 @@ if __name__ == "__main__":
                             body={'index': { 'refresh_interval': '1s',
                                             'number_of_replicas': '1',
                             }})
-
-    # add missing articles which are referenced in the WAPO judgement list
-    with open(f"{data_location}/wapo_missing_articles.jsonl", "r", encoding="utf-8") as f:
-        for line in f:
-            article_raw = json.loads(line)
-            article = article_raw.copy()
-            del article['id']
-            es.index(index=index_name, id=article_raw["id"], body=article)
