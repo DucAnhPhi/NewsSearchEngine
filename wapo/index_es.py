@@ -142,3 +142,26 @@ if __name__ == "__main__":
                             body={'index': { 'refresh_interval': '1s',
                                             'number_of_replicas': '1',
                             }})
+
+    missing_test_article = {
+        "title": "Congress betrays Afghans who risked their lives to help the U.S.",
+        "date": 1463441555000,
+        "kicker": "The Post's View",
+        "author": ["Editorial Board"],
+        "text": "THE HOUSE and Senate Amed Services committees have let down Afghans who braved danger and strife to work with the United States through a decade and a half of war. In 2009, Congress approved  a special program  that provided visas for Afghan translators and others who risked their lives shoulder-to-shoulder with U.S. forces. Though 8,528 applicants  have received visas  , thousands are still waiting. The annual defense bills just sent to the floor of each chamber could leave many of them behind. The legislation should be amended to keep faith with those who kept faith with the United States. The House  legislation  contains a provision that would limit eligibility for new applicants after May 31 to those who had served off-base as military translators or with the U.S. military in a “sensitive and trusted” role. This would exclude Afghans working on bases such as firefighters, maintenance workers and clerical assistants. When we asked Armed Services Committee Chairman Mac Thornberry (R-Tex.) about the limitations, he said they were a response to information he received that some Afghans were exploiting the program, taking menial jobs just to get a visa. We think the response is misplaced. Afghans who work with the United States, whether pushing a broom or translating under fire, potentially face the danger of retribution from extremists — especially when they go home at night. Mr. Thornberry’s concern is already dealt with in the visa process, which requires a detailed check to verify that applicants face ongoing danger. Last year, Congress lengthened the minimum service to two years. If the average processing time of 270 business days is counted, that means most are working for the United States for three years or more before they can acquire a visa and travel. Mr. Thornberry said, “If they can prove they are in danger, I am for them.” We urge him — and the House — to scrap the new limitations and leave the door open for every qualified applicant who faces danger because of association with the United States. The program also needs more visas. The State Department  reported   this year a backlog of approximately 10,300 principal applicants at some step in the process, with only about 4,000 visas remaining to be distributed. If Congress does not provide more, about 6,000 applicants will be left out in the cold, according to the  International Refugee Assistance Project . The House  bill  extends the program through 2017 but includes no new visas, while the Senate bill is silent on the program altogether. Both chambers need to act and allocate new visas. The special Afghan visa program has been a valuable tool for recruiting people to serve in a war zone. Cutting off thousands of applicants will not only betray their loyalty but also send the wrong signal, far and wide, about working for the United States.  Read more on this topic:   The Post’s View: Don’t endanger visas for the Afghans who helped U.S. troops   Aaron E. Fleming: My Afghan battle partner deserves a U.S. visa   Ryan Crocker: Don’t let the U.S. abandon thousands of Afghans who worked for us ",
+        "url": "https://www.washingtonpost.com/opinions/congress-betrays-afghans-who-risked-their-lives-to-help-the-us/2016/05/16/516fb0da-1b92-11e6-9c81-4be1c14fb8c8_story.html",
+        "section_titles": [],
+        "offset_first_paragraph": 163,
+        "links": [
+            "https://travel.state.gov/content/visas/en/immigrate/afghans-work-for-us.html",
+            "https://travel.state.gov/content/dam/visas/Statistics/Immigrant-Statistics/SIV/SQNumbers0316.pdf",
+            "https://www.congress.gov/bill/114th-congress/house-bill/1735/text",
+            "https://travel.state.gov/content/dam/visas/SIVs/Afghan%20SIV%20public%20report_Jan%202016.pdf",
+            "http://www.refugeerights.org/",
+            "https://www.congress.gov/bill/114th-congress/house-bill/1735/text",
+            "https://www.washingtonpost.com/opinions/dont-endanger-visas-for-the-afghans-who-helped-us-troops/2016/02/05/971557c0-cb60-11e5-88ff-e2d1b4289c2f_story.html",
+            "https://www.washingtonpost.com/opinions/my-afghan-battle-partner-deserves-a-us-visa/2015/11/27/98b00ab6-912d-11e5-a2d6-f57908580b1f_story.html",
+            "https://www.washingtonpost.com/posteverything/wp/2016/05/12/dont-let-the-u-s-abandon-thousands-of-afghans-who-worked-for-us/"
+        ]
+    }
+    es.index(index=index_name, id="516fb0da-1b92-11e6-9c81-4be1c14fb8c8", body=missing_test_article)
