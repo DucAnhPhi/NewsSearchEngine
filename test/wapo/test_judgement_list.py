@@ -3,7 +3,7 @@ from ...wapo.judgement_list import JudgementListWapo
 
 class TestJudgementListWAPO():
     def test_create_judgement_list(self):
-        actual = JudgementListWapo.get_topic_dict()
+        actual = JudgementListWapo.get_topic_dict('18')
         expected = {
             "321": "9171debc316e5e2782e0d2404ca7d09d",
             "336": "2a340b8573d498e261d6f2365b37f8eb",
@@ -57,3 +57,10 @@ class TestJudgementListWAPO():
             "825": "a1c41a70-35c7-11e3-8a0e-4e2cf80831fc"
         }
         assert actual == expected
+
+    def test_create_judgement_list_unique(self):
+        jl = JudgementListWapo.create(test=True)
+        keys = set()
+        for key in jl:
+            keys.add(key)
+        assert len(keys) == len(jl)

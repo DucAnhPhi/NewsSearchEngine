@@ -3,8 +3,7 @@ data/*.bin
 data/*.pkl
 data/*.txt
 !data/english_stopwords_nltk.txt
-!data/wapo_bqrels.exp-gains.txt
-!data/wapo_newsir18-topics.txt
+!data/wapo_newsir*.txt
 data/TREC_Washington_Post_collection.v3.jl
 data/netzpolitik.jsonl
 data/judgement_list_netzpolitik.jsonl

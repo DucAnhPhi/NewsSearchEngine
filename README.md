@@ -105,12 +105,21 @@ python -m NewsSearchEngine.netzpolitik.experiments.combined_recall
 
 ### TREC Washington Post document collection (WAPO)
 
-The TREC Washington Post Corpus contains 671,947 news articles and blog posts from January 2012 through December 2019. You can request this data [here](https://trec.nist.gov/data/wapost/).
+The TREC Washington Post Corpus v3 contains 671,947 news articles and blog posts from January 2012 through December 2019. You can request this data [here](https://trec.nist.gov/data/wapost/). In version 3 exact and near-duplicate documents were removed from the collection.
 
-For the background linking task in 2018 (TREC 2018), TREC provided:
+For the background linking task TREC provided:
 
-- [50 test topics for background linking task](https://trec.nist.gov/data/news/2018/newsir18-topics.txt)
-- [relevance judgements for backgroundlinking task (with exponential gain values)](https://trec.nist.gov/data/news/2018/bqrels.exp-gains.txt)
+2018:
+- [test topics for background linking task](./data/wapo_newsir18_topics.txt)
+- [relevance judgements for backgroundlinking task (with exponential gain values)](./data/wapo_newsir18_bqrels.txt)
+
+2019:
+- [test topics for background linking task](./data/wapo_newsir19_topics.txt)
+- [relevance judgements for backgroundlinking task (with exponential gain values)](./data/wapo_newsir19_bqrels.txt)
+
+2020:
+- [test topics for background linking task](./data/wapo_newsir20_topics.txt)
+- [relevance judgements for backgroundlinking task (with exponential gain values)](./data/wapo_newsir20_bqrels.txt)
 
 The relevance values map to the following judgments:
 
@@ -123,10 +132,10 @@ The relevance values map to the following judgments:
 
 We put both sets together in a more usable [JSON Lines Format](https://jsonlines.org/) in **data/judgement_list_wapo.jsonl** by using the following script: **wapo/judgement_list.py**.
 
-According to the [TREC 2020 News Track Guidelines](http://trec-news.org/guidelines-2020.pdf) we removed articles from the dataset which are labeled in the "kicker" field as "Opinion", "Letters to the Editor", or "The Post's View", as they are **not relevant**. Additionally we removed articles which are labeled in the "kicker" field as "Test" as they contain "Lorem ipsum" text, thus being irrelevant aswell.
+According to the [TREC 2020 News Track Guidelines](http://trec-news.org/guidelines-2020.pdf) we removed articles from the dataset which are labeled in the "kicker" field as "Opinion", "Letters to the Editor", or "The Post's View", as they are **not relevant**. Additionally we removed articles which are labeled in the "kicker" field as "Test" as they contain "Lorem ipsum" text, thus being irrelevant as well.
 After the filtering 629385 news articles remain, which is a decrease in size by 6.3%.
 
-It is important to note, that 5 articles listed in the [50 test topics for background linking task (2018)](https://trec.nist.gov/data/news/2018/newsir18-topics.txt) are missing in the dataset:
+**Note:** TREC2018 and TREC2019 test data are based on the v2 WAPO corpus. As we use v3, missing articles are possible. If possible, we add missing articles, otherwise ignore them in the test data:
 
 ```
 # available
