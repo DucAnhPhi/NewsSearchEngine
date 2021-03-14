@@ -36,11 +36,12 @@ if __name__ == "__main__":
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_path = f"{data_location}/judgement_list_wapo.jsonl"
 
-    rel_cutoff = 4
+    rel_cutoff = 2
     ref_count = 0
     future_count = 0
     not_found_ref_articles = set()
     not_found_query_articles = set()
+    useful_relevant_count = 0
     significant_relevant_count = 0
     essential_relevant_count = 0
     critical_relevant_count = 0
@@ -66,6 +67,8 @@ if __name__ == "__main__":
                         )
                         if ref_article_es["_source"]["date"] > query_article_es["_source"]["date"]:
                             future_count += 1
+                            if int(ref["exp_rel"]) == 2:
+                                useful_relevant_count += 1
                             if int(ref["exp_rel"]) == 4:
                                 significant_relevant_count +=1
                             if int(ref["exp_rel"]) == 8:
@@ -82,7 +85,7 @@ if __name__ == "__main__":
                 continue
     
     print(f"Number of relevant articles published after reference article: {future_count}")
-    print(f"Out of these {future_count} articles: \n{significant_relevant_count} are significant, \n{essential_relevant_count} are essential and\n{critical_relevant_count} are critical for relevance.")
+    print(f"Out of these {future_count} articles: \n{useful_relevant_count} are useful, {significant_relevant_count} are significant, \n{essential_relevant_count} are essential and\n{critical_relevant_count} are critical for relevance.")
     print(f"Number of all relevant articles (after relevance cutoff): {ref_count}")
     print(f"Ratio: {future_count/ref_count}")
     print(f"Number of not found relevant articles: {len(not_found_ref_articles)}")

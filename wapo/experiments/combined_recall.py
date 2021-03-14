@@ -138,7 +138,7 @@ if __name__ == "__main__":
     em = EmbeddingModel(lang="en", device=args.device)
     fe = FeatureExtraction(em, parser)
     size = 300
-    rel_cutoff = 4
+    rel_cutoff = 2
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_path = f"{data_location}/judgement_list_wapo.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"

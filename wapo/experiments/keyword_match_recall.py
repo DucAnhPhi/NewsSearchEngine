@@ -16,7 +16,7 @@ class KeywordsMatchExperiment():
         self.retrieval_count_avg = 0.
         self.min_recall = 1.
         self.max_recall = 0.
-        self.rel_cutoff = 4
+        self.rel_cutoff = 2
         self.exception_count = 0
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
