@@ -35,7 +35,7 @@ class ParserWAPO(ParserInterface):
                 }
             }
         )
-        if not title_termvector["found"] or not text_termvector["found"]:
+        if not text_termvector["found"]:
             return []
         keywords_title = []
         keywords_text = []
@@ -130,7 +130,7 @@ class ParserWAPO(ParserInterface):
         if (not text) or ParserWAPO.is_not_relevant(kicker):
             return None
         source_block = {
-            "title": title,
+            "title": title or '',
             "section_titles": section_titles,
             "offset_first_paragraph": len(first_p),
             "date": ParserWAPO.get_first_content_by_type(raw['contents'], 'date'),
