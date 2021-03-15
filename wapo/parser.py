@@ -103,9 +103,9 @@ class ParserWAPO(ParserInterface):
         if kicker:
             not_relevant = {
                 "test",
-                "opinion",
-                "letters to the editor",
-                "the post's view"
+                #"opinion",
+                #"letters to the editor",
+                #"the post's view"
             }
             is_not_relevant = kicker.lower() in not_relevant
         return is_not_relevant
@@ -127,7 +127,7 @@ class ParserWAPO(ParserInterface):
             title.strip()
         kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
         # ignore not relevant docs
-        if (not title) or (not text) or ParserWAPO.is_not_relevant(kicker):
+        if (not text) or ParserWAPO.is_not_relevant(kicker):
             return None
         source_block = {
             "title": title,
