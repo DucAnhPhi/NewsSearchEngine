@@ -1,4 +1,5 @@
 import pytest
+import os
 from ...wapo.judgement_list import JudgementListWapo
 
 class TestJudgementListWAPO():
@@ -64,3 +65,14 @@ class TestJudgementListWAPO():
         for key in jl:
             keys.add(key)
         assert len(keys) == len(jl)
+
+    def test_missing_articles_unique(self):
+        missing_articles = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/wapo_missing_articles.jsonl"
+        ids = set()
+        count = 0
+        with open(missing_articles, "r", encoding="utf-8") as f:
+            for line in f:
+                count += 1
+                article_id = line.strip()
+                ids.add(article_id)
+        assert len(ids) == count
