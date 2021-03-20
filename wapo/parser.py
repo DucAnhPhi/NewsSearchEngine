@@ -111,7 +111,7 @@ class ParserWAPO(ParserInterface):
         return is_not_relevant
 
     @staticmethod
-    def parse_article(raw):
+    def parse_article(raw, ignore=True):
         text = ParserWAPO.get_all_content_by_type(raw['contents'], 'sanitized_html')
         section_titles = ParserWAPO.get_section_titles(raw["contents"])
         first_p = ParserWAPO.get_first_paragraph(raw['contents'])
@@ -127,7 +127,7 @@ class ParserWAPO(ParserInterface):
             title.strip()
         kicker = ParserWAPO.get_first_content_by_type(raw['contents'], 'kicker')
         # ignore not relevant docs
-        if (not text) or ParserWAPO.is_not_relevant(kicker):
+        if ignore and ((not text) or ParserWAPO.is_not_relevant(kicker)):
             return None
         source_block = {
             "title": title or '',

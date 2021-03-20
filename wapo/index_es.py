@@ -14,18 +14,17 @@ from .parser import ParserWAPO
 if __name__ == "__main__":
     parser = ParserWAPO()
 
-    # WAPO Corpus v3
-    index_name = "wapo_clean"
-    index_file = "TREC_Washington_Post_collection.v3.jl"
-
     # WAPO Corpus v2
-    #index_name = "wapo_clean_v2"
-    #index_file = "TREC_Washington_Post_collection.v2.jl"
+    index_name_v2 = "wapo_v2"
+    index_file_v2 = "TREC_Washington_Post_collection.v2.jl"
+
+    # WAPO Corpus v3
+    index_name_combined = "wapo_clean"
+    index_file_v3 = "TREC_Washington_Post_collection.v3.jl"
 
     p = argparse.ArgumentParser(description='Index Washington Post articles to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
     p.add_argument('--port', default='9200', help='Port for ElasticSearch endpoint')
-    p.add_argument('--index_name', default=index_name, help='index name')
     p.add_argument('--user', default=None, help='ElasticSearch user')
     p.add_argument('--secret', default=None, help="ElasticSearch secret")
 
@@ -115,14 +114,33 @@ if __name__ == "__main__":
         }
     }
 
-    if not es.indices.exists(index=args.index_name):
+    if not es.indices.exists(index=index_name_v2):
         try:
-            es.indices.create(index=args.index_name, body=settings)
+            es.indices.create(index=index_name_v2, body=settings)
         except TransportError as e:
             print(e.info)
             sys.exit(-1)
 
-    def doc_generator(f, num_docs):
+    if not es.indices.exists(index=index_name_combined):
+        try:
+            es.indices.create(index=index_name_combined, body=settings)
+        except TransportError as e:
+            print(e.info)
+            sys.exit(-1)
+
+    def doc_generator_v2(f, num_docs):
+        for line in tqdm(f, total=num_docs):
+            raw = json.loads(line)
+            article_source = parser.parse_article(raw, ignore=False)
+            if article_source != None:
+                data_dict = {
+                    "_index": index_name,
+                    "_id": raw['id'],
+                }
+                data_dict["_source"] = article_source
+                yield data_dict
+
+    def doc_generator_v3(f, num_docs):
         for line in tqdm(f, total=num_docs):
             raw = json.loads(line)
             article_source = parser.parse_article(raw)
@@ -134,26 +152,41 @@ if __name__ == "__main__":
                 data_dict["_source"] = article_source
                 yield data_dict
 
-    print("Counting...")
-    articles_location = f"{data_location}/{index_file}"
-    with open(articles_location, 'r', encoding="utf-8") as f:
+    print("Counting WAPO Corpus v2...")
+    articles_location_v2 = f"{data_location}/{index_file_v2}"
+    with open(articles_location_v2, 'r', encoding="utf-8") as f:
         lines = 0
         for line in f:
             lines += 1
 
-    print("Indexing...")
-    with open(articles_location, 'r', encoding="utf-8") as f:
-        helpers.bulk(es, doc_generator(f, lines), request_timeout=30)
+    print("Indexing WAPO Corpus v2...")
+    with open(articles_location_v2, 'r', encoding="utf-8") as f:
+        helpers.bulk(es, doc_generator_v2(f, lines), request_timeout=30)
 
-    es.indices.put_settings(index=args.index_name,
+    es.indices.put_settings(index=args.index_name_v2,
                             body={'index': { 'refresh_interval': '1s',
                                             'number_of_replicas': '1',
                             }})
 
-    # add missing articles which are referenced in the WAPO judgement list
+    print("Counting WAPO Corpus v3...")
+    articles_location_v3 = f"{data_location}/{index_file_v3}"
+    with open(articles_location_v3, 'r', encoding="utf-8") as f:
+        lines = 0
+        for line in f:
+            lines += 1
+
+    print("Indexing WAPO Corpus v3...")
+    with open(articles_location_v3, 'r', encoding="utf-8") as f:
+        helpers.bulk(es, doc_generator_v3(f, lines), request_timeout=30)
+
+    es.indices.put_settings(index=args.index_name_combined,
+                            body={'index': { 'refresh_interval': '1s',
+                                            'number_of_replicas': '1',
+                            }})
+
+    # add removed articles from v2, which are referenced in the WAPO judgement list
     with open(f"{data_location}/wapo_missing_articles.jsonl", "r", encoding="utf-8") as f:
         for line in f:
-            article_raw = json.loads(line)
-            article = article_raw.copy()
-            del article['id']
-            es.index(index=index_name, id=article_raw["id"], body=article)
+            article_id = line.strip()
+            missing_article_es = es.get(index=index_name_v2, id=article_id)
+            es.index(index=index_name_combined, id=missing_article_es["_id"], body=missing_article_es["_source"])
