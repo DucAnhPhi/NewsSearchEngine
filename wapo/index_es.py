@@ -13,7 +13,14 @@ from .parser import ParserWAPO
 
 if __name__ == "__main__":
     parser = ParserWAPO()
+
+    # WAPO Corpus v3
     index_name = "wapo_clean"
+    index_file = "TREC_Washington_Post_collection.v3.jl"
+
+    # WAPO Corpus v2
+    #index_name = "wapo_clean_v2"
+    #index_file = "TREC_Washington_Post_collection.v2.jl"
 
     p = argparse.ArgumentParser(description='Index Washington Post articles to ElasticSearch')
     p.add_argument('--host', default='localhost', help='Host for ElasticSearch endpoint')
@@ -128,7 +135,7 @@ if __name__ == "__main__":
                 yield data_dict
 
     print("Counting...")
-    articles_location = f"{data_location}/TREC_Washington_Post_collection.v3.jl"
+    articles_location = f"{data_location}/{index_file}"
     with open(articles_location, 'r', encoding="utf-8") as f:
         lines = 0
         for line in f:
