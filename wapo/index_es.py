@@ -134,7 +134,7 @@ if __name__ == "__main__":
             article_source = parser.parse_article(raw, ignore=False)
             if article_source != None:
                 data_dict = {
-                    "_index": index_name,
+                    "_index": index_name_v2,
                     "_id": raw['id'],
                 }
                 data_dict["_source"] = article_source
@@ -146,7 +146,7 @@ if __name__ == "__main__":
             article_source = parser.parse_article(raw)
             if article_source != None:
                 data_dict = {
-                    "_index": index_name,
+                    "_index": index_name_combined,
                     "_id": raw['id'],
                 }
                 data_dict["_source"] = article_source
