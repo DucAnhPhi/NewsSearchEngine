@@ -70,3 +70,29 @@ class VectorStorage():
         if self.persist:
             self.storage.save_index(self.storage_location)
             print(f"Done. Exception Count: {exception_count}")
+
+    def add_items_from_ids_file(self, file_path, emb_func):
+        exception_count = 0
+        with open(file_path, 'r', encoding="utf-8") as data_file:
+            emb_batch: VectorList = []
+            id_batch: StringList = []
+
+            for line in data_file:
+                article_id = line.strip()
+                emb = emb_func(article_id)
+                if emb == None:
+                    exception_count += 1
+                    continue
+                emb_batch.append(emb)
+                id_batch.append(article_id)
+
+                if len(emb_batch) == 1000:
+                    self.storage.add_items(emb_batch, id_batch)
+                    emb_batch = []
+                    id_batch = []
+
+            if len(emb_batch) != 0:
+                self.storage.add_items(emb_batch, id_batch)
+        if self.persist:
+            self.storage.save_index(self.storage_location)
+            print(f"Done. Exception Count: {exception_count}")
