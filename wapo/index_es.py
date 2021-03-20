@@ -163,7 +163,7 @@ if __name__ == "__main__":
     with open(articles_location_v2, 'r', encoding="utf-8") as f:
         helpers.bulk(es, doc_generator_v2(f, lines), request_timeout=30)
 
-    es.indices.put_settings(index=args.index_name_v2,
+    es.indices.put_settings(index=index_name_v2,
                             body={'index': { 'refresh_interval': '1s',
                                             'number_of_replicas': '1',
                             }})
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     with open(articles_location_v3, 'r', encoding="utf-8") as f:
         helpers.bulk(es, doc_generator_v3(f, lines), request_timeout=30)
 
-    es.indices.put_settings(index=args.index_name_combined,
+    es.indices.put_settings(index=index_name_combined,
                             body={'index': { 'refresh_interval': '1s',
                                             'number_of_replicas': '1',
                             }})
