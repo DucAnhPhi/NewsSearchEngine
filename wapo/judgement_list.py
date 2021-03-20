@@ -21,9 +21,8 @@ class JudgementListWapo():
         return topic_dict
 
     @staticmethod
-    def create(test=False):
+    def create(years, filename="judgement_list_wapo", test=False):
         data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir))}/data"
-        years = ["18","19","20"]
         topic_combined = {}
         jl = {}
         for year in years:
@@ -40,7 +39,7 @@ class JudgementListWapo():
 
         if test:
             return jl
-        with open(f"{data_location}/judgement_list_wapo.jsonl", "w", encoding="utf-8") as fout:
+        with open(f"{data_location}/{filename}.jsonl", "w", encoding="utf-8") as fout:
             for key in jl:
                 judgement = {"id": key, "references": jl[key]}
                 json.dump(judgement, fout)
@@ -150,4 +149,7 @@ if __name__ == "__main__":
         )
 
     JudgementListWapo.examine(es)
-    #JudgementListWapo.create()
+    #JudgementListWapo.create(["18","19","20"], "judgement_list_wapo_combined.jsonl")
+    #JudgementListWapo.create(["18"], "judgement_list_wapo_18.jsonl")
+    #JudgementListWapo.create(["19"], "judgement_list_wapo_19.jsonl")
+    #JudgementListWapo.create(["20"], "judgement_list_wapo_20.jsonl")

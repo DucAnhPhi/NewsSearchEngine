@@ -59,7 +59,7 @@ class TestJudgementListWAPO():
         assert actual == expected
 
     def test_create_judgement_list_unique(self):
-        jl = JudgementListWapo.create(test=True)
+        jl = JudgementListWapo.create(["18", "19", "20"],test=True)
         keys = set()
         for key in jl:
             keys.add(key)
