@@ -100,7 +100,7 @@ if __name__ == "__main__":
         article_id = get_article_id(raw)
         if not article_id:
             return None
-        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["body"], keep_order=False)
+        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["title"], raw["body"], keep_order=False)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized, get_article_id)
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         article_id = get_article_id(raw)
         if not article_id:
             return None
-        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["body"], keep_order=True)
+        keyw = parser.get_keywords_tf_idf_denormalized(args.index_name, article_id, raw["title"], raw["body"], keep_order=True)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/netzpolitik_vs_extracted_k_denormalized_ordered.bin", num_elements) \
         .add_items_from_file(articles_path, embedding_func_tf_idf_keywords_denormalized_ordered, get_article_id)

@@ -109,7 +109,7 @@ if __name__ == "__main__":
     def embedding_func_tf_idf_keywords_denormalized(raw):
         article = parser.parse_article(raw)
         if article:
-            keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, raw["id"], article["text"], keep_order=False)
+            keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, raw["id"], article["title"], article["text"], keep_order=False)
             return fe.get_embedding_of_keywords(keyw)
         return None
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_denormalized.bin", num_elements) \
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
     def embedding_func_tf_idf_keywords_denormalized_from_id(article_id):
         article_es = es.get(index=index_name_v2, id=article_id)
-        keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, article_id, article_es["_source"]["text"], keep_order=False)
+        keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, article_id, article_es["_source"]["title"], article_es["_source"]["text"], keep_order=False)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_denormalized.bin", num_elements) \
         .add_items_from_ids_file(missing_articles_path, embedding_func_tf_idf_keywords_denormalized_from_id)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     def embedding_func_tf_idf_keywords_denormalized_ordered(raw):
         article = parser.parse_article(raw)
         if article:
-            keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, raw["id"], article["text"], keep_order=True)
+            keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, raw["id"], article["title"], article["text"], keep_order=True)
             return fe.get_embedding_of_keywords(keyw)
         return None
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin", num_elements) \
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     def embedding_func_tf_idf_keywords_denormalized_ordered_from_id(article_id):
         article_es = es.get(index=index_name_v2, id=article_id)
-        keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, article_id, article_es["_source"]["text"], keep_order=True)
+        keyw = parser.get_keywords_tf_idf_denormalized(index_name_combined, article_id, article_es["_source"]["title"], article_es["_source"]["text"], keep_order=True)
         return fe.get_embedding_of_keywords(keyw)
     VectorStorage(f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin", num_elements) \
         .add_items_from_ids_file(missing_articles_path, embedding_func_tf_idf_keywords_denormalized_ordered_from_id)

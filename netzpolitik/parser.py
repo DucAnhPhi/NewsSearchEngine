@@ -47,23 +47,27 @@ class ParserNetzpolitik(ParserInterface):
         combined = list(set(keywords_title + keywords_body))
         return combined
 
-    def get_keywords_tf_idf_denormalized(self, index, article_id, text, keep_order = True) -> StringList:
+    def get_keywords_tf_idf_denormalized(self, index, article_id, title, text, keep_order = True) -> StringList:
         normalized = self.get_keywords_tf_idf(index, article_id)
 
         if len(normalized) == 0:
             return normalized
 
-        def denorm(text, kw):
+        combined_text = f"{title if title is not None else ''} {text if text is not None else ''}".strip()
+        if not combined_text:
+            return []
+
+        def denorm(t, kw):
             query = kw
-            match = re.search(rf"\b{query}([\wöüäß]+)?\b", text, flags=re.IGNORECASE)
+            match = re.search(rf"\b{query}([\wöüäß]+)?\b", t, flags=re.IGNORECASE)
             while match == None:
                 query = query[:-1]
-                match = re.search(rf"\b{query}([\wöüäß]+)?\b", text, flags=re.IGNORECASE)
-                if len(query) == 1 and match == None:
+                match = re.search(rf"\b{query}([\wöüäß]+)?\b", t, flags=re.IGNORECASE)
+                if len(query) <= 1 and match == None:
                     return None
             return (match.group(0), match.start())
 
-        denormalized = list(set([denorm(text, keyw) for keyw in normalized if denorm(text, keyw)]))
+        denormalized = list(set([denorm(combined_text, keyw) for keyw in normalized if denorm(combined_text, keyw)]))
         if keep_order:
             denormalized.sort(key=lambda tupl: tupl[1])
         return [tupl[0] for tupl in denormalized]
