@@ -145,7 +145,7 @@ if __name__ == "__main__":
     vs_title_with_first_paragraph = f"{data_location}/wapo_vs_title_with_first_paragraph.bin"
 
     def get_embedding_of_extracted_keywords_denormalized_ordered(es_doc):
-        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["text"], keep_order=True)
+        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=True)
         query = " ".join(keywords)
         if not query:
             return None

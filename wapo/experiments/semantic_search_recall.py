@@ -134,14 +134,14 @@ if __name__ == "__main__":
         return em.encode(query)
 
     def get_embedding_of_extracted_keywords_denormalized(es_doc):
-        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["text"], keep_order=False)
+        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=False)
         query = " ".join(keywords)
         if not query:
             return None
         return em.encode(query)
 
     def get_embedding_of_extracted_keywords_denormalized_ordered(es_doc):
-        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["text"], keep_order=True)
+        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=True)
         query = " ".join(keywords)
         if not query:
             return None
