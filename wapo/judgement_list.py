@@ -148,8 +148,8 @@ if __name__ == "__main__":
             max_retries=10
         )
 
-    JudgementListWapo.examine(es)
-    #JudgementListWapo.create(["18","19","20"], "judgement_list_wapo_combined.jsonl")
-    #JudgementListWapo.create(["18"], "judgement_list_wapo_18.jsonl")
-    #JudgementListWapo.create(["19"], "judgement_list_wapo_19.jsonl")
-    #JudgementListWapo.create(["20"], "judgement_list_wapo_20.jsonl")
+    #JudgementListWapo.examine(es)
+    JudgementListWapo.create(["18","19","20"], "judgement_list_wapo_combined")
+    JudgementListWapo.create(["18"], "judgement_list_wapo_18")
+    JudgementListWapo.create(["19"], "judgement_list_wapo_19")
+    JudgementListWapo.create(["20"], "judgement_list_wapo_20")
