@@ -110,7 +110,7 @@ if __name__ == "__main__":
     size = 100
     rel_cutoff = 2
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
-    judgement_list_path = f"{data_location}/judgement_list_wapo.jsonl"
+    judgement_list_path = f"{data_location}/judgement_list_wapo_combined.jsonl"
     vs_title = f"{data_location}/wapo_vs_title.bin"
     vs_title_with_section_titles = f"{data_location}/wapo_vs_title_with_section_titles.bin"
     vs_title_with_first_paragraph = f"{data_location}/wapo_vs_title_with_first_paragraph.bin"
