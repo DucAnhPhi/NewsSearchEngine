@@ -134,6 +134,7 @@ if __name__ == "__main__":
     judgement_list_path = f"{data_location}/judgement_list_netzpolitik.jsonl"
     vs_title_with_first_paragraph = f"{data_location}/netzpolitik_vs_title_with_first_paragraph.bin"
     vs_annotated_k = f"{data_location}/netzpolitik_vs_annotated_k.bin"
+    vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
 
     def get_embedding_of_title_with_first_paragraph(es_doc):
         return fe.get_embedding_of_title_with_first_paragraph(es_doc["_source"])
@@ -145,10 +146,21 @@ if __name__ == "__main__":
             return None
         return em.encode(query)
 
+    def get_embedding_of_extracted_keywords(es_doc):
+        extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
+        query = " ".join(extracted)
+        if not query:
+            return None
+        return em.encode(query)
+
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
         return " ".join(annotated + extracted)
+
+    def get_query_from_tf_idf_keywords(es_doc):
+        extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
+        return " ".join(extracted)
 
     exp = CombinedRecallExperiment(
         es,
@@ -162,6 +174,7 @@ if __name__ == "__main__":
     )
     print("----------------------------------------------------------------")
     print("Run combined retrieval method using keyword matching and semantic search.")
+    print("Ranked Boolean Retrieval based on combined extracted keywords (denormalized, order preserved) and annotated keywords")
     print("Semantic Search configuration:")
     print("Index articles by:   embedding of annotated keywords")
     print("Query:               embedding of annotated keywords")
@@ -180,8 +193,47 @@ if __name__ == "__main__":
     )
     print("----------------------------------------------------------------")
     print("Run combined retrieval method using keyword matching and semantic search.")
+    print("Ranked Boolean Retrieval based on combined extracted keywords (denormalized, order preserved) and annotated keywords")
     print("Semantic Search configuration:")
     print("Index articles by:   embedding of title with first paragraph")
     print("Query:               embedding of title with first paragraph")
     exp2.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    exp3 = CombinedRecallExperiment(
+        es,
+        parser,
+        index,
+        size,
+        get_query_from_tf_idf_keywords,
+        get_embedding_of_annotated_keywords,
+        vs_annotated_k,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Run combined retrieval method using keyword matching and semantic search.")
+    print("Ranked Boolean Retrieval based on extracted keywords (denormalized, order preserved)")
+    print("Semantic Search configuration:")
+    print("Index articles by:   embedding of annotated keywords")
+    print("Query:               embedding of annotated keywords")
+    exp3.print_stats()
+    print("----------------------------------------------------------------\n")
+
+    exp4 = CombinedRecallExperiment(
+        es,
+        parser,
+        index,
+        size,
+        get_query_from_tf_idf_keywords,
+        get_embedding_of_extracted_keywords,
+        vs_extracted_k_denormalized_ordered,
+        judgement_list_path
+    )
+    print("----------------------------------------------------------------")
+    print("Run combined retrieval method using keyword matching and semantic search.")
+    print("Ranked Boolean Retrieval based on extracted keywords (denormalized, order preserved)")
+    print("Semantic Search configuration:")
+    print("Index articles by:   embedding of extracted keywords (denormalized, order preserved)")
+    print("Query:               embedding of extracted keywords (denormalized, order preserved)")
+    exp4.print_stats()
     print("----------------------------------------------------------------\n")
