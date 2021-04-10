@@ -108,11 +108,14 @@ if __name__ == "__main__":
         )
 
     parser = ParserWAPO(es)
-    judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo.jsonl"
+    judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_wapo_combined.jsonl"
 
-    exp = KeywordsMatchExperiment(es, parser, index, 300, judgement_location)
-    print("WAPO Keyword Match Retrieval Experiment")
-    print("----------------------------------------------------------------")
-    print("Query by string query with concatenated extracted tf-idf keywords.")
-    exp.print_stats()
-    print("----------------------------------------------------------------")
+    ret_counts = [100, 150, 200, 250, 300]
+
+    for count in ret_counts:
+        exp = KeywordsMatchExperiment(es, parser, index, count, judgement_location)
+        print("WAPO Keyword Match Retrieval Experiment")
+        print("----------------------------------------------------------------")
+        print("Query by string query with concatenated extracted tf-idf keywords.")
+        exp.print_stats()
+        print("----------------------------------------------------------------")
