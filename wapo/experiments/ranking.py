@@ -3,6 +3,7 @@ import os
 import lightgbm as lgb
 import numpy as np
 import json
+from tqdm import tqdm
 from elasticsearch import Elasticsearch
 from scipy.spatial.distance import cosine
 from ..parser import ParserWAPO
@@ -57,7 +58,7 @@ def get_training_and_validation_data(es, parser, index):
     X_train = []
     y_train = []
     query_train = []
-    for jl in train_data_raw:
+    for jl in tqdm(train_data_raw, total=16915)
         query_es = es.get(index=index, id=jl["id"])
         query_train.append(len(jl["references"]))
         for ref in jl["references"]:
@@ -67,7 +68,7 @@ def get_training_and_validation_data(es, parser, index):
     X_val = []
     y_val = []
     query_val = []
-    for jl in val_data_raw:
+    for jl in tqdm(val_data_raw, total=7248):
         query_es = es.get(index=index, id=jl["id"])
         query_val.append(len(jl["references"]))
         for ref in jl["references"]:
@@ -75,10 +76,6 @@ def get_training_and_validation_data(es, parser, index):
             X_val.append(ref_features)
             y_val.append(int(ref["exp_rel"]))
     return (np.array(X_train), np.array(y_train), np.array(query_train), np.array(X_val), np.array(y_val), np.array(query_val))
-
-
-
-
 
 if __name__ == "__main__":
     index = "wapo_clean"
@@ -117,6 +114,27 @@ if __name__ == "__main__":
     judgement_list_20_path = f"{data_location}/judgement_list_wapo_20.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
 
+    print("Initialize training and validation data...")
     X_train, y_train, query_train, X_val, y_val, query_val = get_training_and_validation_data(es, parser, index)
-    print(query_train)
-    print(query_val)
+
+    print("Finished. Saving data...")
+    np.savetxt('X_train.txt', X_train)
+    np.savetxt('y_train.txt', y_train)
+    np.savetxt('X_val.txt', X_val)
+    np.savetxt('y_val.txt', y_val)
+    np.savetxt('query_train.txt', query_train)
+    np.savetxt('query_val.txt', query_val)
+
+    gbm = lgb.LGBMRanker()
+    print("Start training...")
+    gbm.fit(
+        X_train,
+        y_train,
+        group=query_train,
+        eval_set=[(X_val, y_val)],
+        eval_group=[query_val],
+        eval_at=[5,10],
+        early_stopping_rounds=50
+    )
+    print("Training finished. Saving ranking model...")
+    gbm.save_model(f"{data_location}/ranking_model.txt")
