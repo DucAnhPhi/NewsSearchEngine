@@ -120,27 +120,38 @@ if __name__ == "__main__":
     judgement_list_20_path = f"{data_location}/judgement_list_wapo_20.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
 
-    print("Initialize training and validation data...")
-    X_train, y_train, query_train, X_val, y_val, query_val = get_training_and_validation_data(es, parser, index)
+    if not os.path.isfile(f"{data_location}/ranking_model.txt"):
+        if not os.path.isfile(f"{data_location}/X_train.txt"):
+            print("Initialize training and validation data...")
+            X_train, y_train, query_train, X_val, y_val, query_val = get_training_and_validation_data(es, parser, index)
 
-    print("Finished. Saving data...")
-    np.savetxt('X_train.txt', X_train)
-    np.savetxt('y_train.txt', y_train)
-    np.savetxt('X_val.txt', X_val)
-    np.savetxt('y_val.txt', y_val)
-    np.savetxt('query_train.txt', query_train)
-    np.savetxt('query_val.txt', query_val)
+            print("Finished. Saving data...")
+            np.savetxt(f"{data_location}/X_train.txt", X_train)
+            np.savetxt(f"{data_location}/y_train.txt", y_train)
+            np.savetxt(f"{data_location}/X_val.txt", X_val)
+            np.savetxt(f"{data_location}/y_val.txt", y_val)
+            np.savetxt(f"{data_location}/query_train.txt", query_train)
+            np.savetxt(f"{data_location}/query_val.txt", query_val)
+        else:
+            X_train = np.loadtxt(f"{data_location}/X_train.txt", dtype=float)
+            y_train = np.loadtxt(f"{data_location}/y_train.txt", dtype=float)
+            query_train = np.loadtxt(f"{data_location}/query_train.txt", dtype=float)
+            X_val = np.loadtxt(f"{data_location}/X_val.txt", dtype=float)
+            y_val = np.loadtxt(f"{data_location}/y_val.txt", dtype=float)
+            query_val = np.loadtxt(f"{data_location}/query_val.txt", dtype=float)
 
-    gbm = lgb.LGBMRanker()
-    print("Start training...")
-    gbm.fit(
-        X_train,
-        y_train,
-        group=query_train,
-        eval_set=[(X_val, y_val)],
-        eval_group=[query_val],
-        eval_at=[5,10],
-        early_stopping_rounds=50
-    )
-    print("Training finished. Saving ranking model...")
-    gbm.save_model(f"{data_location}/ranking_model.txt")
+        gbm = lgb.LGBMRanker()
+        print("Start training...")
+        gbm.fit(
+            X_train,
+            y_train,
+            group=query_train,
+            eval_set=[(X_val, y_val)],
+            eval_group=[query_val],
+            eval_at=[5,10],
+            early_stopping_rounds=50
+        )
+        print("Training finished. Saving ranking model...")
+        gbm.booster_.save_model(f"{data_location}/ranking_model.txt")
+
+    #if os.path.isfile(f"{data_location}/ranking_model.txt"):
