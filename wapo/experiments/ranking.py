@@ -58,7 +58,7 @@ def get_training_and_validation_data(es, parser, index):
     X_train = []
     y_train = []
     query_train = []
-    for jl in tqdm(train_data_raw, total=16915):
+    for jl in tqdm(train_data_raw, total=77):
         query_es = es.get(index=index, id=jl["id"])
         query_train.append(len(jl["references"]))
         for ref in jl["references"]:
@@ -68,7 +68,7 @@ def get_training_and_validation_data(es, parser, index):
     X_val = []
     y_val = []
     query_val = []
-    for jl in tqdm(val_data_raw, total=7248):
+    for jl in tqdm(val_data_raw, total=33):
         query_es = es.get(index=index, id=jl["id"])
         query_val.append(len(jl["references"]))
         for ref in jl["references"]:
