@@ -22,24 +22,30 @@ def get_features(es, parser, index, query_es, doc_id, bm25_score=None, cosine_sc
     query_published_after = 1 if int(query_es["_source"]["date"]) > int(doc_es["_source"]["date"]) else 0
 
     if not bm25_score:
+        bm25_score = 0
         query_keywords = parser.get_keywords_tf_idf(index, query_es["_id"])
         query = " OR ".join(query_keywords)
-        bm25_score = es.explain(
-            index=index,
-            id=doc_id,
-            body = {
-                "query": {
-                    "query_string": {
-                        "fields": [ "title", "text" ],
-                        "query": query
+        if query:
+            val = es.explain(
+                index=index,
+                id=doc_id,
+                body = {
+                    "query": {
+                        "query_string": {
+                            "fields": [ "title", "text" ],
+                            "query": query
+                        }
                     }
                 }
-            }
-        )["explanation"]["value"]
+            )["explanation"]["value"]
+            if val:
+                bm25_score = val
     if not cosine_score:
+        cosine_score = 1
         query_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, index, query_es)
         doc_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, index, doc_es)
-        cosine_score = cosine(query_emb, doc_emb)
+        if query_emb and doc_emb:
+            cosine_score = cosine(query_emb, doc_emb)
     
     return [bm25_score, cosine_score, doc_length, query_published_after]
 
