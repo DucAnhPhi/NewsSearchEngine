@@ -22,6 +22,7 @@ itemadapter==0.2.0
 itemloaders==1.0.4
 jmespath==0.10.0
 joblib==1.0.0
+lightgbm==3.2.0
 littleutils==0.2.2
 lxml==4.6.2
 numpy==1.19.4
