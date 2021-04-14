@@ -120,7 +120,7 @@ def get_combined_retrieval(es, parser, em, vs, index, size, query_id):
                 if res_e["id"] == res_k["id"]:
                     result_ids[i]["cosine_score"] = res_e["cosine_score"]
                     break
-                result_ids.append(res_e)
+            result_ids.append(res_e)
     return result_ids
 
 def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path, model):
