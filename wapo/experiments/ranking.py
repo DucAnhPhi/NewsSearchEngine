@@ -140,6 +140,8 @@ def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path
                     doc_features = get_features(es,parser,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
                     X_test_ids.append(res["id"])
                     X_test.append(doc_features)
+                X_test = np.array(X_test)
+                X_test_ids = np.array(X_test_ids)
                 test_pred = model.predict(X_test)
                 inds = (test_pred.argsort())[::-1]
                 ranked_test_pred = test_pred[inds]
