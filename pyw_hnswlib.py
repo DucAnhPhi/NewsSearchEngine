@@ -15,6 +15,12 @@ class Hnswlib():
     def init_index(self, max_elements: int, ef_construction = 200, M = 16):
         self.index.init_index(max_elements = max_elements, ef_construction = ef_construction, M = M)
 
+    def get_max_elements(self):
+        return self.index.get_max_elements()
+
+    def get_current_count(self):
+        return self.index.get_current_count()
+
     def add_items(self, data: VectorList, ids=None):
         if ids != None:
             assert len(data) == len(ids)
