@@ -228,7 +228,9 @@ if __name__ == "__main__":
         print("Training finished. Saving ranking model...")
         gbm.booster_.save_model(f"{data_location}/ranking_model.txt")
 
-    if os.path.isfile(f"{data_location}/ranking_model.txt"):
+    model_path = f"{data_location}/ranking_model.txt"
+    if os.path.isfile(model_path):
         print("Load model from file...")
+        model = lgb.Booster(model_file=model_path)
         result_path = f"{data_location}/ranking_results_20.txt"
-        test_model(es, parser, em, vs, index, 300, judgement_list_20_path, result_path, gbm)
+        test_model(es, parser, em, vs, index, 300, judgement_list_20_path, result_path, model)
