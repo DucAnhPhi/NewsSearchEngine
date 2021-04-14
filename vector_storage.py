@@ -9,7 +9,7 @@ class VectorStorage():
     def __init__(
         self,
         storage_location,
-        max_elements,
+        max_elements = None,
         dim = 768,
         ef_construction = 200,
         m = 100,
@@ -20,7 +20,10 @@ class VectorStorage():
         self.storage_location = storage_location
 
         if os.path.isfile(storage_location):
-            self.storage.load_index(storage_location, max_elements=max_elements)
+            if max_elements:
+                self.storage.load_index(storage_location, max_elements=max_elements)
+            else:
+                self.storage.load_index(storage_location)
         else:
             self.storage.init_index(max_elements=max_elements, ef_construction = ef_construction, M = m)
 
