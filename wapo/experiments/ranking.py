@@ -133,6 +133,7 @@ def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path
     with open(judgement_list_path, "r", encoding="utf-8") as f:
         for line in tqdm(f, total=50):
             judgement = json.loads(line)
+            query_es = es.get(index=index,id=judgement["id"])
             topic_ids.append(topic_dict[judgement["id"]])
             combined_retrieval = get_combined_retrieval(es, parser, em, vs, index, size, judgement["id"])
             query_test.append(len(combined_retrieval))
