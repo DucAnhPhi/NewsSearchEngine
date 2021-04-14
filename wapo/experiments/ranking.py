@@ -9,6 +9,8 @@ from scipy.spatial.distance import cosine
 from ..parser import ParserWAPO
 from ...embedding.model import EmbeddingModel
 from ...feature_extraction import FeatureExtraction
+from ..judgement_list import JudgementListWapo
+from ...vector_storage import VectorStorage
 
 def get_embedding_of_extracted_keywords_denormalized_ordered(parser, index, es_doc):
         keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=True)
@@ -83,6 +85,77 @@ def get_training_and_validation_data(es, parser, index):
             y_val.append(int(ref["exp_rel"]))
     return (np.array(X_train), np.array(y_train), np.array(query_train), np.array(X_val), np.array(y_val), np.array(query_val))
 
+def get_combined_retrieval(es, parser, em, vs, index, size, query_id):
+    result_ids = []
+    query_article_es = es.get(
+        index=index,
+        id=query_id
+    )
+    keywords = parser.get_keywords_tf_idf(index, query_id)
+    if keywords:
+        query_keywords = " OR ".join(keywords)
+        k_results = (es.search(
+            size = size,
+            index = index,
+            body = {
+                "query": {
+                    "query_string": {
+                        "fields": [ "title", "text" ],
+                        "query": query_keywords
+                    }
+                }
+            }
+        ))["hits"]["hits"]
+        result_ids = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results]
+    keywords = parser.get_keywords_tf_idf_denormalized(index, query_article_es["_id"], query_article_es["_source"]["title"], query_article_es["_source"]["text"], keep_order=True)
+    keyw_query = " ".join(keywords)
+    if not keyw_query:
+        return None
+    emb_query = em.encode(keyw_query)
+    if emb_query:
+        nearest_n: NearestNeighborList = vs.get_k_nearest(emb_query,size)
+        e_results = [{"id": list(nn.keys())[0], "cosine_score":list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]]
+        for res_e in e_results:
+            for i, res_k in enumerate(result_ids):
+                if res_e["id"] == res_k["id"]:
+                    result_ids[i]["cosine_score"] = res_e["cosine_score"]
+                    break
+                result_ids.append(res_e)
+    return result_ids
+
+def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path, model):
+    X_test = []
+    query_test = []
+    topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
+    topic_ids = []
+    X_test_ids = []
+    print("Retrieve background links for each topic and calculate features...")
+    with open(judgement_list_path, "r", encoding="utf-8") as f:
+        for line in tqdm(f, total=50):
+            judgement = json.loads(line)
+            topic_ids.append(topic_dict[judgement["id"]])
+            combined_retrieval = get_combined_retrieval(es, parser, em, vs, index, size, judgement["id"])
+            query_test.append(len(combined_retrieval))
+            for res in combined_retrieval:
+                doc_features = get_features(es,parser,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
+                X_test_ids.append(res["id"])
+                X_test.append(doc_features)
+    print("Rank features with trained ranking model and output results to file...")
+    test_pred = model.predict(X_test)
+    acc_offset = 0
+    with open(result_path, "w", encoding="utf-8") as fout:
+        for i, offset in enumerate(query_test):
+            test_pred_topic = np.array(test_pred[acc_offset:(acc_offset+offset)])
+            inds = (test_pred_topic.argsort())[::-1]
+            ranked_test_pred = test_pred_topic[inds]
+            ranked_retrieval = (X_test_ids[acc_offset:(acc_offset+offset)])[inds]
+            topic = topic_ids[i]
+            for rank, ret in enumerate(ranked_retrieval):
+                out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
+                fout.write(out)
+            acc_offset += offset
+    print("Finished.")
+
 if __name__ == "__main__":
     index = "wapo_clean"
 
@@ -119,6 +192,7 @@ if __name__ == "__main__":
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_20_path = f"{data_location}/judgement_list_wapo_20.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
+    vs = VectorStorage(vs_extracted_k_denormalized_ordered)
 
     if not os.path.isfile(f"{data_location}/ranking_model.txt"):
         if not os.path.isfile(f"{data_location}/X_train.txt"):
@@ -154,4 +228,7 @@ if __name__ == "__main__":
         print("Training finished. Saving ranking model...")
         gbm.booster_.save_model(f"{data_location}/ranking_model.txt")
 
-    #if os.path.isfile(f"{data_location}/ranking_model.txt"):
+    if os.path.isfile(f"{data_location}/ranking_model.txt"):
+        print("Load model from file...")
+        result_path = f"{data_location}/ranking_results_20.txt"
+        test_model(es, parser, em, vs, index, 300, judgement_list_20_path, result_path, gbm)
