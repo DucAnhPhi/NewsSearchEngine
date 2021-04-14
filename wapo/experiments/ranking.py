@@ -116,11 +116,14 @@ def get_combined_retrieval(es, parser, em, vs, index, size, query_id):
         nearest_n: NearestNeighborList = vs.get_k_nearest(emb_query,size)
         e_results = [{"id": list(nn.keys())[0], "cosine_score":list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]]
         for res_e in e_results:
+            is_new_res = True
             for i, res_k in enumerate(result_ids):
                 if res_e["id"] == res_k["id"]:
                     result_ids[i]["cosine_score"] = res_e["cosine_score"]
+                    is_new_res = False
                     break
-            result_ids.append(res_e)
+            if is_new_res:
+                result_ids.append(res_e)
     return result_ids
 
 def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path, model):
