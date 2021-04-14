@@ -135,6 +135,7 @@ def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path
                 topic=topic_dict[judgement["id"]]
                 query_test=len(combined_retrieval)
                 X_test = []
+                X_test_ids = []
                 for res in combined_retrieval:
                     doc_features = get_features(es,parser,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
                     X_test_ids.append(res["id"])
