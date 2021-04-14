@@ -32,6 +32,12 @@ class VectorStorage():
         self.storage.set_ef(ef) # ef should always be > k
         self.persist = persist
 
+    def get_max_elements(self):
+        return self.storage.get_max_elements()
+
+    def get_current_count(self):
+        return self.storage.get_current_count()
+
     def get_k_nearest(self, embedding: Vector, k: int) -> NearestNeighborList:
         '''
         embeddings (shape:N*dim). Returns a numpy array of (shape: N*K)
