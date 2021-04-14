@@ -124,37 +124,28 @@ def get_combined_retrieval(es, parser, em, vs, index, size, query_id):
     return result_ids
 
 def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path, model):
-    X_test = []
-    query_test = []
     topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
-    topic_ids = []
-    X_test_ids = []
     print("Retrieve background links for each topic and calculate features...")
     with open(judgement_list_path, "r", encoding="utf-8") as f:
-        for line in tqdm(f, total=50):
-            judgement = json.loads(line)
-            query_es = es.get(index=index,id=judgement["id"])
-            topic_ids.append(topic_dict[judgement["id"]])
-            combined_retrieval = get_combined_retrieval(es, parser, em, vs, index, size, judgement["id"])
-            query_test.append(len(combined_retrieval))
-            for res in combined_retrieval:
-                doc_features = get_features(es,parser,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
-                X_test_ids.append(res["id"])
-                X_test.append(doc_features)
-    print("Rank features with trained ranking model and output results to file...")
-    test_pred = model.predict(X_test)
-    acc_offset = 0
-    with open(result_path, "w", encoding="utf-8") as fout:
-        for i, offset in enumerate(query_test):
-            test_pred_topic = np.array(test_pred[acc_offset:(acc_offset+offset)])
-            inds = (test_pred_topic.argsort())[::-1]
-            ranked_test_pred = test_pred_topic[inds]
-            ranked_retrieval = (X_test_ids[acc_offset:(acc_offset+offset)])[inds]
-            topic = topic_ids[i]
-            for rank, ret in enumerate(ranked_retrieval):
-                out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
-                fout.write(out)
-            acc_offset += offset
+        with open(result_path, "w", encoding="utf-8") as fout:
+            for line in tqdm(f, total=50):
+                judgement = json.loads(line)
+                query_es = es.get(index=index,id=judgement["id"])
+                combined_retrieval = get_combined_retrieval(es, parser, em, vs, index, size, judgement["id"])
+                topic=topic_dict[judgement["id"]]
+                query_test=len(combined_retrieval)
+                X_test = []
+                for res in combined_retrieval:
+                    doc_features = get_features(es,parser,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
+                    X_test_ids.append(res["id"])
+                    X_test.append(doc_features)
+                test_pred = model.predict(X_test)
+                inds = (test_pred.argsort())[::-1]
+                ranked_test_pred = test_pred[inds]
+                ranked_retrieval = X_test_ids[inds]
+                for rank, ret in enumerate(ranked_retrieval):
+                    out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
+                    fout.write(out)
     print("Finished.")
 
 if __name__ == "__main__":
