@@ -77,9 +77,8 @@ class TestParserNetzpolitik():
         )
         parsed = next(self.parser.parse_article(fake_response))
         expected_k = ['EU', 'Rechnungshof', 'Kartellbehörden', 'Konzerne', 'anfassen', 'Facebook', 'Amazon', 'Google', 'Apple', 'konnten', 'Marktvorteil', 'Kommission', 'Wettbewerbsbehörde', 'Fusionen', 'Besonders', 'Wettbewerbsrechts', 'nennt', 'ersten', 'Verfahren', 'Bericht', 'oft', 'Hand', 'eingreife', 'WhatsApp', 'Unternehmen', 'neu', 'Definitionen', 'Europas']
-        combined = [self.parser.get_title(parsed), parsed["body"]]
-        combined_text = " ".join([t for t in combined if t])
-        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, self.parser.get_title(parsed), parsed["body"])
+        print(actual_k)
         assert " ".join(expected_k) == " ".join(actual_k)
 
     def test_get_keywords_tf_idf_denormalized_2(self):
@@ -101,9 +100,7 @@ class TestParserNetzpolitik():
         )
         parsed = next(self.parser.parse_article(fake_response))
         expected_k = ['und', 'Dienste', 'fädeln', 'Herausgabe', 'Cloud', 'Daten', 'Bundesamt', 'Verfassungsschutz', 'geht', 'ZKA', 'Arbeitsgruppen', 'Bundesnetzagentur', 'ETSI', 'Telekommunikationsüberwachung', 'Lawful', 'Interception', 'Aachener', 'erarbeiteten', 'Anbieter', 'Bundespolizeien', 'befasst', 'SFZ', 'TK', 'Computing', 'Ausland', 'Sicherung', 'Europarates']
-        combined = [self.parser.get_title(parsed), parsed["body"]]
-        combined_text = " ".join([t for t in combined if t])
-        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, combined_text)
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, article_id, self.parser.get_title(parsed), parsed["body"])
         assert " ".join(expected_k) == " ".join(actual_k)
 
     def test_parse_empty(self):

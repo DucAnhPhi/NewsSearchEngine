@@ -20,7 +20,7 @@ class TestParserNetzpolitik():
     def test_get_keywords_tf_idf(self):
         raw = self.articles[0]
         parsed = self.parser.parse_article(raw)
-        expected_k = ["ahead", "commut", "region", "avenu", "beltwai", "bridg", "congest", "connector", "construct", "driver", "fare", "intercounti", "lane", "line", "mainten", "metro", "new", "open", "project", "rider", "road", "rout", "schedul", "station", "telegraph", "train", "transport", "travel"]
+        expected_k = ["ahead", "commut", "region", "avenu", "beltwai", "bridg", "congest", "connector", "driver", "entranc", "fare", "intercounti", "lane", "line", "mainten", "metro", "new", "open", "project", "rider", "road", "rout", "schedul", "station", "telegraph", "train", "transport", "travel"]
         actual_k = self.parser.get_keywords_tf_idf(self.index, raw["id"])
         intersection = list(set(expected_k) & set(actual_k))
         assert len(intersection) == len(expected_k)
@@ -28,12 +28,10 @@ class TestParserNetzpolitik():
     def test_get_keywords_tf_idf_denormalized(self):
         raw = self.articles[0]
         parsed = self.parser.parse_article(raw)
-        expected_k = ['ahead', 'region', 'commuters', 'transportation', 'projects', 'scheduled', 'lanes', 'Beltway', 'open', 'Travelers', 'Road', 'drivers', 'new', 'Intercounty', 'Connector', 'congestion', 'routes', 'Telegraph', 'Bridge', 'Metro', 'riders', 'trains', 'Line', 'maintenance', 'stations', 'fare', 'construction', 'Avenue']
-        combined = [self.parser.get_title(parsed), parsed["text"]]
-        combined_text = " ".join([t for t in combined if t])
-        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, raw["id"], combined_text)
+        expected_k = ['ahead', 'region', 'commuters', 'transportation', 'projects', 'scheduled', 'lanes', 'Beltway', 'open', 'Travelers', 'Road', 'drivers', 'new', 'Intercounty', 'Connector', 'congestion', 'routes', 'Telegraph', 'Bridge', 'Metro', 'riders', 'trains', 'Line', 'maintenance', 'stations', 'entrance', 'fare', 'Avenue']
+        actual_k = self.parser.get_keywords_tf_idf_denormalized(self.index, raw["id"], self.parser.get_title(parsed), parsed["text"])
         intersection = list(set(expected_k) & set(actual_k))
-        assert len(intersection) == len(expected_k)
+        assert len(actual_k) == 28
         assert "".join(expected_k) == "".join(actual_k)
 
     def test_parse_article_2012(self):
