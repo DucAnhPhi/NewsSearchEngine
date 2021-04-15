@@ -12,12 +12,12 @@ from ...feature_extraction import FeatureExtraction
 from ..judgement_list import JudgementListWapo
 from ...vector_storage import VectorStorage
 
-def get_embedding_of_extracted_keywords_denormalized_ordered(parser, index, es_doc):
+def get_embedding_of_extracted_keywords_denormalized_ordered(parser, em, index, es_doc):
         keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=True)
         query = " ".join(keywords)
         return em.encode(query)
 
-def get_features(es, parser, index, query_es, doc_id, bm25_score=None, cosine_score=None):
+def get_features(es, parser, em, index, query_es, doc_id, bm25_score=None, cosine_score=None):
     doc_es = es.get(index=index, id=doc_id)
 
     doc_length = len(doc_es["_source"]["title"]) + len(doc_es["_source"]["text"])
@@ -44,14 +44,14 @@ def get_features(es, parser, index, query_es, doc_id, bm25_score=None, cosine_sc
                 bm25_score = val
     if not cosine_score:
         cosine_score = 1
-        query_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, index, query_es)
-        doc_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, index, doc_es)
+        query_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, em, index, query_es)
+        doc_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, em, index, doc_es)
         if query_emb and doc_emb:
             cosine_score = cosine(query_emb, doc_emb)
     
     return [bm25_score, cosine_score, doc_length, query_published_after]
 
-def get_training_and_validation_data(es, parser, index):
+def get_training_and_validation_data(es, parser, em, index):
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_paths = [f"{data_location}/judgement_list_wapo_18.jsonl", f"{data_location}/judgement_list_wapo_19.jsonl"]
     data = []
@@ -70,7 +70,7 @@ def get_training_and_validation_data(es, parser, index):
         query_es = es.get(index=index, id=jl["id"])
         query_train.append(len(jl["references"]))
         for ref in jl["references"]:
-            ref_features = get_features(es, parser, index, query_es, ref["id"])
+            ref_features = get_features(es, parser, em, index, query_es, ref["id"])
             X_train.append(ref_features)
             y_train.append(int(ref["exp_rel"]))
     X_val = []
@@ -80,7 +80,7 @@ def get_training_and_validation_data(es, parser, index):
         query_es = es.get(index=index, id=jl["id"])
         query_val.append(len(jl["references"]))
         for ref in jl["references"]:
-            ref_features = get_features(es, parser, index, query_es, ref["id"])
+            ref_features = get_features(es, parser, em, index, query_es, ref["id"])
             X_val.append(ref_features)
             y_val.append(int(ref["exp_rel"]))
     return (np.array(X_train), np.array(y_train), np.array(query_train), np.array(X_val), np.array(y_val), np.array(query_val))
@@ -140,7 +140,7 @@ def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path
                 X_test = []
                 X_test_ids = []
                 for res in combined_retrieval:
-                    doc_features = get_features(es,parser,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
+                    doc_features = get_features(es,parser,em,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
                     X_test_ids.append(res["id"])
                     X_test.append(doc_features)
                 X_test = np.array(X_test)
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     if not os.path.isfile(f"{data_location}/ranking_model.txt"):
         if not os.path.isfile(f"{data_location}/X_train.txt"):
             print("Initialize training and validation data...")
-            X_train, y_train, query_train, X_val, y_val, query_val = get_training_and_validation_data(es, parser, index)
+            X_train, y_train, query_train, X_val, y_val, query_val = get_training_and_validation_data(es, parser, em, index)
 
             print("Finished. Saving data...")
             np.savetxt(f"{data_location}/X_train.txt", X_train)
