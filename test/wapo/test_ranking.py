@@ -71,6 +71,45 @@ class TestWapoRanking():
         assert actual_features[2] == expected_doc_length
         assert actual_features[3] == expected_published_after
 
+    def test_split_training_data(self):
+        data = [
+            {
+                "id": "9171debc316e5e2782e0d2404ca7d09d",
+                "references": [
+                    {"id": "00f57310e5c8ec7833d6756ba637332e", "exp_rel": "16"},
+                    {"id": "02ae7136-006d-11e3-9711-3708310f6f4d", "exp_rel": "2"}
+                ]
+            },
+            {
+                "id": "7ef8ce1720bf2f6b2065a97506ee89b4",
+                "references": [
+                    {"id": "000f4c71d82856a1584c4a3c62c71454", "exp_rel": "8"}
+                ]
+            },
+            {
+                "id": "c3cea789141ef2ae856419e86e165e0c",
+                "references": [
+                    {"id": "0325ff5c-fd4d-11e3-932c-0a55b81f48ce", "exp_rel": "8"}
+                ]
+            }
+        ]
+        expected_y = [16,2,8,8]
+        expected_query_groups = [2,1,1]
+        expected_X = [
+            [65.08981, 0.5181154783264579, 4775, 0],
+            [21.67442, 0.6364726437693504, 8077, 1],
+            [53.90142, 0.6056357075602647, 6344, 1],
+            [68.92036, 0.26061434674200035, 9363, 1]
+        ]
+        X,y,query_groups = self.ranker.split_training_data(data)
+        print(X)
+        assert len(y) == len(expected_y)
+        assert len(X) == len(expected_X)
+        assert len(query_groups) == len(expected_query_groups)
+        assert all([a==b for a,b in zip(y,expected_y)])
+        assert all([a==b for a,b in zip(X,expected_X)])
+        assert all([a==b for a,b in zip(query_groups,expected_query_groups)])
+
     def test_get_training_and_validation_set(self):
         data = np.arange(100)
         data = [{"id": str(el)} for el in data]
@@ -91,5 +130,5 @@ class TestWapoRanking():
         expected_test_ids = ["e", "d", "b", "c", "a"]
         assert len(ranked_test_pred) == len(expected_test_pred)
         assert len(test_ids) == len(expected_test_ids)
-        assert all([a == b for a,b in zip(ranked_test_pred, expected_test_pred)])
+        assert all([a==b for a,b in zip(ranked_test_pred, expected_test_pred)])
         assert all([a==b for a,b in zip(ranked_ids, expected_test_ids)])
