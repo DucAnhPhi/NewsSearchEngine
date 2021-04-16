@@ -11,148 +11,149 @@ from ...embedding.model import EmbeddingModel
 from ...feature_extraction import FeatureExtraction
 from ..judgement_list import JudgementListWapo
 from ...vector_storage import VectorStorage
+from ...typings import NearestNeighborList
 
-def get_embedding_of_extracted_keywords_denormalized_ordered(parser, em, index, es_doc):
-        keywords = parser.get_keywords_tf_idf_denormalized(index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=True)
-        query = " ".join(keywords)
-        return em.encode(query)
+class WAPORanker():
+    def __init__(self, es, parser, em, vs, index):
+        self.es = es
+        self.parser = parser
+        self.em = em
+        self.vs = vs
+        self.index = index
 
-def get_features(es, parser, em, index, query_es, doc_id, bm25_score=None, cosine_score=None):
-    doc_es = es.get(index=index, id=doc_id)
+    def get_embedding_of_extracted_keywords_denormalized_ordered(self, es_doc):
+            keywords = self.parser.get_keywords_tf_idf_denormalized(self.index, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["text"], keep_order=True)
+            query = " ".join(keywords)
+            return self.em.encode(query)
 
-    doc_length = len(doc_es["_source"]["title"]) + len(doc_es["_source"]["text"])
-    query_published_after = 1 if int(query_es["_source"]["date"]) > int(doc_es["_source"]["date"]) else 0
+    def get_features(self, query_es, doc_id, bm25_score=None, cosine_score=None):
+        doc_es = self.es.get(index=self.index, id=doc_id)
 
-    if not bm25_score:
-        bm25_score = 0
-        query_keywords = parser.get_keywords_tf_idf(index, query_es["_id"])
-        query = " OR ".join(query_keywords)
-        if query:
-            val = es.explain(
-                index=index,
-                id=doc_id,
+        doc_length = len(doc_es["_source"]["title"]) + len(doc_es["_source"]["text"])
+        query_published_after = 1 if int(query_es["_source"]["date"]) > int(doc_es["_source"]["date"]) else 0
+
+        if not bm25_score:
+            bm25_score = 0
+            query_keywords = self.parser.get_keywords_tf_idf(self.index, query_es["_id"])
+            query = " OR ".join(query_keywords)
+            if query:
+                val = self.es.explain(
+                    index=self.index,
+                    id=doc_id,
+                    body = {
+                        "query": {
+                            "query_string": {
+                                "fields": [ "title", "text" ],
+                                "query": query
+                            }
+                        }
+                    }
+                )["explanation"]["value"]
+                if val:
+                    bm25_score = val
+        if not cosine_score:
+            cosine_score = 1
+            query_emb = self.get_embedding_of_extracted_keywords_denormalized_ordered(query_es)
+            doc_emb = self.get_embedding_of_extracted_keywords_denormalized_ordered(doc_es)
+            if query_emb and doc_emb:
+                cosine_score = cosine(query_emb, doc_emb)
+        
+        return [bm25_score, cosine_score, doc_length, query_published_after]
+
+    def get_training_and_validation_set(self, data):
+        np.random.shuffle(data)
+        train_size = int(len(data) * 0.7)
+        train_data_raw = data[:train_size]
+        val_data_raw = data[train_size:]
+        return (train_data_raw, val_data_raw)
+
+    def split_training_data(self, data):
+        X = []
+        y = []
+        query_groups = []
+        for jl in tqdm(data, total=len(data)):
+            query_es = self.es.get(index=self.index, id=jl["id"])
+            query_groups.append(len(jl["references"]))
+            for ref in jl["references"]:
+                ref_features = self.get_features(query_es, ref["id"])
+                X.append(ref_features)
+                y.append(int(ref["exp_rel"]))
+        return (X,y,query_groups)
+
+    def get_training_data(self):
+        data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
+        judgement_list_paths = [f"{data_location}/judgement_list_wapo_18.jsonl", f"{data_location}/judgement_list_wapo_19.jsonl"]
+        data = []
+        for path in judgement_list_paths:
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    judgement = json.loads(line)
+                    data.append(judgement)
+        train_data_raw, val_data_raw = self.get_training_and_validation_set(data)
+        X_train, y_train, query_train = self.split_training_data(train_data_raw)
+        X_val, y_val, query_val = self.split_training_data(val_data_raw)
+        return (np.array(X_train), np.array(y_train), np.array(query_train), np.array(X_val), np.array(y_val), np.array(query_val))
+
+    def get_combined_retrieval(self, size, query_es):
+        results = []
+        keywords = self.parser.get_keywords_tf_idf(self.index, query_es["_id"])
+        if keywords:
+            query_keywords = " OR ".join(keywords)
+            k_results = (self.es.search(
+                size = size,
+                index = self.index,
                 body = {
                     "query": {
                         "query_string": {
                             "fields": [ "title", "text" ],
-                            "query": query
+                            "query": query_keywords
                         }
                     }
                 }
-            )["explanation"]["value"]
-            if val:
-                bm25_score = val
-    if not cosine_score:
-        cosine_score = 1
-        query_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, em, index, query_es)
-        doc_emb = get_embedding_of_extracted_keywords_denormalized_ordered(parser, em, index, doc_es)
-        if query_emb and doc_emb:
-            cosine_score = cosine(query_emb, doc_emb)
-    
-    return [bm25_score, cosine_score, doc_length, query_published_after]
+            ))["hits"]["hits"]
+            results = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results]
+        keywords_denorm = self.parser.get_keywords_tf_idf_denormalized(self.index, query_es["_id"], query_es["_source"]["title"], query_es["_source"]["text"], keep_order=True)
+        if keywords_denorm:
+            emb_query = self.em.encode(" ".join(keywords_denorm))
+            nearest_n: NearestNeighborList = self.vs.get_k_nearest(emb_query,size)
+            e_results = [{"id": list(nn.keys())[0], "cosine_score":list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]]
+            for res_e in e_results:
+                is_new_res = True
+                for i, res_k in enumerate(results):
+                    if res_e["id"] == res_k["id"]:
+                        results[i]["cosine_score"] = res_e["cosine_score"]
+                        is_new_res = False
+                        break
+                if is_new_res:
+                    results.append(res_e)
+        return results
 
-def get_training_and_validation_data(es, parser, em, index):
-    data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
-    judgement_list_paths = [f"{data_location}/judgement_list_wapo_18.jsonl", f"{data_location}/judgement_list_wapo_19.jsonl"]
-    data = []
-    for path in judgement_list_paths:
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                judgement = json.loads(line)
-                data.append(judgement)
-    np.random.shuffle(data)
-    train_size = int(len(data) * 0.7)
-    train_data_raw, val_data_raw = data[:train_size], data[train_size:]
-    X_train = []
-    y_train = []
-    query_train = []
-    for jl in tqdm(train_data_raw, total=77):
-        query_es = es.get(index=index, id=jl["id"])
-        query_train.append(len(jl["references"]))
-        for ref in jl["references"]:
-            ref_features = get_features(es, parser, em, index, query_es, ref["id"])
-            X_train.append(ref_features)
-            y_train.append(int(ref["exp_rel"]))
-    X_val = []
-    y_val = []
-    query_val = []
-    for jl in tqdm(val_data_raw, total=33):
-        query_es = es.get(index=index, id=jl["id"])
-        query_val.append(len(jl["references"]))
-        for ref in jl["references"]:
-            ref_features = get_features(es, parser, em, index, query_es, ref["id"])
-            X_val.append(ref_features)
-            y_val.append(int(ref["exp_rel"]))
-    return (np.array(X_train), np.array(y_train), np.array(query_train), np.array(X_val), np.array(y_val), np.array(query_val))
-
-def get_combined_retrieval(es, parser, em, vs, index, size, query_id):
-    result_ids = []
-    query_article_es = es.get(
-        index=index,
-        id=query_id
-    )
-    keywords = parser.get_keywords_tf_idf(index, query_id)
-    if keywords:
-        query_keywords = " OR ".join(keywords)
-        k_results = (es.search(
-            size = size,
-            index = index,
-            body = {
-                "query": {
-                    "query_string": {
-                        "fields": [ "title", "text" ],
-                        "query": query_keywords
-                    }
-                }
-            }
-        ))["hits"]["hits"]
-        result_ids = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results]
-    keywords = parser.get_keywords_tf_idf_denormalized(index, query_article_es["_id"], query_article_es["_source"]["title"], query_article_es["_source"]["text"], keep_order=True)
-    keyw_query = " ".join(keywords)
-    if not keyw_query:
-        return None
-    emb_query = em.encode(keyw_query)
-    if emb_query:
-        nearest_n: NearestNeighborList = vs.get_k_nearest(emb_query,size)
-        e_results = [{"id": list(nn.keys())[0], "cosine_score":list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]]
-        for res_e in e_results:
-            is_new_res = True
-            for i, res_k in enumerate(result_ids):
-                if res_e["id"] == res_k["id"]:
-                    result_ids[i]["cosine_score"] = res_e["cosine_score"]
-                    is_new_res = False
-                    break
-            if is_new_res:
-                result_ids.append(res_e)
-    return result_ids
-
-def test_model(es, parser, em, vs, index, size, judgement_list_path, result_path, model):
-    topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
-    print("Retrieve background links for each topic and calculate features...")
-    with open(judgement_list_path, "r", encoding="utf-8") as f:
-        with open(result_path, "w", encoding="utf-8") as fout:
-            for line in tqdm(f, total=50):
-                judgement = json.loads(line)
-                query_es = es.get(index=index,id=judgement["id"])
-                combined_retrieval = get_combined_retrieval(es, parser, em, vs, index, size, judgement["id"])
-                topic=topic_dict[judgement["id"]]
-                query_test=len(combined_retrieval)
-                X_test = []
-                X_test_ids = []
-                for res in combined_retrieval:
-                    doc_features = get_features(es,parser,em,index,query_es,res["id"],res["bm25_score"],res["cosine_score"])
-                    X_test_ids.append(res["id"])
-                    X_test.append(doc_features)
-                X_test = np.array(X_test)
-                X_test_ids = np.array(X_test_ids)
-                test_pred = model.predict(X_test)
-                inds = (test_pred.argsort())[::-1]
-                ranked_test_pred = test_pred[inds]
-                ranked_retrieval = X_test_ids[inds]
-                for rank, ret in enumerate(ranked_retrieval):
-                    out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
-                    fout.write(out)
-    print("Finished.")
+    def test_model(self, size, judgement_list_path, result_path, model):
+        topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
+        print("Retrieve background links for each topic and calculate features...")
+        with open(judgement_list_path, "r", encoding="utf-8") as f:
+            with open(result_path, "w", encoding="utf-8") as fout:
+                for line in tqdm(f, total=50):
+                    judgement = json.loads(line)
+                    query_es = self.es.get(index=self.index,id=judgement["id"])
+                    combined_retrieval = self.get_combined_retrieval(size, query_es)
+                    X_test = []
+                    X_test_ids = []
+                    for res in combined_retrieval:
+                        res_features = self.get_features(query_es,res["id"],res["bm25_score"],res["cosine_score"])
+                        X_test.append(res_features)
+                        X_test_ids.append(res["id"])
+                    X_test = np.array(X_test)
+                    X_test_ids = np.array(X_test_ids)
+                    test_pred = model.predict(X_test)
+                    inds = (test_pred.argsort())[::-1]
+                    ranked_test_pred = test_pred[inds]
+                    ranked_retrieval = X_test_ids[inds]
+                    topic=topic_dict[judgement["id"]]
+                    for rank, ret in enumerate(ranked_retrieval):
+                        out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
+                        fout.write(out)
+        print("Finished.")
 
 if __name__ == "__main__":
     index = "wapo_clean"
@@ -191,11 +192,12 @@ if __name__ == "__main__":
     judgement_list_20_path = f"{data_location}/judgement_list_wapo_20.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
     vs = VectorStorage(vs_extracted_k_denormalized_ordered)
+    ranker = WAPORanker(es, parser, em, vs, index)
 
     if not os.path.isfile(f"{data_location}/ranking_model.txt"):
         if not os.path.isfile(f"{data_location}/X_train.txt"):
             print("Initialize training and validation data...")
-            X_train, y_train, query_train, X_val, y_val, query_val = get_training_and_validation_data(es, parser, em, index)
+            X_train, y_train, query_train, X_val, y_val, query_val = ranker.get_training_data()
 
             print("Finished. Saving data...")
             np.savetxt(f"{data_location}/X_train.txt", X_train)
@@ -231,4 +233,4 @@ if __name__ == "__main__":
         print("Load model from file...")
         model = lgb.Booster(model_file=model_path)
         result_path = f"{data_location}/ranking_results_20.txt"
-        test_model(es, parser, em, vs, index, 300, judgement_list_20_path, result_path, model)
+        ranker.test_model(300, judgement_list_20_path, result_path, model)

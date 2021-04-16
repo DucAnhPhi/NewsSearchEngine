@@ -1,13 +1,14 @@
 import pytest
 import os
 import json
+import numpy as np
 from elasticsearch import Elasticsearch
 from scipy.spatial.distance import cosine
 from ...vector_storage import VectorStorage
 from ...wapo.parser import ParserWAPO
 from ...embedding.model import EmbeddingModel
 from ...pyw_hnswlib import Hnswlib
-from ...wapo.experiments.ranking import get_features
+from ...wapo.experiments.ranking import WAPORanker
 
 class TestWapoRanking():
     @classmethod
@@ -23,6 +24,7 @@ class TestWapoRanking():
         self.em = EmbeddingModel(lang="en")
         self.storage = Hnswlib(space="cosine", dim=768)
         self.storage.init_index(max_elements=10, ef_construction=200, M=100)
+        self.ranker = WAPORanker(self.es, self.parser, self.em, None, self.index)
 
     def test_same_cosine(self):
         raw = self.articles[0]
@@ -43,7 +45,7 @@ class TestWapoRanking():
         parsed_query = self.parser.parse_article(raw_query)
         query_doc = {"_id": raw_query["id"], "_source": parsed_query}
         doc_id = self.articles[0]["id"]
-        actual_features = get_features(self.es, self.parser, self.em, self.index, query_doc, doc_id)
+        actual_features = self.ranker.get_features(query_doc, doc_id)
         query_bm25_keywords = self.parser.get_keywords_tf_idf(self.index, query_doc["_id"])
         query_keywords = self.parser.get_keywords_tf_idf_denormalized(self.index, query_doc["_id"], query_doc["_source"]["title"], query_doc["_source"]["text"], keep_order=True)
         query_emb = self.em.encode(" ".join(query_keywords))
@@ -68,3 +70,15 @@ class TestWapoRanking():
         assert actual_features[1] == expected_cos
         assert actual_features[2] == expected_doc_length
         assert actual_features[3] == expected_published_after
+
+    def test_get_training_and_validation_set(self):
+        data = np.arange(100)
+        data = [{"id": str(el)} for el in data]
+        train_data, val_data = self.ranker.get_training_and_validation_set(data)
+        assert (len(train_data) + len(val_data)) == 100
+        assert len(train_data) == 70
+        assert len(val_data) == 30
+        data_ids = [d["id"] for d in data]
+        ordered = np.arange(100)
+        ordered = [str(el) for el in ordered]
+        assert "".join(data_ids) != "".join(ordered)
