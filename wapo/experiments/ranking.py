@@ -128,6 +128,12 @@ class WAPORanker():
                     results.append(res_e)
         return results
 
+    def get_ranking(self, test_pred, test_ids):
+        inds = (test_pred.argsort())[::-1]
+        ranked_test_pred = test_pred[inds]
+        ranked_ids = test_ids[inds]
+        return (ranked_test_pred, ranked_ids)
+
     def test_model(self, size, judgement_list_path, result_path, model):
         topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
         print("Retrieve background links for each topic and calculate features...")
@@ -147,10 +153,9 @@ class WAPORanker():
                     X_test_ids = np.array(X_test_ids)
                     test_pred = model.predict(X_test)
                     inds = (test_pred.argsort())[::-1]
-                    ranked_test_pred = test_pred[inds]
-                    ranked_retrieval = X_test_ids[inds]
+                    ranked_test_pred, ranked_ids = self.get_ranking(test_pred, X_test_ids)
                     topic=topic_dict[judgement["id"]]
-                    for rank, ret in enumerate(ranked_retrieval):
+                    for rank, ret in enumerate(ranked_ids):
                         out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
                         fout.write(out)
         print("Finished.")

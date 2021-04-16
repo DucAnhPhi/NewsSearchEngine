@@ -82,3 +82,14 @@ class TestWapoRanking():
         ordered = np.arange(100)
         ordered = [str(el) for el in ordered]
         assert "".join(data_ids) != "".join(ordered)
+
+    def test_get_ranking(self):
+        test_pred = np.array([-1.1, 1, -0.5, 2, 3])
+        test_ids = np.array(["a", "b", "c", "d", "e"])
+        ranked_test_pred, ranked_ids = self.ranker.get_ranking(test_pred, test_ids)
+        expected_test_pred = [3,2,1,-0.5,-1.1]
+        expected_test_ids = ["e", "d", "b", "c", "a"]
+        assert len(ranked_test_pred) == len(expected_test_pred)
+        assert len(test_ids) == len(expected_test_ids)
+        assert all([a == b for a,b in zip(ranked_test_pred, expected_test_pred)])
+        assert all([a==b for a,b in zip(ranked_ids, expected_test_ids)])
