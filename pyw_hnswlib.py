@@ -22,7 +22,7 @@ class Hnswlib():
         return self.index.get_current_count()
 
     def add_items(self, data: VectorList, ids=None):
-        if ids != None:
+        if ids is not None:
             assert len(data) == len(ids)
         num_added = len(data)
         with self.lock:
@@ -30,7 +30,7 @@ class Hnswlib():
             self.cur_ind += num_added
         int_labels = []
 
-        if ids != None:
+        if ids is not None:
             for dl in ids:
                 int_labels.append(start)
                 self.dict_labels[start] = dl

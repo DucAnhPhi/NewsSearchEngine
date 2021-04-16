@@ -60,10 +60,10 @@ class ParserNetzpolitik(ParserInterface):
         def denorm(t, kw):
             query = kw
             match = re.search(rf"\b{query}([\wöüäß]+)?\b", t, flags=re.IGNORECASE)
-            while match == None:
+            while match is None:
                 query = query[:-1]
                 match = re.search(rf"\b{query}([\wöüäß]+)?\b", t, flags=re.IGNORECASE)
-                if len(query) <= 1 and match == None:
+                if len(query) <= 1 and match is None:
                     return None
             return (match.group(0), match.start())
 

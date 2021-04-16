@@ -132,7 +132,7 @@ if __name__ == "__main__":
         for line in tqdm(f, total=num_docs):
             raw = json.loads(line)
             article_source = parser.parse_article(raw, ignore=False)
-            if article_source != None:
+            if article_source is not None:
                 data_dict = {
                     "_index": index_name_v2,
                     "_id": raw['id'],
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         for line in tqdm(f, total=num_docs):
             raw = json.loads(line)
             article_source = parser.parse_article(raw)
-            if article_source != None:
+            if article_source is not None:
                 data_dict = {
                     "_index": index_name_combined,
                     "_id": raw['id'],

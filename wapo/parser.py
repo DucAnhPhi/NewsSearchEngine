@@ -59,10 +59,10 @@ class ParserWAPO(ParserInterface):
         def denorm(t, kw):
             query = kw
             match = re.search(rf"\b{query}([\wöüäß]+)?\b", t, flags=re.IGNORECASE)
-            while match == None:
+            while match is None:
                 query = query[:-1]
                 match = re.search(rf"\b{query}([\wöüäß]+)?\b", t, flags=re.IGNORECASE)
-                if len(query) <= 1 and match == None:
+                if len(query) <= 1 and match is None:
                     return None
             return (match.group(0), match.start())
 
@@ -74,7 +74,7 @@ class ParserWAPO(ParserInterface):
     @staticmethod
     def get_first_content_by_type(jsarr, t):
         for block in jsarr:
-            if block != None and block["type"] == t:
+            if block is not None and block["type"] == t:
                 return block["content"]
         return None
 
@@ -82,7 +82,7 @@ class ParserWAPO(ParserInterface):
     def get_first_paragraph(jsarr):
         first_p = ""
         for block in jsarr:
-            if block != None and block["type"] == "sanitized_html":
+            if block is not None and block["type"] == "sanitized_html":
                 first_p += f"{block['content']} "
                 if block["subtype"] == "paragraph" and len(first_p) > 50:
                     return first_p.strip()
@@ -90,7 +90,7 @@ class ParserWAPO(ParserInterface):
 
     @staticmethod
     def get_all_content_by_type(jsarr, t, field="content"):
-        strings = [c[field] for c in jsarr if c != None and c["type"] == t and field in c and c[field] != None]
+        strings = [c[field] for c in jsarr if c is not None and c["type"] == t and field in c and c[field] is not None]
         if strings:
             return " ".join(strings)
         else:
@@ -98,7 +98,7 @@ class ParserWAPO(ParserInterface):
 
     @staticmethod
     def get_section_titles(jsarr):
-        titles = [c["content"] for c in jsarr if c != None and c["type"] == "sanitized_html" and "subtype" in c and (c["subtype"] == "subhead" or c["subtype"] == "sublabel") and "content" in c and c["content"] != None]
+        titles = [c["content"] for c in jsarr if c is not None and c["type"] == "sanitized_html" and "subtype" in c and (c["subtype"] == "subhead" or c["subtype"] == "sublabel") and "content" in c and c["content"] is not None]
         return titles
 
     @staticmethod
