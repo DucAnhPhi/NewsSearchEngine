@@ -1,5 +1,6 @@
 import json
 import os
+from tqdm import tqdm
 from .pyw_hnswlib import Hnswlib
 from .typings import Vector, VectorList, StringList, NearestNeighborList
 from .embedding.model import EmbeddingModel
@@ -18,6 +19,7 @@ class VectorStorage():
     ):
         self.storage = Hnswlib(space='cosine', dim = dim)
         self.storage_location = storage_location
+        self.max_elements = max_elements
 
         if os.path.isfile(storage_location):
             if max_elements:
@@ -60,7 +62,7 @@ class VectorStorage():
             emb_batch: VectorList = []
             id_batch: StringList = []
 
-            for line in data_file:
+            for line in tqdm(data_file, total=self.max_elements):
                 raw = json.loads(line)
                 article_id = get_id_func(raw)
                 emb = emb_func(raw)
