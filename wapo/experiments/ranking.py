@@ -61,6 +61,7 @@ class WAPORanker():
         return [bm25_score, cosine_score, doc_length, query_published_after]
 
     def get_training_and_validation_set(self, data):
+        np.random.seed(69)
         np.random.shuffle(data)
         train_size = int(len(data) * 0.7)
         train_data_raw = data[:train_size]
