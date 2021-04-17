@@ -129,8 +129,10 @@ class WAPORanker():
                     results.append(res_e)
         return results
 
-    def get_ranking(self, test_pred, test_ids):
+    def get_ranking(self, test_pred, test_ids, asc=False):
         inds = (test_pred.argsort())[::-1]
+        if asc:
+            inds = (test_pred.argsort())
         ranked_test_pred = test_pred[inds]
         ranked_ids = test_ids[inds]
         return (ranked_test_pred, ranked_ids)
@@ -153,13 +155,45 @@ class WAPORanker():
                     X_test = np.array(X_test)
                     X_test_ids = np.array(X_test_ids)
                     test_pred = model.predict(X_test)
-                    inds = (test_pred.argsort())[::-1]
                     ranked_test_pred, ranked_ids = self.get_ranking(test_pred, X_test_ids)
-                    topic=topic_dict[judgement["id"]]
+                    topic = topic_dict[judgement["id"]]
                     for rank, ret in enumerate(ranked_ids):
                         out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
                         fout.write(out)
         print("Finished.")
+
+    def rank_by_features_individually(self, judgement_list_path, result_file_name):
+        topic_dict_18 = JudgementListWapo.get_topic_dict('18')
+        topic_dict_19 = JudgementListWapo.get_topic_dict('19')
+        topic_dict_20 = JudgementListWapo.get_topic_dict('20')
+        topic_dict_combined = {**topic_dict_18, **topic_dict_19, **topic_dict_20}
+        topic_dict_combined = {v:k for k,v in topic_dict_combined.items()}
+        data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
+        with open(judgement_list_path, "r", encoding="utf-8") as f:
+            jl = []
+            for line in tqdm(f, total = 107):
+                judgm = json.loads(line)
+                j = {"id": judgm["id"], "references": []}
+                for ref in judgm["references"]:
+                    feat = self.get_features(judgm["id"], ref["id"])
+                    j["references"].append({"id": ref["id"], "features": feat})
+                jl.append(j)
+            with open(f"{data_location}/{result_file_name}_bm25.txt", "w", encoding="utf-8") as fout:
+                for j in jl:
+                    bm25_scores = np.array([ref["features"][0] for ref in j["references"]])
+                    ranked_bm25_scores, ranked_refs = self.get_ranking(bm25_scores,j["references"])
+                    topic = topic_dict_combined[j["id"]]
+                    for rank, ret in enumerate(ranked_refs):
+                        out = f"{topic}\tQ0\t{ret["id"]}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
+                        fout.write(out)
+            with open(f"{data_location}/{result_file_name}_cos.txt", "w", encoding="utf-8") as fout:
+                for j in jl:
+                    cos_scores = np.array([ref["features"][1] for ref in j["references"]])
+                    ranked_cos_scores, ranked_refs = self.get_ranking(cos_scores,j["references"], asc=True)
+                    topic = topic_dict_combined[j["id"]]
+                    for rank, ret in enumerate(ranked_refs):
+                        out = f"{topic}\tQ0\t{ret["id"]}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
+                        fout.write(out)
 
 if __name__ == "__main__":
     index = "wapo_clean"
@@ -195,6 +229,8 @@ if __name__ == "__main__":
     em = EmbeddingModel(lang="en", device=args.device)
     fe = FeatureExtraction(em, parser)
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
+    judgement_list_18_path = f"{data_location}/judgement_list_wapo_18.jsonl"
+    judgement_list_19_path = f"{data_location}/judgement_list_wapo_19.jsonl"
     judgement_list_20_path = f"{data_location}/judgement_list_wapo_20.jsonl"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
     vs = VectorStorage(vs_extracted_k_denormalized_ordered)
@@ -240,3 +276,7 @@ if __name__ == "__main__":
         model = lgb.Booster(model_file=model_path)
         result_path = f"{data_location}/ranking_results_20.txt"
         ranker.test_model(300, judgement_list_20_path, result_path, model)
+
+    ranker.rank_by_features_individually(judgement_list_18_path, "wapo_jl18_ranking_results_by")
+    ranker.rank_by_features_individually(judgement_list_19_path, "wapo_jl19_ranking_results_by")
+    ranker.rank_by_features_individually(judgement_list_20_path, "wapo_jl20_ranking_results_by")
