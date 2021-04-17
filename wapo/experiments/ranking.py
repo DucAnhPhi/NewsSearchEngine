@@ -169,16 +169,21 @@ class WAPORanker():
         topic_dict_combined = {**topic_dict_18, **topic_dict_19, **topic_dict_20}
         topic_dict_combined = {v:k for k,v in topic_dict_combined.items()}
         data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
+        exception_count = 0
         with open(judgement_list_path, "r", encoding="utf-8") as f:
             jl = []
             for line in tqdm(f, total = 107):
                 judgm = json.loads(line)
                 j = {"id": judgm["id"], "references": []}
-                query_es = es.get(index=self.index, id=judgm["id"])
-                for ref in judgm["references"]:
-                    feat = self.get_features(query_es, ref["id"])
-                    j["references"].append({"id": ref["id"], "features": feat})
-                jl.append(j)
+                try:
+                    query_es = es.get(index=self.index, id=judgm["id"])
+                    for ref in judgm["references"]:
+                        feat = self.get_features(query_es, ref["id"])
+                        j["references"].append({"id": ref["id"], "features": feat})
+                    jl.append(j)
+                except:
+                    exception_count += 1
+                    continue
             with open(f"{data_location}/{result_file_name}_bm25.txt", "w", encoding="utf-8") as fout:
                 for j in jl:
                     bm25_scores = np.array([ref["features"][0] for ref in j["references"]])
@@ -197,6 +202,7 @@ class WAPORanker():
                     for rank, ret in enumerate(ranked_refs):
                         out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
                         fout.write(out)
+            print(f"Exception count: {exception_count}")
 
 if __name__ == "__main__":
     index = "wapo_clean"
