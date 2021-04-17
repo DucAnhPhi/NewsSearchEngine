@@ -184,7 +184,7 @@ class WAPORanker():
                     ranked_bm25_scores, ranked_refs = self.get_ranking(bm25_scores,j["references"])
                     topic = topic_dict_combined[j["id"]]
                     for rank, ret in enumerate(ranked_refs):
-                        out = f"{topic}\tQ0\t{ret["id"]}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
+                        out = f"{topic}\tQ0\t{ret['id']}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
                         fout.write(out)
             with open(f"{data_location}/{result_file_name}_cos.txt", "w", encoding="utf-8") as fout:
                 for j in jl:
@@ -192,7 +192,7 @@ class WAPORanker():
                     ranked_cos_scores, ranked_refs = self.get_ranking(cos_scores,j["references"], asc=True)
                     topic = topic_dict_combined[j["id"]]
                     for rank, ret in enumerate(ranked_refs):
-                        out = f"{topic}\tQ0\t{ret["id"]}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
+                        out = f"{topic}\tQ0\t{ret['id']}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
                         fout.write(out)
 
 if __name__ == "__main__":
