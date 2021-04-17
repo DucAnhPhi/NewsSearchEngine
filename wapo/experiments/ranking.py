@@ -174,8 +174,9 @@ class WAPORanker():
             for line in tqdm(f, total = 107):
                 judgm = json.loads(line)
                 j = {"id": judgm["id"], "references": []}
+                query_es = es.get(index=self.index, id=judgm["id"])
                 for ref in judgm["references"]:
-                    feat = self.get_features(judgm["id"], ref["id"])
+                    feat = self.get_features(query_es, ref["id"])
                     j["references"].append({"id": ref["id"], "features": feat})
                 jl.append(j)
             with open(f"{data_location}/{result_file_name}_bm25.txt", "w", encoding="utf-8") as fout:
