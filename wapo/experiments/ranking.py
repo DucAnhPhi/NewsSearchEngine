@@ -76,16 +76,17 @@ class WAPORanker():
             query_es = self.es.get(index=self.index, id=jl["id"])
             query_groups.append(len(jl["references"]))
             for ref in jl["references"]:
+                if ref["id"] == jl["id"]:
+                    continue
                 ref_features = self.get_features(query_es, ref["id"])
                 X.append(ref_features)
                 y.append(int(ref["exp_rel"]))
         return (X,y,query_groups)
 
-    def get_training_data(self):
+    def get_training_data(self, jl_paths):
         data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
-        judgement_list_paths = [f"{data_location}/judgement_list_wapo_18.jsonl", f"{data_location}/judgement_list_wapo_19.jsonl"]
         data = []
-        for path in judgement_list_paths:
+        for path in jl_paths:
             with open(path, "r", encoding="utf-8") as f:
                 for line in f:
                     judgement = json.loads(line)
@@ -127,6 +128,7 @@ class WAPORanker():
                         break
                 if is_new_res:
                     results.append(res_e)
+        results = [res for res in results if res["id"] != query_es["_id"]]
         return results
 
     def get_ranking(self, test_pred, test_ids, asc=False):
@@ -246,7 +248,7 @@ if __name__ == "__main__":
     if not os.path.isfile(f"{data_location}/ranking_model.txt"):
         if not os.path.isfile(f"{data_location}/X_train.txt"):
             print("Initialize training and validation data...")
-            X_train, y_train, query_train, X_val, y_val, query_val = ranker.get_training_data()
+            X_train, y_train, query_train, X_val, y_val, query_val = ranker.get_training_data([judgement_list_18_path, judgement_list_19_path])
 
             print("Finished. Saving data...")
             np.savetxt(f"{data_location}/X_train.txt", X_train)
