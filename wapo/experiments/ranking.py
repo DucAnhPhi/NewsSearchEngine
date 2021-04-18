@@ -184,24 +184,22 @@ class WAPORanker():
                 except:
                     exception_count += 1
                     continue
-            with open(f"{data_location}/{result_file_name}_bm25.txt", "w", encoding="utf-8") as fout:
-                for j in jl:
-                    bm25_scores = np.array([ref["features"][0] for ref in j["references"]])
-                    ref_ids = np.array([ref["id"] for ref in j["references"]])
-                    ranked_bm25_scores, ranked_refs = self.get_ranking(bm25_scores,ref_ids)
-                    topic = topic_dict_combined[j["id"]]
-                    for rank, ret in enumerate(ranked_refs):
-                        out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
-                        fout.write(out)
-            with open(f"{data_location}/{result_file_name}_cos.txt", "w", encoding="utf-8") as fout:
-                for j in jl:
-                    cos_scores = np.array([ref["features"][1] for ref in j["references"]])
-                    ref_ids = np.array([ref["id"] for ref in j["references"]])
-                    ranked_cos_scores, ranked_refs = self.get_ranking(cos_scores,ref_ids, asc=True)
-                    topic = topic_dict_combined[j["id"]]
-                    for rank, ret in enumerate(ranked_refs):
-                        out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
-                        fout.write(out)
+            with open(f"{data_location}/{result_file_name}_bm25.txt", "w", encoding="utf-8") as fout_bm25:
+                with open(f"{data_location}/{result_file_name}_cos.txt", "w", encoding="utf-8") as fout_cos:
+                    for j in jl:
+                        filtered_refs = [ref for ref in j["references"] if ref["id"] != j["id"]]
+                        bm25_scores = np.array([ref["features"][0] for ref in filtered_refs)
+                        cos_scores = np.array([ref["features"][1] for ref in filtered_refs])
+                        ref_ids = np.array([ref["id"] for ref in filtered_refs])
+                        ranked_bm25_scores, ranked_bm25_refs = self.get_ranking(bm25_scores,ref_ids)
+                        ranked_cos_scores, ranked_cos_refs = self.get_ranking(cos_scores,ref_ids, asc=True)
+                        topic = topic_dict_combined[j["id"]]
+                        for rank, ret in enumerate(ranked_bm25_refs):
+                            out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
+                            fout_bm25.write(out)
+                        for rank, ret in enumerate(ranked_cos_refs):
+                            out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
+                            fout_cos.write(out)
             print(f"Exception count: {exception_count}")
 
 if __name__ == "__main__":
