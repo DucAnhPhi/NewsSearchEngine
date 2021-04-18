@@ -149,7 +149,7 @@ if __name__ == "__main__":
             return None
         return em.encode(query)
 
-    ret_count = [100,150,200,250,300]
+    ret_count = [100,125,150,175,200]
 
     for ret in ret_count:
         exp1 = CombinedRecallExperiment(
