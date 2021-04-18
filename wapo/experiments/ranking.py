@@ -188,7 +188,7 @@ class WAPORanker():
                 with open(f"{data_location}/{result_file_name}_cos.txt", "w", encoding="utf-8") as fout_cos:
                     for j in jl:
                         filtered_refs = [ref for ref in j["references"] if ref["id"] != j["id"]]
-                        bm25_scores = np.array([ref["features"][0] for ref in filtered_refs)
+                        bm25_scores = np.array([ref["features"][0] for ref in filtered_refs])
                         cos_scores = np.array([ref["features"][1] for ref in filtered_refs])
                         ref_ids = np.array([ref["id"] for ref in filtered_refs])
                         ranked_bm25_scores, ranked_bm25_refs = self.get_ranking(bm25_scores,ref_ids)
