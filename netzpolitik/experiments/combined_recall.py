@@ -43,9 +43,11 @@ class CombinedRecallExperiment():
                             index = self.index,
                             body = {
                                 "query": {
-                                    "query_string": {
+                                    "multi_match": {
                                         "fields": [ "title", "body" ],
-                                        "query": keywords_query
+                                        "query": keywords_query,
+                                        "analyzer": "german",
+                                        "operator": "or"
                                     }
                                 }
                             }

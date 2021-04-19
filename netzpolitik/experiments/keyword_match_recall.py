@@ -32,9 +32,11 @@ class KeywordsMatchExperiment():
                         index = self.index,
                         body = {
                             "query": {
-                                "query_string": {
+                                "multi_match": {
                                     "fields": [ "title", "body" ],
-                                    "query": query
+                                    "query": query,
+                                    "analyzer": "german",
+                                    "operator": "or"
                                 }
                             }
                         }
@@ -101,16 +103,16 @@ if __name__ == "__main__":
 
     def get_query_from_annotated_keywords(es_doc):
         keywords = es_doc["_source"]["keywords"]
-        return " OR ".join(keywords)
+        return " ".join(keywords)
 
     def get_query_from_tf_idf_keywords(es_doc):
         keywords = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " OR ".join(keywords)
+        return " ".join(keywords)
 
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " OR ".join(annotated + extracted)
+        return " ".join(annotated + extracted)
 
     ret_count = [100,150,200,250,300]
     print("Netzpolitik Keyword Match Retrieval Experiment")
