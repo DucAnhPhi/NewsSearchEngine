@@ -26,9 +26,7 @@ class WAPORanker():
             query = " ".join(keywords)
             return self.em.encode(query)
 
-    def get_features(self, query_es, doc_id, bm25_score=None, cosine_score=None):
-        doc_es = self.es.get(index=self.index, id=doc_id)
-
+    def get_features(self, query_es, doc_es, bm25_score=None, cosine_score=None):
         doc_length = len(doc_es["_source"]["title"]) + len(doc_es["_source"]["text"])
         query_published_after = 1 if int(query_es["_source"]["date"]) > int(doc_es["_source"]["date"]) else 0
 
@@ -39,7 +37,7 @@ class WAPORanker():
             if query:
                 val = self.es.explain(
                     index=self.index,
-                    id=doc_id,
+                    id=doc_es["_id"],
                     body = {
                         "query": {
                             "query_string": {
@@ -78,7 +76,16 @@ class WAPORanker():
             for ref in jl["references"]:
                 if ref["id"] == jl["id"]:
                     continue
-                ref_features = self.get_features(query_es, ref["id"])
+                doc_es = None
+                try:
+                    doc_es = self.es.get(
+                        index = self.index,
+                        id = ref["id"]
+                    )
+                except Exception as e:
+                    print(e)
+                    continue
+                ref_features = self.get_features(query_es, doc_es)
                 X.append(ref_features)
                 y.append(int(ref["exp_rel"]))
         return (X,y,query_groups)
@@ -151,7 +158,16 @@ class WAPORanker():
                     X_test = []
                     X_test_ids = []
                     for res in combined_retrieval:
-                        res_features = self.get_features(query_es,res["id"],res["bm25_score"],res["cosine_score"])
+                        doc_es = None
+                        try:
+                            doc_es = self.es.get(
+                                index = self.index,
+                                id = res["id"]
+                            )
+                        except Exception as e:
+                            print(e)
+                            continue
+                        res_features = self.get_features(query_es,doc_es,res["bm25_score"],res["cosine_score"])
                         X_test.append(res_features)
                         X_test_ids.append(res["id"])
                     X_test = np.array(X_test)
@@ -182,7 +198,16 @@ class WAPORanker():
                     for ref in judgm["references"]:
                         if ref["id"] == judgm["id"]:
                             continue
-                        feat = self.get_features(query_es, ref["id"])
+                        doc_es = None
+                        try:
+                            doc_es = self.es.get(
+                                index = self.index,
+                                id = ref["id"]
+                            )
+                        except Exception as e:
+                            print(e)
+                            continue
+                        feat = self.get_features(query_es, doc_es)
                         j["references"].append({"id": ref["id"], "features": feat})
                     jl.append(j)
                 except:
