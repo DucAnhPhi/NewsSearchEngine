@@ -180,6 +180,8 @@ class WAPORanker():
                 try:
                     query_es = es.get(index=self.index, id=judgm["id"])
                     for ref in judgm["references"]:
+                        if ref["id"] == judgm["id"]:
+                            continue
                         feat = self.get_features(query_es, ref["id"])
                         j["references"].append({"id": ref["id"], "features": feat})
                     jl.append(j)
