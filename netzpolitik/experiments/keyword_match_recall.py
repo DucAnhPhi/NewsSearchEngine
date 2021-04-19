@@ -32,11 +32,9 @@ class KeywordsMatchExperiment():
                         index = self.index,
                         body = {
                             "query": {
-                                "multi_match": {
+                                "query_string": {
                                     "fields": [ "title", "body" ],
-                                    "query": query,
-                                    "analyzer": "german",
-                                    "operator": "or"
+                                    "query": query
                                 }
                             }
                         }
@@ -101,32 +99,37 @@ if __name__ == "__main__":
     parser = ParserNetzpolitik(es)
     judgement_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data/judgement_list_netzpolitik.jsonl"
 
-    print("Netzpolitik Keyword Match Retrieval Experiment")
-
     def get_query_from_annotated_keywords(es_doc):
         keywords = es_doc["_source"]["keywords"]
-        return " ".join(keywords)
-    exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_keywords, judgement_location)
-    print("----------------------------------------------------------------")
-    print("Query by multi-match query with concatenated pre-annotated keywords.")
-    exp.print_stats()
-    print("----------------------------------------------------------------")
+        return " OR ".join(keywords)
 
     def get_query_from_tf_idf_keywords(es_doc):
         keywords = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " ".join(keywords)
-    exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_tf_idf_keywords, judgement_location)
-    print("----------------------------------------------------------------")
-    print("Query by multi-match query with concatenated extracted tf-idf keywords.")
-    exp.print_stats()
-    print("----------------------------------------------------------------")
+        return " OR ".join(keywords)
 
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " ".join(annotated + extracted)
-    exp = KeywordsMatchExperiment(es, args.index_name, 200, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
-    print("----------------------------------------------------------------")
-    print("Query by multi-match query with concatenated annotated and extracted tf-idf keywords.")
-    exp.print_stats()
-    print("----------------------------------------------------------------")
+        return " OR ".join(annotated + extracted)
+
+    ret_count = [100,150,200,250,300]
+    print("Netzpolitik Keyword Match Retrieval Experiment")
+
+    for ret in ret_count:
+        exp = KeywordsMatchExperiment(es, args.index_name, ret, get_query_from_annotated_keywords, judgement_location)
+        print("----------------------------------------------------------------")
+        print("Query with concatenated pre-annotated keywords.")
+        exp.print_stats()
+        print("----------------------------------------------------------------")
+
+        exp = KeywordsMatchExperiment(es, args.index_name, ret, get_query_from_tf_idf_keywords, judgement_location)
+        print("----------------------------------------------------------------")
+        print("Query with concatenated extracted tf-idf keywords.")
+        exp.print_stats()
+        print("----------------------------------------------------------------")
+
+        exp = KeywordsMatchExperiment(es, args.index_name, ret, get_query_from_annotated_and_tf_idf_keywords, judgement_location)
+        print("----------------------------------------------------------------")
+        print("Query with concatenated annotated and extracted tf-idf keywords.")
+        exp.print_stats()
+        print("----------------------------------------------------------------")

@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from elasticsearch import Elasticsearch
+from tqdm import tqdm
 from ..parser import ParserNetzpolitik
 from ...vector_storage import VectorStorage
 from ...feature_extraction import FeatureExtraction
@@ -26,7 +27,7 @@ class CombinedRecallExperiment():
         self.vs = VectorStorage(vector_storage_location)
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
-            for line in f:
+            for line in tqdm(f, total=20000):
                 judgement = json.loads(line)
                 try:
                     result_ids = []
@@ -131,7 +132,7 @@ if __name__ == "__main__":
     judgement_list_path = f"{data_location}/judgement_list_netzpolitik.jsonl"
     vs_title_with_first_paragraph = f"{data_location}/netzpolitik_vs_title_with_first_paragraph.bin"
     vs_annotated_k = f"{data_location}/netzpolitik_vs_annotated_k.bin"
-    vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
+    vs_extracted_k_denormalized_ordered = f"{data_location}/netzpolitik_vs_extracted_k_denormalized_ordered.bin"
 
     ret_count = [100,125,150,175,200]
 
