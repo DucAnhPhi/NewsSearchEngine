@@ -158,11 +158,11 @@ if __name__ == "__main__":
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " OR ".join(annotated + extracted)
+        return " ".join(annotated + extracted)
 
     def get_query_from_tf_idf_keywords(es_doc):
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " OR ".join(extracted)
+        return " ".join(extracted)
 
     for ret in ret_count:
         exp = CombinedRecallExperiment(
