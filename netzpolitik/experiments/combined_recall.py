@@ -23,7 +23,7 @@ class CombinedRecallExperiment():
         self.recall_improvement_avg = 0.
 
         # load vector storage from file
-        self.vs = VectorStorage(vector_storage_location, 20000)
+        self.vs = VectorStorage(vector_storage_location)
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -42,11 +42,9 @@ class CombinedRecallExperiment():
                             index = self.index,
                             body = {
                                 "query": {
-                                "multi_match": {
-                                    "fields": [ "title", "body" ],
-                                    "query": keywords_query,
-                                    "analyzer": "german",
-                                    "operator": "or"
+                                    "query_string": {
+                                        "fields": [ "title", "body" ],
+                                        "query": keywords_query
                                     }
                                 }
                             }
@@ -129,12 +127,13 @@ if __name__ == "__main__":
     parser = ParserNetzpolitik(es)
     em = EmbeddingModel(lang="de", device=args.device)
     fe = FeatureExtraction(em, parser)
-    size = 300
     data_location = f"{os.path.abspath(os.path.join(__file__ , os.pardir, os.pardir, os.pardir))}/data"
     judgement_list_path = f"{data_location}/judgement_list_netzpolitik.jsonl"
     vs_title_with_first_paragraph = f"{data_location}/netzpolitik_vs_title_with_first_paragraph.bin"
     vs_annotated_k = f"{data_location}/netzpolitik_vs_annotated_k.bin"
     vs_extracted_k_denormalized_ordered = f"{data_location}/wapo_vs_extracted_k_denormalized_ordered.bin"
+
+    ret_count = [100,125,150,175,200]
 
     def get_embedding_of_title_with_first_paragraph(es_doc):
         return fe.get_embedding_of_title_with_first_paragraph(es_doc["_source"])
@@ -146,8 +145,8 @@ if __name__ == "__main__":
             return None
         return em.encode(query)
 
-    def get_embedding_of_extracted_keywords(es_doc):
-        extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
+    def get_embedding_of_extracted_keywords_denorm_ordered(es_doc):
+        extracted = parser.get_keywords_tf_idf_denormalized(args.index_name, es_doc["_id"], es_doc["_source"]["title"], es_doc["_source"]["body"])
         query = " ".join(extracted)
         if not query:
             return None
@@ -156,31 +155,33 @@ if __name__ == "__main__":
     def get_query_from_annotated_and_tf_idf_keywords(es_doc):
         annotated = es_doc["_source"]["keywords"]
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " ".join(annotated + extracted)
+        return " OR ".join(annotated + extracted)
 
     def get_query_from_tf_idf_keywords(es_doc):
         extracted = parser.get_keywords_tf_idf(args.index_name, es_doc["_id"])
-        return " ".join(extracted)
+        return " OR ".join(extracted)
 
-    exp = CombinedRecallExperiment(
-        es,
-        parser,
-        index,
-        size,
-        get_query_from_annotated_and_tf_idf_keywords,
-        get_embedding_of_annotated_keywords,
-        vs_annotated_k,
-        judgement_list_path
-    )
-    print("----------------------------------------------------------------")
-    print("Run combined retrieval method using keyword matching and semantic search.")
-    print("Ranked Boolean Retrieval based on combined extracted keywords (denormalized, order preserved) and annotated keywords")
-    print("Semantic Search configuration:")
-    print("Index articles by:   embedding of annotated keywords")
-    print("Query:               embedding of annotated keywords")
-    exp.print_stats()
-    print("----------------------------------------------------------------\n")
+    for ret in ret_count:
+        exp = CombinedRecallExperiment(
+            es,
+            parser,
+            index,
+            ret,
+            get_query_from_tf_idf_keywords,
+            get_embedding_of_extracted_keywords_denorm_ordered,
+            vs_extracted_k_denormalized_ordered,
+            judgement_list_path
+        )
+        print("----------------------------------------------------------------")
+        print("Run combined retrieval method using keyword matching and semantic search.")
+        print("Ranked Boolean Retrieval based on extracted TF-IDF keywords")
+        print("Semantic Search configuration:")
+        print("Index articles by:   embedding of denormalized keywords (order preserved)")
+        print("Query:               embedding of denormalized keywords (order preserved)")
+        exp.print_stats()
+        print("----------------------------------------------------------------\n")
 
+    comment = '''
     exp2 = CombinedRecallExperiment(
         es,
         parser,
@@ -237,3 +238,4 @@ if __name__ == "__main__":
     print("Query:               embedding of extracted keywords (denormalized, order preserved)")
     exp4.print_stats()
     print("----------------------------------------------------------------\n")
+    '''
