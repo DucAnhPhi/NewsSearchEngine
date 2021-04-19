@@ -27,7 +27,7 @@ class CombinedRecallExperiment():
         self.vs = VectorStorage(vector_storage_location)
 
         with open(judgement_list_path, "r", encoding="utf-8") as f:
-            for line in tqdm(f, total=20000):
+            for line in tqdm(f, total=7527):
                 judgement = json.loads(line)
                 try:
                     result_ids = []
