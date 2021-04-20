@@ -265,7 +265,7 @@ class WAPORanker():
                             out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
                             fout_bm25.write(out)
                         for rank, ret in enumerate(ranked_cos_refs):
-                            out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
+                            out = f"{topic}\tQ0\t{ret}\t{rank}\t{1-ranked_cos_scores[rank]}\tducrun\n" # need to convert cosine similarity to cosine distance, as trev_eval sorts in descending order
                             fout_cos.write(out)
             print(f"Exception count: {exception_count}")
 
