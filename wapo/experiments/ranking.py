@@ -140,6 +140,26 @@ class WAPORanker():
         results = [res for res in results if res["id"] != query_es["_id"]]
         return results
 
+    def get_ranked_bool_retrieval(self, size, query_es):
+        results = []
+        keywords = self.parser.get_keywords_tf_idf(self.index, query_es["_id"])
+        if keywords:
+            query_keywords = " OR ".join(keywords)
+            k_results = (self.es.search(
+                size = size,
+                index = self.index,
+                body = {
+                    "query": {
+                        "query_string": {
+                            "fields": [ "title", "text" ],
+                            "query": query_keywords
+                        }
+                    }
+                }
+            ))["hits"]["hits"]
+            results = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results if res["_id"] != query_es["_id"]]
+        return results
+
     def get_ranking(self, test_pred, test_ids, asc=False):
         inds = (test_pred.argsort())[::-1]
         if asc:
@@ -181,6 +201,23 @@ class WAPORanker():
                         out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
                         fout.write(out)
         print("Finished.")
+
+    def test_ranked_bool(self, size, jl_path, result_path):
+        topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
+        print("Retrieve background links for each topic and rank based on ranked Boolean...")
+        with open(jl_path, "r", encoding="utf-8") as f:
+            with open(result_path, "w", encoding="utf-8") as fout:
+                for line in tqdm(f, total=49):
+                    judgement = json.loads(line)
+                    query_es = self.es.get(index=self.index,id=judgement["id"])
+                    retrieval = self.get_ranked_bool_retrieval(size, query_es)
+                    bm25_scores = [ret["bm25_score"] for ret in retrieval]
+                    ret_ids = [ret["id"] for ret in retrieval]
+                    ranked_scores, ranked_ids = self.get_ranking(bm25_scores, ret_ids)
+                    topic = topic_dict[judgement["id"]]
+                    for rank, rid in enumerate(ranked_ids):
+                        out = f"{topic}\tQ0\t{rid}\t{rank}\t{ranked_scores[rank]}\tducrun\n"
+                        fout.write(out)
 
     def rank_by_features_individually(self, judgement_list_path, result_file_name):
         topic_dict_18 = JudgementListWapo.get_topic_dict('18')
@@ -318,3 +355,8 @@ if __name__ == "__main__":
     ranker.rank_by_features_individually(judgement_list_18_path, "wapo_jl18_ranking_results_by")
     ranker.rank_by_features_individually(judgement_list_19_path, "wapo_jl19_ranking_results_by")
     ranker.rank_by_features_individually(judgement_list_20_path, "wapo_jl20_ranking_results_by")
+
+    ret_count = [100,150,200,250,300]
+    for ret in ret_count:
+        result_path = f"{data_location}/wapo_ranked_bool_ranking_{str(ret)}.txt"
+        self.test_ranked_bool(ret,judgement_list_20_path, result_path)
