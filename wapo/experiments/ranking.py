@@ -168,18 +168,18 @@ class WAPORanker():
         ranked_ids = test_ids[inds]
         return (ranked_test_pred, ranked_ids)
 
-    def test_model(self, size, judgement_list_path, result_path, model):
+    def test_model(self, retrieval_func, features_func, jl_path, res_path, model):
         topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
         print("Retrieve background links for each topic and calculate features...")
         with open(judgement_list_path, "r", encoding="utf-8") as f:
             with open(result_path, "w", encoding="utf-8") as fout:
-                for line in tqdm(f, total=50):
+                for line in tqdm(f, total=49):
                     judgement = json.loads(line)
                     query_es = self.es.get(index=self.index,id=judgement["id"])
-                    combined_retrieval = self.get_combined_retrieval(size, query_es)
                     X_test = []
                     X_test_ids = []
-                    for res in combined_retrieval:
+                    retrieval = retrieval_func(query_es)
+                    for res in retrieval:
                         doc_es = None
                         try:
                             doc_es = self.es.get(
@@ -189,7 +189,7 @@ class WAPORanker():
                         except Exception as e:
                             print(e)
                             continue
-                        res_features = self.get_features(query_es,doc_es,res["bm25_score"],res["cosine_score"])
+                        res_features = features_func(query_es,doc_es,res["bm25_score"],res["cosine_score"])
                         X_test.append(res_features)
                         X_test_ids.append(res["id"])
                     X_test = np.array(X_test)
@@ -200,7 +200,6 @@ class WAPORanker():
                     for rank, ret in enumerate(ranked_ids):
                         out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_test_pred[rank]}\tducrun\n"
                         fout.write(out)
-        print("Finished.")
 
     def test_ranked_bool(self, size, jl_path, result_path):
         topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
@@ -311,52 +310,90 @@ if __name__ == "__main__":
     vs = VectorStorage(vs_extracted_k_denormalized_ordered)
     ranker = WAPORanker(es, parser, em, vs, index)
 
-    if not os.path.isfile(f"{data_location}/ranking_model.txt"):
-        if not os.path.isfile(f"{data_location}/X_train.txt"):
-            print("Initialize training and validation data...")
-            X_train, y_train, query_train, X_val, y_val, query_val = ranker.get_training_data([judgement_list_18_path, judgement_list_19_path])
+    if not os.path.isfile(f"{data_location}/X_train.txt"):
+        print("Initialize training and validation data...")
+        X_train, y_train, query_train, X_val, y_val, query_val = ranker.get_training_data([judgement_list_18_path, judgement_list_19_path])
 
-            print("Finished. Saving data...")
-            np.savetxt(f"{data_location}/X_train.txt", X_train)
-            np.savetxt(f"{data_location}/y_train.txt", y_train)
-            np.savetxt(f"{data_location}/X_val.txt", X_val)
-            np.savetxt(f"{data_location}/y_val.txt", y_val)
-            np.savetxt(f"{data_location}/query_train.txt", query_train)
-            np.savetxt(f"{data_location}/query_val.txt", query_val)
-        else:
-            X_train = np.loadtxt(f"{data_location}/X_train.txt", dtype=float)
-            y_train = np.loadtxt(f"{data_location}/y_train.txt", dtype=float)
-            query_train = np.loadtxt(f"{data_location}/query_train.txt", dtype=float)
-            X_val = np.loadtxt(f"{data_location}/X_val.txt", dtype=float)
-            y_val = np.loadtxt(f"{data_location}/y_val.txt", dtype=float)
-            query_val = np.loadtxt(f"{data_location}/query_val.txt", dtype=float)
+        print("Finished. Saving data...")
+        np.savetxt(f"{data_location}/X_train.txt", X_train)
+        np.savetxt(f"{data_location}/y_train.txt", y_train)
+        np.savetxt(f"{data_location}/X_val.txt", X_val)
+        np.savetxt(f"{data_location}/y_val.txt", y_val)
+        np.savetxt(f"{data_location}/query_train.txt", query_train)
+        np.savetxt(f"{data_location}/query_val.txt", query_val)
+    else:
+        X_train = np.loadtxt(f"{data_location}/X_train.txt", dtype=float)
+        y_train = np.loadtxt(f"{data_location}/y_train.txt", dtype=float)
+        query_train = np.loadtxt(f"{data_location}/query_train.txt", dtype=float)
+        X_val = np.loadtxt(f"{data_location}/X_val.txt", dtype=float)
+        y_val = np.loadtxt(f"{data_location}/y_val.txt", dtype=float)
+        query_val = np.loadtxt(f"{data_location}/query_val.txt", dtype=float)
 
-        gbm = lgb.LGBMRanker()
-        print("Start training...")
-        gbm.fit(
-            X_train,
-            y_train,
-            group=query_train,
-            eval_set=[(X_val, y_val)],
-            eval_group=[query_val],
-            eval_at=[5,10],
-            early_stopping_rounds=50
-        )
-        print("Training finished. Saving ranking model...")
-        gbm.booster_.save_model(f"{data_location}/ranking_model.txt")
+    print("Test baseline + cosine similarity model")
+    def get_combined_retrieval(query_es):
+        return ranker.get_combined_retrieval(100, query_es)
 
-    model_path = f"{data_location}/ranking_model.txt"
-    if os.path.isfile(model_path):
-        print("Load model from file...")
-        model = lgb.Booster(model_file=model_path)
-        result_path = f"{data_location}/ranking_results_20.txt"
-        ranker.test_model(300, judgement_list_20_path, result_path, model)
+    def get_combined_features(query_es, doc_es, bm25_score, cos_score):
+        features = ranker.get_features(query_es, doc_es, bm25_score=bm25_score, cosine_score=cos_score)
+        return features[:2]
 
-    ranker.rank_by_features_individually(judgement_list_18_path, "wapo_jl18_ranking_results_by")
-    ranker.rank_by_features_individually(judgement_list_19_path, "wapo_jl19_ranking_results_by")
-    ranker.rank_by_features_individually(judgement_list_20_path, "wapo_jl20_ranking_results_by")
+    model_combined = lgb.LGBMRanker()
+    model_combined.fit(
+        np.array([v[:2] for v in X_train]),
+        y_train,
+        group=query_train,
+        eval_set=[(np.array([v[:2] for v in X_val]), y_val)],
+        eval_group=[query_val],
+        eval_at=[5,10],
+        early_stopping_rounds=50
+    )
+    ranker.test_model(get_combined_retrieval, get_combined_features, judgement_list_20_path, f"{data_location}/wapo_ranking_combined_20.txt", model_combined)
 
-    ret_count = [100,150,200,250,300]
-    for ret in ret_count:
-        result_path = f"{data_location}/wapo_ranked_bool_ranking_{str(ret)}.txt"
-        ranker.test_ranked_bool(ret,judgement_list_20_path, result_path)
+    print("Test baseline + doc length model")
+    def get_retrieval_base_doc_len(query_es):
+        return ranker.get_ranked_boolean_retrieval(100, query_es)
+
+    def get_features_base_doc_len(query_es, doc_es, bm25_score, cos_score):
+        features = ranker.get_features(query_es, doc_es, bm25_score=bm25_score, cosine_score=cos_score)
+        return [features[0], features[2]]
+
+    model_base_doc_len = lgb.LGBMRanker()
+    model_base_doc_len.fit(
+        np.array([[v[0], v[2]] for v in X_train]),
+        y_train,
+        group=query_train,
+        eval_set=[(np.array([[v[0], v[2]] for v in X_val]), y_val)],
+        eval_group=[query_val],
+        eval_at=[5,10],
+        early_stopping_rounds=50
+    )
+    ranker.test_model(get_retrieval_base_doc_len, get_features_base_doc_len, judgement_list_20_path, f"{data_location}/wapo_ranking_base_doc_len_20.txt", model_base_doc_len)
+
+    print("Test baseline + time model")
+    def get_retrieval_base_time(query_es):
+        return ranker.get_ranked_boolean_retrieval(100, query_es)
+
+    def get_features_base_time(query_es, doc_es, bm25_score, cos_score):
+        features = ranker.get_features(query_es, doc_es, bm25_score=bm25_score, cosine_score=cos_score)
+        return [features[0], features[3]]
+
+    model_base_time = lgb.LGBMRanker()
+    model_base_time.fit(
+        np.array([[v[0], v[3]] for v in X_train]),
+        y_train,
+        group=query_train,
+        eval_set=[(np.array([[v[0], v[3]] for v in X_val]), y_val)],
+        eval_group=[query_val],
+        eval_at=[5,10],
+        early_stopping_rounds=50
+    )
+    ranker.test_model(get_retrieval_base_time, get_features_base_time, judgement_list_20_path, f"{data_location}/wapo_ranking_base_time_20.txt", model_base_time)
+
+    #ranker.rank_by_features_individually(judgement_list_18_path, "wapo_jl18_ranking_results_by")
+    #ranker.rank_by_features_individually(judgement_list_19_path, "wapo_jl19_ranking_results_by")
+    #ranker.rank_by_features_individually(judgement_list_20_path, "wapo_jl20_ranking_results_by")
+
+    #ret_count = [100,150,200,250,300]
+    #for ret in ret_count:
+    #    result_path = f"{data_location}/wapo_ranked_bool_ranking_{str(ret)}.txt"
+    #    ranker.test_ranked_bool(ret,judgement_list_20_path, result_path)
