@@ -211,8 +211,8 @@ class WAPORanker():
                     judgement = json.loads(line)
                     query_es = self.es.get(index=self.index,id=judgement["id"])
                     retrieval = self.get_ranked_bool_retrieval(size, query_es)
-                    bm25_scores = [ret["bm25_score"] for ret in retrieval]
-                    ret_ids = [ret["id"] for ret in retrieval]
+                    bm25_scores = np.array([ret["bm25_score"] for ret in retrieval])
+                    ret_ids = np.array([ret["id"] for ret in retrieval])
                     ranked_scores, ranked_ids = self.get_ranking(bm25_scores, ret_ids)
                     topic = topic_dict[judgement["id"]]
                     for rank, rid in enumerate(ranked_ids):
