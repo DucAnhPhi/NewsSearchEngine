@@ -359,4 +359,4 @@ if __name__ == "__main__":
     ret_count = [100,150,200,250,300]
     for ret in ret_count:
         result_path = f"{data_location}/wapo_ranked_bool_ranking_{str(ret)}.txt"
-        self.test_ranked_bool(ret,judgement_list_20_path, result_path)
+        ranker.test_ranked_bool(ret,judgement_list_20_path, result_path)
