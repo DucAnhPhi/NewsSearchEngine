@@ -171,8 +171,8 @@ class WAPORanker():
     def test_model(self, retrieval_func, features_func, jl_path, res_path, model):
         topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
         print("Retrieve background links for each topic and calculate features...")
-        with open(judgement_list_path, "r", encoding="utf-8") as f:
-            with open(result_path, "w", encoding="utf-8") as fout:
+        with open(jl_path, "r", encoding="utf-8") as f:
+            with open(res_path, "w", encoding="utf-8") as fout:
                 for line in tqdm(f, total=49):
                     judgement = json.loads(line)
                     query_es = self.es.get(index=self.index,id=judgement["id"])
