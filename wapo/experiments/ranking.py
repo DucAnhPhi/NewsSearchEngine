@@ -72,7 +72,7 @@ class WAPORanker():
         query_groups = []
         for jl in tqdm(data, total=len(data)):
             query_es = self.es.get(index=self.index, id=jl["id"])
-            query_groups.append(len(jl["references"]))
+            count = 0
             for ref in jl["references"]:
                 if ref["id"] == jl["id"]:
                     continue
@@ -88,6 +88,8 @@ class WAPORanker():
                 ref_features = self.get_features(query_es, doc_es)
                 X.append(ref_features)
                 y.append(int(ref["exp_rel"]))
+                count += 1
+            query_groups.append(count)
         return (X,y,query_groups)
 
     def get_training_data(self, jl_paths):
