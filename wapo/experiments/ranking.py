@@ -351,7 +351,7 @@ if __name__ == "__main__":
 
     print("Test baseline + doc length model")
     def get_retrieval_base_doc_len(query_es):
-        return ranker.get_ranked_boolean_retrieval(100, query_es)
+        return ranker.get_ranked_bool_retrieval(100, query_es)
 
     def get_features_base_doc_len(query_es, doc_es, bm25_score, cos_score):
         features = ranker.get_features(query_es, doc_es, bm25_score=bm25_score, cosine_score=cos_score)
@@ -371,7 +371,7 @@ if __name__ == "__main__":
 
     print("Test baseline + time model")
     def get_retrieval_base_time(query_es):
-        return ranker.get_ranked_boolean_retrieval(100, query_es)
+        return ranker.get_ranked_bool_retrieval(100, query_es)
 
     def get_features_base_time(query_es, doc_es, bm25_score, cos_score):
         features = ranker.get_features(query_es, doc_es, bm25_score=bm25_score, cosine_score=cos_score)
