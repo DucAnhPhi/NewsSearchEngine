@@ -270,10 +270,12 @@ class WAPORanker():
             print(f"Exception count: {exception_count}")
 
     def experiment_assume_perfect_recall(self, jl_paths, res_names):
+        print("Start ranking experiment assuming perfect recall...")
         for i, path in enumerate(jl_paths):
             self.rank_by_features_individually(path, res_names[i])
 
     def experiment_baseline_ranking(self, jl_path):
+        print("Test baseline ranking...")
         ret_count = [100,150,200,250,300]
         for ret in ret_count:
             result_path = f"{self.data_location}/wapo_ranking_base_{str(ret)}.txt"
