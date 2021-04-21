@@ -50,7 +50,7 @@ class WAPORanker():
                 if val:
                     bm25_score = val
         if not cosine_score:
-            cosine_score = 1
+            cosine_score = 0
             query_emb = self.get_embedding_of_extracted_keywords_denormalized_ordered(query_es)
             doc_emb = self.get_embedding_of_extracted_keywords_denormalized_ordered(doc_es)
             if query_emb and doc_emb:
@@ -160,10 +160,8 @@ class WAPORanker():
             results = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results if res["_id"] != query_es["_id"]]
         return results
 
-    def get_ranking(self, test_pred, test_ids, asc=False):
+    def get_ranking(self, test_pred, test_ids):
         inds = (test_pred.argsort())[::-1]
-        if asc:
-            inds = (test_pred.argsort())
         ranked_test_pred = test_pred[inds]
         ranked_ids = test_ids[inds]
         return (ranked_test_pred, ranked_ids)
@@ -259,13 +257,13 @@ class WAPORanker():
                         cos_scores = np.array([ref["features"][1] for ref in filtered_refs])
                         ref_ids = np.array([ref["id"] for ref in filtered_refs])
                         ranked_bm25_scores, ranked_bm25_refs = self.get_ranking(bm25_scores,ref_ids)
-                        ranked_cos_scores, ranked_cos_refs = self.get_ranking(cos_scores,ref_ids, asc=True)
+                        ranked_cos_scores, ranked_cos_refs = self.get_ranking(cos_scores,ref_ids)
                         topic = topic_dict_combined[j["id"]]
                         for rank, ret in enumerate(ranked_bm25_refs):
                             out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_bm25_scores[rank]}\tducrun\n"
                             fout_bm25.write(out)
                         for rank, ret in enumerate(ranked_cos_refs):
-                            out = f"{topic}\tQ0\t{ret}\t{rank}\t{1-ranked_cos_scores[rank]}\tducrun\n" # need to convert cosine similarity to cosine distance, as trev_eval sorts in descending order
+                            out = f"{topic}\tQ0\t{ret}\t{rank}\t{ranked_cos_scores[rank]}\tducrun\n"
                             fout_cos.write(out)
             print(f"Exception count: {exception_count}")
 
