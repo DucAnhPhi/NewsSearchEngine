@@ -332,7 +332,18 @@ class WAPORanker():
             )
             ranker.test_model(get_retrieval_base_time, [0,3], judgement_list_20_path, f"{data_location}/wapo_ranking_base_time_{ret}.txt", model_base_time)
 
-
+            print(f"All features combined. k = {ret}")
+            model_all = lgb.LGBMRanker()
+            model_all.fit(
+                X_train,
+                y_train,
+                group=query_train,
+                eval_set=[(X_val, y_val)],
+                eval_group=[query_val],
+                eval_at=[5,10],
+                early_stopping_rounds=50
+            )
+            self.test_model(get_combined_retrieval, [0,1,2,3], judgement_list_20_path, f"{self.data_location}/wapo_ranking_all_{ret}.txt", model_all)
 if __name__ == "__main__":
     index = "wapo_clean"
 
