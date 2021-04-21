@@ -45,12 +45,13 @@ class TestWapoRanking():
         parsed_query = self.parser.parse_article(raw_query)
         query_doc = {"_id": raw_query["id"], "_source": parsed_query}
         doc_id = self.articles[0]["id"]
-        actual_features = self.ranker.get_features(query_doc, doc_id)
+        doc_es = self.es.get(index=self.index, id=doc_id)
+        actual_features = self.ranker.get_features(query_doc, doc_es)
         query_bm25_keywords = self.parser.get_keywords_tf_idf(self.index, query_doc["_id"])
         query_keywords = self.parser.get_keywords_tf_idf_denormalized(self.index, query_doc["_id"], query_doc["_source"]["title"], query_doc["_source"]["text"], keep_order=True)
         query_emb = self.em.encode(" ".join(query_keywords))
         doc_keywords = ['ahead', 'region', 'commuters', 'transportation', 'projects', 'scheduled', 'lanes', 'Beltway', 'open', 'Travelers', 'Road', 'drivers', 'new', 'Intercounty', 'Connector', 'congestion', 'routes', 'Telegraph', 'Bridge', 'Metro', 'riders', 'trains', 'Line', 'maintenance', 'stations', 'entrance', 'fare', 'Avenue']
-        doc_emb = self.em.encode(" ".join(doc_keywords)) 
+        doc_emb = self.em.encode(" ".join(doc_keywords))
         expected_bm25 = self.es.explain(
             index=self.index,
             id=doc_id,
@@ -102,12 +103,11 @@ class TestWapoRanking():
             [68.92036, 0.26061434674200035, 9363, 1]
         ]
         X,y,query_groups = self.ranker.split_training_data(data)
-        print(X)
         assert len(y) == len(expected_y)
         assert len(X) == len(expected_X)
         assert len(query_groups) == len(expected_query_groups)
         assert all([a==b for a,b in zip(y,expected_y)])
-        assert all([a==b for a,b in zip(X,expected_X)])
+        assert all([all([c==d for c,d in zip(a,b)]) for a,b in zip(X,expected_X)])
         assert all([a==b for a,b in zip(query_groups,expected_query_groups)])
 
     def test_get_training_and_validation_set(self):
