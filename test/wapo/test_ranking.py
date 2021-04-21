@@ -64,7 +64,7 @@ class TestWapoRanking():
                 }
             }
         )["explanation"]["value"]
-        expected_cos = cosine(query_emb, doc_emb)
+        expected_cos = 1-cosine(query_emb, doc_emb)
         expected_published_after = 1
         expected_doc_length = 7069 
         assert actual_features[0] == expected_bm25
@@ -97,10 +97,10 @@ class TestWapoRanking():
         expected_y = [16,2,8,8]
         expected_query_groups = [2,1,1]
         expected_X = [
-            [65.08981, 0.5181154783264579, 4775, 0],
-            [21.67442, 0.6364726437693504, 8077, 1],
-            [53.90142, 0.6056357075602647, 6344, 1],
-            [68.92036, 0.26061434674200035, 9363, 1]
+            [65.08981, 1-0.5181154783264579, 4775, 0],
+            [21.67442, 1-0.6364726437693504, 8077, 1],
+            [53.90142, 1-0.6056357075602647, 6344, 1],
+            [68.92036, 1-0.26061434674200035, 9363, 1]
         ]
         X,y,query_groups = self.ranker.split_training_data(data)
         assert len(y) == len(expected_y)

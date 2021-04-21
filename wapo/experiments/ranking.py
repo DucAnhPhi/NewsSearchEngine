@@ -55,7 +55,7 @@ class WAPORanker():
             query_emb = self.get_embedding_of_extracted_keywords_denormalized_ordered(query_es)
             doc_emb = self.get_embedding_of_extracted_keywords_denormalized_ordered(doc_es)
             if query_emb and doc_emb:
-                cosine_score = cosine(query_emb, doc_emb)
+                cosine_score = 1 - cosine(query_emb, doc_emb) # convert cosine sim. to cosine dist. as trev_eval sorts in desc. order
         
         return np.array([bm25_score, cosine_score, doc_length, query_published_after])
 
@@ -127,7 +127,7 @@ class WAPORanker():
         if keywords_denorm:
             emb_query = self.em.encode(" ".join(keywords_denorm))
             nearest_n: NearestNeighborList = self.vs.get_k_nearest(emb_query,size)
-            e_results = [{"id": list(nn.keys())[0], "cosine_score":list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]]
+            e_results = [{"id": list(nn.keys())[0], "cosine_score":1-list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]] # convert cosine sim. to cosine dist. as trev_eval sorts in desc. order
             orig_len = len(results)
             for res_e in e_results:
                 is_new_res = True
