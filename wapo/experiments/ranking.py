@@ -286,7 +286,7 @@ class WAPORanker():
         for ret in ret_count:
             print(f"Test baseline + cosine similarity model. k = {ret}")
             def get_combined_retrieval(query_es):
-                return ranker.get_combined_retrieval(ret/2, query_es)
+                return ranker.get_combined_retrieval(ret//2, query_es)
 
             model_combined = lgb.LGBMRanker()
             model_combined.fit(
