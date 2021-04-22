@@ -273,7 +273,7 @@ class WAPORanker():
                             fout_cos.write(out)
             print(f"Exception count: {exception_count}")
 
-    def experiment_assume_perfect_recall(self, jl_paths, res_names):
+    def experiment_assume_optimal_retrieval(self, jl_paths, res_names):
         print("Start ranking experiment assuming perfect recall...")
         for i, path in enumerate(jl_paths):
             self.rank_by_features_individually(path, res_names[i])
@@ -415,9 +415,9 @@ if __name__ == "__main__":
         y_val = np.loadtxt(f"{data_location}/y_val.txt", dtype=float)
         query_val = np.loadtxt(f"{data_location}/query_val.txt", dtype=float)
 
-    ranker.experiment_assume_perfect_recall(
+    ranker.experiment_assume_optimal_retrieval(
         [judgement_list_18_path, judgement_list_19_path, judgement_list_20_path],
-        ["wapo_ranking_perf_recall_18", "wapo_ranking_perf_recall_19", "wapo_ranking_perf_recall_20"]
+        ["wapo_ranking_optimal_retrieval_18", "wapo_ranking_optimal_retrieval_19", "wapo_ranking_optimal_retrieval_20"]
     )
     ranker.experiment_baseline_ranking(judgement_list_20_path) # output file: wapo_ranking_base_{k}.txt
     ranker.experiment_semantic_search_ranking(judgement_list_20_path) # output file: wapo_ranking_cos_{k}.txt
