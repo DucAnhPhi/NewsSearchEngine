@@ -106,39 +106,18 @@ class WAPORanker():
         return (np.array(X_train), np.array(y_train), np.array(query_train), np.array(X_val), np.array(y_val), np.array(query_val))
 
     def get_combined_retrieval(self, size, query_es):
-        results = []
-        keywords = self.parser.get_keywords_tf_idf(self.index, query_es["_id"])
-        if keywords:
-            query_keywords = " OR ".join(keywords)
-            k_results = (self.es.search(
-                size = size,
-                index = self.index,
-                body = {
-                    "query": {
-                        "query_string": {
-                            "fields": [ "title", "text" ],
-                            "query": query_keywords
-                        }
-                    }
-                }
-            ))["hits"]["hits"]
-            results = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results]
-        keywords_denorm = self.parser.get_keywords_tf_idf_denormalized(self.index, query_es["_id"], query_es["_source"]["title"], query_es["_source"]["text"], keep_order=True)
-        if keywords_denorm:
-            emb_query = self.em.encode(" ".join(keywords_denorm))
-            nearest_n: NearestNeighborList = self.vs.get_k_nearest(emb_query,size)
-            e_results = [{"id": list(nn.keys())[0], "cosine_score":1-list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0]] # convert cosine sim. to cosine dist. as trev_eval sorts in desc. order
-            orig_len = len(results)
-            for res_e in e_results:
-                is_new_res = True
-                for i in range(orig_len):
-                    if res_e["id"] == results[i]["id"]:
-                        results[i]["cosine_score"] = res_e["cosine_score"]
-                        is_new_res = False
-                        break
-                if is_new_res:
-                    results.append(res_e)
-        results = [res for res in results if res["id"] != query_es["_id"]]
+        results = self.get_ranked_bool_retrieval(size, query_es)
+        results_sem_search = self.get_semantic_search_retrieval(size, query_es)
+        orig_len = len(results)
+        for res in results_sem_search:
+            is_new_res = True
+            for i in range(orig_len):
+                if res["id"] == results[i]["id"]:
+                    results[i]["cosine_score"] = res["cosine_score"]
+                    is_new_res = False
+                    break
+            if is_new_res:
+                results.append(res)
         return results
 
     def get_ranked_bool_retrieval(self, size, query_es):
@@ -159,6 +138,15 @@ class WAPORanker():
                 }
             ))["hits"]["hits"]
             results = [{"id": res["_id"], "bm25_score":res["_score"], "cosine_score":None} for res in k_results if res["_id"] != query_es["_id"]]
+        return results
+
+    def get_semantic_search_retrieval(self, size, query_es):
+        results = []
+        keywords_denorm = self.parser.get_keywords_tf_idf_denormalized(self.index, query_es["_id"], query_es["_source"]["title"], query_es["_source"]["text"], keep_order=True)
+        if keywords_denorm:
+            emb_query = self.em.encode(" ".join(keywords_denorm))
+            nearest_n: NearestNeighborList = self.vs.get_k_nearest(emb_query,size)
+            results = [{"id": list(nn.keys())[0], "cosine_score":1-list(nn.values())[0], "bm25_score":None} for nn in nearest_n[0] if list(nn.keys())[0] != query_es["_id"]] # convert cosine sim. to cosine dist. as trev_eval sorts in desc. order
         return results
 
     def get_ranking(self, test_pred, test_ids):
@@ -214,6 +202,22 @@ class WAPORanker():
                     topic = topic_dict[judgement["id"]]
                     for rank, rid in enumerate(ret_ids):
                         out = f"{topic}\tQ0\t{rid}\t{rank}\t{bm25_scores[rank]}\tducrun\n"
+                        fout.write(out)
+
+    def test_semantic_search(self, size, jl_path, result_path):
+        topic_dict = {v: k for k, v in (JudgementListWapo.get_topic_dict("20")).items()}
+        print("Retrieve background links for each topic and rank based on semantic search cosine similarity...")
+        with open(jl_path, "r", encoding="utf-8") as f:
+            with open(result_path, "w", encoding="utf-8") as fout:
+                for line in tqdm(f, total=49):
+                    judgement = json.loads(line)
+                    query_es = self.es.get(index=self.index,id=judgement["id"])
+                    retrieval = self.get_semantic_search_retrieval(size, query_es) # already ranked
+                    cosine_scores = np.array([ret["cosine_score"] for ret in retrieval])
+                    ret_ids = np.array([ret["id"] for ret in retrieval])
+                    topic = topic_dict[judgement["id"]]
+                    for rank, rid in enumerate(ret_ids):
+                        out = f"{topic}\tQ0\t{rid}\t{rank}\t{cosine_scores[rank]}\tducrun\n"
                         fout.write(out)
 
     def get_combined_reversed_topic_dict(self):
@@ -279,7 +283,14 @@ class WAPORanker():
         ret_count = [100,150,200,250,300]
         for ret in ret_count:
             result_path = f"{self.data_location}/wapo_ranking_base_{str(ret)}.txt"
-            self.test_baseline(ret,judgement_list_20_path, result_path)
+            self.test_baseline(ret,jl_path, result_path)
+
+    def experiment_semantic_search_ranking(self, jl_path):
+        print("Test semantic search ranking...")
+        ret_count = [100,150,200,250,300]
+        for ret in ret_count:
+            result_path = f"{self.data_location}/wapo_ranking_cos_{str(ret)}.txt"
+            self.test_semantic_search(ret,jl_path, result_path)
 
     def experiment_rank_feature_pairs(self, X_train, y_train, query_train, X_val, y_val, query_val, jl_path):
         ret_count = [100,150,200]
@@ -298,7 +309,7 @@ class WAPORanker():
                 eval_at=[5,10],
                 early_stopping_rounds=50
             )
-            self.test_model(get_combined_retrieval, [0,1], judgement_list_20_path, f"{self.data_location}/wapo_ranking_base_cos_{ret}.txt", model_combined)
+            self.test_model(get_combined_retrieval, [0,1], jl_path, f"{self.data_location}/wapo_ranking_base_cos_{ret}.txt", model_combined)
 
             print(f"Test baseline + doc length model. k = {ret}")
             def get_retrieval_base_doc_len(query_es):
@@ -314,7 +325,7 @@ class WAPORanker():
                 eval_at=[5,10],
                 early_stopping_rounds=50
             )
-            self.test_model(get_retrieval_base_doc_len, [0,2], judgement_list_20_path, f"{data_location}/wapo_ranking_base_doc_len_{ret}.txt", model_base_doc_len)
+            self.test_model(get_retrieval_base_doc_len, [0,2], jl_path, f"{data_location}/wapo_ranking_base_doc_len_{ret}.txt", model_base_doc_len)
 
             print(f"Test baseline + time model. k = {ret}")
             def get_retrieval_base_time(query_es):
@@ -330,7 +341,7 @@ class WAPORanker():
                 eval_at=[5,10],
                 early_stopping_rounds=50
             )
-            self.test_model(get_retrieval_base_time, [0,3], judgement_list_20_path, f"{data_location}/wapo_ranking_base_time_{ret}.txt", model_base_time)
+            self.test_model(get_retrieval_base_time, [0,3], jl_path, f"{data_location}/wapo_ranking_base_time_{ret}.txt", model_base_time)
 
             print(f"All features combined. k = {ret}")
             model_all = lgb.LGBMRanker()
@@ -343,7 +354,8 @@ class WAPORanker():
                 eval_at=[5,10],
                 early_stopping_rounds=50
             )
-            self.test_model(get_combined_retrieval, [0,1,2,3], judgement_list_20_path, f"{self.data_location}/wapo_ranking_all_{ret}.txt", model_all)
+            self.test_model(get_combined_retrieval, [0,1,2,3], jl_path, f"{self.data_location}/wapo_ranking_all_{ret}.txt", model_all)
+
 if __name__ == "__main__":
     index = "wapo_clean"
 
@@ -408,4 +420,5 @@ if __name__ == "__main__":
         ["wapo_ranking_perf_recall_18", "wapo_ranking_perf_recall_19", "wapo_ranking_perf_recall_20"]
     )
     ranker.experiment_baseline_ranking(judgement_list_20_path) # output file: wapo_ranking_base_{k}.txt
+    ranker.experiment_semantic_search_ranking(judgement_list_20_path) # output file: wapo_ranking_cos_{k}.txt
     ranker.experiment_rank_feature_pairs(X_train, y_train, query_train, X_val, y_val, query_val, judgement_list_20_path) # output files: wapo_ranking_base_*_{k}.txt
