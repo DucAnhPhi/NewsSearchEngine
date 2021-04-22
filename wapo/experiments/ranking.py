@@ -239,7 +239,7 @@ class WAPORanker():
                 try:
                     query_es = es.get(index=self.index, id=judgm["id"])
                     for ref in judgm["references"]:
-                        if ref["id"] == judgm["id"]:
+                        if ref["id"] == judgm["id"] or int(ref["exp_rel"])<2:
                             continue
                         doc_es = None
                         try:
