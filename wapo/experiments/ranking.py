@@ -286,7 +286,7 @@ class WAPORanker():
         for ret in ret_count:
             print(f"Test baseline + cosine similarity model. k = {ret}")
             def get_combined_retrieval(query_es):
-                return ranker.get_combined_retrieval(ret//2, query_es)
+                return self.get_combined_retrieval(ret//2, query_es)
 
             model_combined = lgb.LGBMRanker()
             model_combined.fit(
@@ -302,7 +302,7 @@ class WAPORanker():
 
             print(f"Test baseline + doc length model. k = {ret}")
             def get_retrieval_base_doc_len(query_es):
-                return ranker.get_ranked_bool_retrieval(ret, query_es)
+                return self.get_ranked_bool_retrieval(ret, query_es)
 
             model_base_doc_len = lgb.LGBMRanker()
             model_base_doc_len.fit(
@@ -314,11 +314,11 @@ class WAPORanker():
                 eval_at=[5,10],
                 early_stopping_rounds=50
             )
-            ranker.test_model(get_retrieval_base_doc_len, [0,2], judgement_list_20_path, f"{data_location}/wapo_ranking_base_doc_len_{ret}.txt", model_base_doc_len)
+            self.test_model(get_retrieval_base_doc_len, [0,2], judgement_list_20_path, f"{data_location}/wapo_ranking_base_doc_len_{ret}.txt", model_base_doc_len)
 
             print(f"Test baseline + time model. k = {ret}")
             def get_retrieval_base_time(query_es):
-                return ranker.get_ranked_bool_retrieval(ret, query_es)
+                return self.get_ranked_bool_retrieval(ret, query_es)
 
             model_base_time = lgb.LGBMRanker()
             model_base_time.fit(
@@ -330,7 +330,7 @@ class WAPORanker():
                 eval_at=[5,10],
                 early_stopping_rounds=50
             )
-            ranker.test_model(get_retrieval_base_time, [0,3], judgement_list_20_path, f"{data_location}/wapo_ranking_base_time_{ret}.txt", model_base_time)
+            self.test_model(get_retrieval_base_time, [0,3], judgement_list_20_path, f"{data_location}/wapo_ranking_base_time_{ret}.txt", model_base_time)
 
             print(f"All features combined. k = {ret}")
             model_all = lgb.LGBMRanker()

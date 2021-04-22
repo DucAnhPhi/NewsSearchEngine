@@ -1,15 +1,9 @@
 
-- [TODOs](#todos)
 - [Installation](#installation)
 - [Run experiments](#getting-started)
 - [Run unit tests](#run-unit-tests)
 - [License](#license)
 - [Author](#author)
-
-## TODOs
-- implement filtering
-- implement LTR
-- handle scaling vector storage (max elements)
 
 ## Installation
 * Install Python 3.6.9 (if not already installed)
