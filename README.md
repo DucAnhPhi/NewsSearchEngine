@@ -1,6 +1,6 @@
 # Background Linking of News Articles
 
-This repository contains the code for my master thesis *Background Linking of News Articles*. That includes (installation) instructions and executable scripts, such that all conducted experiments, methods and results that are presented in my work can be reproduced or built up on.
+This repository contains the code for my master thesis *Background Linking of News Articles*. This includes (installation) instructions and executable scripts, such that all conducted experiments, methods and results that are presented in my work can be reproduced or built up on.
 
 - [Abstract](#abstract)
 - [Installation](#installation)
